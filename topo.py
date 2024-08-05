@@ -17,6 +17,7 @@ try:
         sys.version_info.minor,
         'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
+    print('carla not found')
     pass
 
 import carla
@@ -24,7 +25,7 @@ import argparse
 from random import sample 
 from copy import copy
 from pprint import pprint
-from scenariogeneration import xosc, prettyprint
+# from scenariogeneration import xosc, prettyprint
 
 
 import matplotlib.pyplot as plt
@@ -132,7 +133,7 @@ class MapAlignment():
         print(f"Junction center: ({junction_center.x:.1f},{junction_center.y:.1f})")
 
         sortbyradians = {}
-        begin =carla.Vector3D(0,-1,0)#direction 從下開始,逆時針定義z1,z2, ....
+        begin = carla.Vector3D(0,-1,0) #direction 從下開始,逆時針定義z1,z2, ....
         jlane = junction.get_waypoints(carla.LaneType.Driving)
         for pair in jlane:
             wp = pair[1] #right lane
@@ -350,7 +351,8 @@ def main():
             #     sce = generate_straight(Map, sc)
             # if sc.topo == 'straight_static':
             #     sce = generate_straight_obstacle(Map, sc)
-            sce.write_xml(f"../../esmini-demo/resources/xosc/{scenario_name}TEST.xosc")
+                # sce.write_xml(f"../../esmini-demo/resources/xosc/{scenario_name}TEST.xosc")
+                sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{scenario_name}_TEST.xosc")
 
             if sc.topo == '4way':
                 sce = generate_4way(Map, sc, company="ITRI")
@@ -360,7 +362,8 @@ def main():
             #     sce = generate_straight(Map, sc, company="ITRI")
             # if sc.topo == 'straight_static':
             #     sce = generate_straight_obstacle(Map, sc, company="ITRI")
-            sce.write_xml(f"../xosc/0722/{scenario_name}.xosc")
+                # sce.write_xml(f"../xosc/0722/{scenario_name}.xosc")
+                sce.write_xml(f"./xosc_itri/{scenario_name}.xosc")
             """
             """
         # prettyprint(sce.get_element())

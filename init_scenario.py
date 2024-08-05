@@ -67,6 +67,9 @@ class ScenarioCategory():
         #                 'speed_up': ( 0, AgentSpeed, 5, 'linear', None), #加速
         #                 'speed_up': ( 0, AgentSpeed, 5, 'linear', None), #加速
         #                } 
+
+
+        # ex: cate = 'hcis_23_01SR-TR'
         tags = cate.split('_')
         agent1Tag = tags[2][2:]
         scenarioId = tags[1]

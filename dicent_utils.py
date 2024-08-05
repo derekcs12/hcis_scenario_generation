@@ -164,13 +164,14 @@ def create_EntityTrigger_at_egoInitWp(egoName, ego_wp,s="$Ego_S", tolerance=1):
                               entitycondition = reachPosCondition, 
                               triggerentity = egoName, triggeringrule = "any")
     
-def create_StopTrigger(egoName, distance=130, time=11):
+def create_StopTrigger(egoName, distance=130, time=11,event_name='event'):
 
     stopdist_trigger = xosc.EntityTrigger(
             "stoptrigger", 0, xosc.ConditionEdge.none, xosc.TraveledDistanceCondition(value = distance), egoName
     )
     stoptime_trigger = xosc.ValueTrigger(
-            "stoptrigger", 0, xosc.ConditionEdge.none, xosc.SimulationTimeCondition(value = time, rule= xosc.Rule.greaterThan)
+            # "stoptrigger", 0, xosc.ConditionEdge.none, xosc.SimulationTimeCondition(value = time, rule= xosc.Rule.greaterThan)
+            "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
     )
     stopdist_group = xosc.ConditionGroup()
     stopdist_group.add_condition(stopdist_trigger)
