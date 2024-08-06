@@ -127,7 +127,7 @@ def generate_Adv_Maneuver(config,index):
     ## Event1: Adv Behavior
     Behavior = config['Agents'][index]['Behavior']
     advspeed = xosc.AbsoluteSpeedAction(Behavior['Start_speed'], xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
-    advcontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
+    # advcontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
 
     # if Sc.adv[0].traj == None:
     #     adv1goal  = xosc.AcquirePositionAction(create_LanePosition_from_wp(Map.zones[Sc.adv[0].to]))
@@ -173,17 +173,17 @@ def generate_Adv_Maneuver(config,index):
 
         advStartSpeedEvent = xosc.Event(f"Adv{index}StartSpeedEvent", xosc.Priority.overwrite)
         advStartSpeedEvent.add_action(f"Adv{index}StartSpeedAction", advspeed)
-        advStartSpeedEvent.add_action("AdvControlAction", advcontl)
+        # advStartSpeedEvent.add_action("AdvControlAction", advcontl)
         advStartSpeedEvent.add_action("AcquirePositionAction", advgoal)
         advStartSpeedEvent.add_trigger(trigger)
 
 
         ## Adv1 - Event2: Speed Behavior
         advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'])
-        trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", 1)
+        trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", 0)
 
         advEndSpeedEvent = xosc.Event(f"Adv{index}EndSpeedEvent", xosc.Priority.parallel)
-        advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEvent", advEndSpeed)
+        advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEventAction", advEndSpeed)
         advEndSpeedEvent.add_trigger(trigger)
 
 

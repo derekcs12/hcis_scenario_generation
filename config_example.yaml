@@ -25,15 +25,15 @@ Agents:
       type: absolute
       road:  0 # -1:後 0:同 1:前
       lane:  2 # -1:左 0:中 1:右
-      s:  0
+      s:  25
 
   - Start: 2 1 30
     End: 3 1 20
     Behavior: 
       type: keeping
       Start_speed: 30
-      End_speed: 60
-      Dynamic_duration: 99
+      End_speed: 0
+      Dynamic_duration: 0.5
       Dynamic_shape: linear
     Trigger:   
       type: absolute

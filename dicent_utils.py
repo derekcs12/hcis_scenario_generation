@@ -222,7 +222,7 @@ def create_StopTrigger(egoName, distance=130, time=11,event_name='event'):
 
     return stopTrigger
 
-def create_Trigger_following_previous(previousEventName, delay):
+def create_Trigger_following_previous(previousEventName, delay = 0):
     return xosc.ValueTrigger(
             name = "FollowingPreviosTrigger",
             delay = delay,
