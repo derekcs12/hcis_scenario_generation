@@ -1,0 +1,50 @@
+Scenario_name: example
+  
+Map: 
+  - 121
+  - 17
+  - 144
+  - 16 
+
+Center: 685.61 -134.05
+
+Ego:
+  Start: 0 2 40 # road_no lane_id 
+  End: 0 2 100
+
+Agents:
+  - Start: 2 2 10
+    End: 3 -1 10
+    Behavior: 
+      type: breaking
+      Start_speed: 30
+      End_speed: 0
+      Dynamic_duration: 1
+      Dynamic_shape: linear
+    Trigger:
+      type: absolute
+      road:  0 # -1:後 0:同 1:前
+      lane:  2 # -1:左 0:中 1:右
+      s:  0
+
+  - Start: 2 1 30
+    End: 3 1 20
+    Behavior: 
+      type: keeping
+      Start_speed: 30
+      End_speed: 60
+      Dynamic_duration: 99
+      Dynamic_shape: linear
+    Trigger:   
+      type: absolute
+      road: 0 # road_no
+      lane: 2 # lane_id
+      s:  25
+
+
+
+# 1. Ego 初始位置
+# 2. {Agent 初始位置
+# 3. Agent 行為
+# 4. Agent 觸發位置
+# 5. Agent 觸發距離} * n 

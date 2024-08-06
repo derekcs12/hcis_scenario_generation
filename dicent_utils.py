@@ -100,11 +100,34 @@ def create_LanePosition_from_wp(waypoint, s=None, s_offset=0, lane_offset=0, ori
         orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
     )
 
+def create_LanePosition_from_config(Map, position, orientation=False, s=None):
+    if s == None:
+        index, lane_id , s = map(int,position.split(' '))
+    else:
+        index, lane_id , _ = map(int,position.split(' '))
+    
+    # print("index, lane_id , s", index, lane_id , s)
+    # exit()
+    road = int(Map[index])
+    return xosc.LanePosition(
+        s=s,
+        offset=0,
+        lane_id=lane_id,
+        road_id=road,
+        orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
+    )
+
+
 
 def create_TransitionDynamics_from_sc(agent_sc):
     dynamic_shape = getattr(xosc.DynamicsShapes, agent_sc.dynamic_shape)
     return xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, agent_sc.dynamic_duration)
 
+def create_TransitionDynamics_from_config(Behavior):
+    dynamic_shape = getattr(xosc.DynamicsShapes, Behavior['Dynamic_shape'])
+    transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, Behavior['Dynamic_duration'])
+    
+    return xosc.AbsoluteSpeedAction(Behavior['End_speed'], transition_dynamics)
 
 def create_ValueTrigger_from_sc(agent_sc=None, agent_name=None, ego_name=None):
     if agent_sc == None:
@@ -163,7 +186,21 @@ def create_EntityTrigger_at_egoInitWp(egoName, ego_wp,s="$Ego_S", tolerance=1):
                               conditionedge = xosc.ConditionEdge.rising,
                               entitycondition = reachPosCondition, 
                               triggerentity = egoName, triggeringrule = "any")
-    
+
+def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName):
+    road_index , lane_id , s = Trigger['road'], Trigger['lane'], Trigger['s']
+    road = int(Map[road_index])
+    return xosc.EntityTrigger(name = "EgoApproachInitWp", 
+                              delay = 0,
+                              conditionedge = xosc.ConditionEdge.rising,
+                              entitycondition = xosc.ReachPositionCondition(xosc.LanePosition(s = s,
+                                                                                          offset = 0,  
+                                                                                          lane_id = lane_id, 
+                                                                                          road_id = road),
+                                                                        tolerance = 2), 
+                              triggerentity = EntityName, triggeringrule = "any")
+
+
 def create_StopTrigger(egoName, distance=130, time=11,event_name='event'):
 
     stopdist_trigger = xosc.EntityTrigger(
