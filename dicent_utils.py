@@ -201,24 +201,26 @@ def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName):
                               triggerentity = EntityName, triggeringrule = "any")
 
 
-def create_StopTrigger(egoName, distance=130, time=11,event_name='event'):
+def create_StopTrigger(egoName, distance=130, time=11,agent_count=1):
+    stopdist_group = xosc.ConditionGroup()
+    element_group = xosc.ConditionGroup()
 
     stopdist_trigger = xosc.EntityTrigger(
             "stoptrigger", 0, xosc.ConditionEdge.none, xosc.TraveledDistanceCondition(value = distance), egoName
     )
-    stoptime_trigger = xosc.ValueTrigger(
-            # "stoptrigger", 0, xosc.ConditionEdge.none, xosc.SimulationTimeCondition(value = time, rule= xosc.Rule.greaterThan)
-            "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
-    )
-    stopdist_group = xosc.ConditionGroup()
     stopdist_group.add_condition(stopdist_trigger)
-    stoptime_group = xosc.ConditionGroup()
-    stoptime_group.add_condition(stoptime_trigger)
+
+    for i in range(agent_count):
+        event_name = f"Adv{i}EndSpeedEvent"
+        element_trigger = xosc.ValueTrigger(
+            "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
+        )
+        element_group.add_condition(element_trigger)
 
     # create trigger and add the two conditiongroups (or logic)
     stopTrigger = xosc.Trigger('stop')
     stopTrigger.add_conditiongroup(stopdist_group)
-    stopTrigger.add_conditiongroup(stoptime_group)
+    stopTrigger.add_conditiongroup(element_group)
 
     return stopTrigger
 

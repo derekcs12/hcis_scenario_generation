@@ -101,7 +101,7 @@ def generate(config, company='HCISLab'):
     
 
     
-    sb = xosc.StoryBoard(init, create_StopTrigger(egoName,event_name='Adv1EndSpeedEvent',distance=130))
+    sb = xosc.StoryBoard(init, create_StopTrigger(egoName,agent_count=len(Agents),distance=130))
     
     ### Storyboard - Event
     for i in range(len(Agents)):
