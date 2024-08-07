@@ -5,6 +5,7 @@ Agents:
     End_speed: '40'
     Start_speed: '40'
     type: keeping
+    Dynamic_delay: 0
   End: 1 -1 20
   Start: 0 1 20
   Trigger:

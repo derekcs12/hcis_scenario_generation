@@ -25,7 +25,8 @@ def generate(config, company='HCISLab'):
         agentLowSpeed     = xosc.Parameter(name=f"Agent{i}LowSpeed",parameter_type="double",value=str(agentBehavior['End_speed']))
         agentDynmDuration = xosc.Parameter(name=f"Agent{i}DynamicDuration",parameter_type="double",value=str(agentBehavior['Dynamic_duration']))
         agentS     = xosc.Parameter(name=f"Agent{i}_S",parameter_type="double",value=str(agentInit_S))
-        paraList.extend([agentInit, agentSpeed, agentS, agentLowSpeed, agentDynmDuration])
+        agentDynamicDelay = xosc.Parameter(name=f"Agent{i}DynamicDelay",parameter_type="double",value=str(agentBehavior['Dynamic_delay']))
+        paraList.extend([agentInit, agentSpeed, agentS, agentLowSpeed, agentDynmDuration, agentDynamicDelay])
 
     # paraList = [egoInit, egoSpeed, egoS, agentInit, agentSpeed, agentS, agentLowSpeed, agentDynmDuration]
     for i in paraList:
@@ -181,7 +182,7 @@ def generate_Adv_Maneuver(config,index):
 
         ## Adv1 - Event2: Speed Behavior
         advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'],index=index)
-        trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", 0)
+        trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", f'$Agent{index}DynamicDelay')
 
         advEndSpeedEvent = xosc.Event(f"Adv{index}EndSpeedEvent", xosc.Priority.parallel)
         advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEventAction", advEndSpeed)

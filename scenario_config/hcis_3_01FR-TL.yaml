@@ -1,10 +1,11 @@
 Agents:
 - Behavior:
-    Dynamic_duration: '5'
+    Dynamic_duration: '0'
     Dynamic_shape: linear
     End_speed: 0
     Start_speed: '40'
     type: braking_halt
+    Dynamic_delay: 0
   End: 1 -1 20
   Start: 0 1 20
   Trigger:
