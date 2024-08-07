@@ -1,6 +1,7 @@
 Agents:
 - Behavior:
-    Dynamic_duration: '1'
+    Dynamic_delay: '2'
+    Dynamic_duration: '1.5'
     Dynamic_shape: sinusoidal
     End_speed: 0
     Start_speed: '40'

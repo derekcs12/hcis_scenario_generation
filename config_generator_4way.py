@@ -34,16 +34,17 @@ if 'init':
     AgentSpeed = '40'
     AgentLowSpeed = '10'
     DynamicDuration = '3' #3.0
-    DynamicHaltDuration = '1' #1
-    AgentDelay = '0.5' # 0.45
+    DynamicHaltDuration = '1.5' #1
+    DynamicDelay = '2' #1
+    # AgentDelay = '0.5' # 0.45
     
     
     BehaviorMode = {}
-    BehaviorMode['keeping']  = (AgentSpeed, AgentSpeed, DynamicDuration, 'linear', None) #等速
-    BehaviorMode['braking'] = (AgentSpeed, AgentLowSpeed, DynamicDuration, 'linear', None)  #減速
-    BehaviorMode['braking_halt'] = (AgentSpeed, 0, DynamicHaltDuration, 'linear', None) #減速|未完成
-    BehaviorMode['sudden_braking_halt'] = (AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', AgentDelay)  #急煞|未完成
-    BehaviorMode['speed_up'] = ( 0, AgentSpeed, DynamicDuration, 'linear', None) #加速
+    BehaviorMode['keeping']  = (AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay) #等速
+    BehaviorMode['braking'] = (AgentSpeed, AgentLowSpeed, DynamicDuration, 'linear', DynamicDelay)  #減速
+    BehaviorMode['braking_halt'] = (AgentSpeed, 0, DynamicHaltDuration, 'linear', DynamicDelay) #減速|未完成
+    BehaviorMode['sudden_braking_halt'] = (AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', DynamicDelay)  #急煞|未完成
+    BehaviorMode['speed_up'] = ( 0, AgentSpeed, DynamicDuration, 'linear', DynamicDelay) #加速
 
 
 
@@ -82,6 +83,7 @@ if "Agent Position:2,3,5 - Turn Left":
             agent1['Behavior']['End_speed'] = behavior[1]
             agent1['Behavior']['Dynamic_duration'] = behavior[2]
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
+            agent1['Behavior']['Dynamic_delay'] = behavior[4]
             
             
             config['Agents'] = [agent1]
@@ -120,6 +122,7 @@ if "Agent From Oncoming - Turn Left":
             agent1['Behavior']['End_speed'] = behavior[1]
             agent1['Behavior']['Dynamic_duration'] = behavior[2]
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
+            agent1['Behavior']['Dynamic_delay'] = behavior[4]
             
             
             config['Agents'] = [agent1]
@@ -153,7 +156,7 @@ if "Agent From Oncoming - U-turn to Same lane":
         agent1['Behavior']['End_speed'] = behavior[1]
         agent1['Behavior']['Dynamic_duration'] = behavior[2]
         agent1['Behavior']['Dynamic_shape'] = behavior[3]
-        
+        agent1['Behavior']['Dynamic_delay'] = behavior[4]
         
         config['Agents'] = [agent1]
         
@@ -198,6 +201,7 @@ if "Agent Position:1,2,4 - Turn Right":
             agent1['Behavior']['End_speed'] = behavior[1]
             agent1['Behavior']['Dynamic_duration'] = behavior[2]
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
+            agent1['Behavior']['Dynamic_delay'] = behavior[4]
             
             
             config['Agents'] = [agent1]
@@ -235,6 +239,7 @@ if "Agent From Oncoming - Turn Right":
         agent1['Behavior']['End_speed'] = behavior[1]
         agent1['Behavior']['Dynamic_duration'] = behavior[2]
         agent1['Behavior']['Dynamic_shape'] = behavior[3]
+        agent1['Behavior']['Dynamic_delay'] = behavior[4]
         
         
         config['Agents'] = [agent1]
@@ -268,6 +273,7 @@ if "Agent From Oncoming - U-turn":
         agent1['Behavior']['End_speed'] = behavior[1]
         agent1['Behavior']['Dynamic_duration'] = behavior[2]
         agent1['Behavior']['Dynamic_shape'] = behavior[3]
+        agent1['Behavior']['Dynamic_delay'] = behavior[4]
         
         
         config['Agents'] = [agent1]
@@ -316,6 +322,7 @@ if "Agent From Oncoming - Keeping":
             agent1['Behavior']['End_speed'] = behavior[1]
             agent1['Behavior']['Dynamic_duration'] = behavior[2]
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
+            agent1['Behavior']['Dynamic_delay'] = behavior[4]
             
             
             config['Agents'] = [agent1]
