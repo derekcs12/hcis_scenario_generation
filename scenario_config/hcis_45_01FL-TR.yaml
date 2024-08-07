@@ -1,12 +1,12 @@
 Agents:
 - Behavior:
-    Dynamic_duration: '1'
-    Dynamic_shape: sinusoidal
-    End_speed: 0
-    Start_speed: '40'
-    type: sudden_braking_halt
+    Dynamic_duration: '3'
+    Dynamic_shape: linear
+    End_speed: '40'
+    Start_speed: 0
+    type: speed_up
   End: 3 -1 20
-  Start: 0 1 20
+  Start: 0 2 20
   Trigger:
     lane: 2
     road: 0
@@ -21,4 +21,4 @@ Map:
 - 17
 - 144
 - 16
-Scenario_name: hcis_39_01FL-TR
+Scenario_name: hcis_45_01FL-TR

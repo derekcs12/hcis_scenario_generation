@@ -6,19 +6,19 @@ Agents:
     Start_speed: '40'
     type: sudden_braking_halt
   End: 3 -1 20
-  Start: 0 1 20
+  Start: 1 1 20
   Trigger:
-    lane: 2
+    lane: 1
     road: 0
-    s: 30
+    s: 20
     type: absolute
-Center: 685.61 -134.05
+Center: 257 30.5
 Ego:
-  End: 2 -2 40
-  Start: 0 2 40
+  End: 2 -1 40
+  Start: 0 1 40
 Map:
-- 121
-- 17
-- 144
-- 16
-Scenario_name: hcis_39_01FL-TR
+- 98
+- 119
+- 141
+- 106
+Scenario_name: hcis_64_01FR-KEEP

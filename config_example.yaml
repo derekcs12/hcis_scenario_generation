@@ -13,7 +13,8 @@ Ego:
   End: 0 2 100
 
 Agents:
-  - Start: 2 2 10
+  - Start: 2 2 
+    End: 3 2 100
     End: 3 -1 10
     Behavior: 
       type: breaking

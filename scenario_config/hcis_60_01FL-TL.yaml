@@ -5,12 +5,12 @@ Agents:
     End_speed: '40'
     Start_speed: 0
     type: speed_up
-  End: 3 -1 20
-  Start: 0 1 20
+  End: 2 1 20
+  Start: 2 -1 20
   Trigger:
     lane: 2
     road: 0
-    s: 30
+    s: 20
     type: absolute
 Center: 685.61 -134.05
 Ego:
@@ -21,4 +21,4 @@ Map:
 - 17
 - 144
 - 16
-Scenario_name: hcis_40_01FL-TR
+Scenario_name: hcis_60_01FL-TL
