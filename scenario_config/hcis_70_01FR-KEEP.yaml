@@ -6,7 +6,8 @@ Agents:
     End_speed: '40'
     Start_speed: 0
     type: speed_up
-  End: 1 -1 20
+    Use_route: False
+  End: 1 1 20
   Start: 3 1 0
   Trigger:
     lane: 1

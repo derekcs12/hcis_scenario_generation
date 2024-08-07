@@ -134,7 +134,7 @@ def generate_Adv_Maneuver(config,index):
     # if Sc.adv[0].traj == None:
     #     adv1goal  = xosc.AcquirePositionAction(create_LanePosition_from_wp(Map.zones[Sc.adv[0].to]))
     # else:
-    if True:
+    if config['Agents'][index]['Behavior']['Use_route']:
         # route = plan_path(start=Map.zones[Sc.adv[0].origin],
         #                     end=Map.zones[Sc.adv[0].to],
         #                     WAYPOINT_DISTANCE=0.5,
@@ -166,7 +166,8 @@ def generate_Adv_Maneuver(config,index):
         # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End'],s=0),routestrategy=xosc.RouteStrategy.fastest)
         # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']),routestrategy=xosc.RouteStrategy.fastest)
         # advgoal = xosc.AssignRouteAction(route)
-
+    else:
+        advgoal = xosc.AcquirePositionAction(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))
 
     if config['Agents'][index]['Trigger']['type'] == 'relative':
         ...
