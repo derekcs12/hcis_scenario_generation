@@ -5,6 +5,7 @@ Agents:
     Dynamic_shape: linear
     End_speed: '40'
     Start_speed: '40'
+    Use_route: false
     type: keeping
   End: 1 -1 20
   Start: 0 1 20

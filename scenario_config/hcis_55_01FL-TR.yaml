@@ -4,8 +4,9 @@ Agents:
     Dynamic_duration: '3'
     Dynamic_shape: linear
     End_speed: '40'
-    Start_speed: '40'
-    type: keeping
+    Start_speed: 0
+    Use_route: false
+    type: speed_up
   End: 2 1 20
   Start: 3 1 20
   Trigger:
@@ -22,4 +23,4 @@ Map:
 - 17
 - 144
 - 16
-Scenario_name: hcis_51_01FR-TR
+Scenario_name: hcis_55_01FL-TR

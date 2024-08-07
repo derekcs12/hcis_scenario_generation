@@ -4,6 +4,7 @@ from scenariogeneration import xosc, prettyprint
 from dicent_utils import *
 
 
+
 def generate(config, company='HCISLab'):
     Agents = config['Agents']
     paramdec = xosc.ParameterDeclarations()
@@ -131,18 +132,8 @@ def generate_Adv_Maneuver(config,index):
     advspeed = xosc.AbsoluteSpeedAction(f'${{$Agent{index}Speed / 3.6}}', xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
     # advcontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
 
-    # if Sc.adv[0].traj == None:
-    #     adv1goal  = xosc.AcquirePositionAction(create_LanePosition_from_wp(Map.zones[Sc.adv[0].to]))
-    # else:
-    if config['Agents'][index]['Behavior']['Use_route'] == 'true':
-        # route = plan_path(start=Map.zones[Sc.adv[0].origin],
-        #                     end=Map.zones[Sc.adv[0].to],
-        #                     WAYPOINT_DISTANCE=0.5,
-        #                     method="global_planner")
-        # print(Map.zones[Sc.adv[0].origin])
-        # print(Map.zones[Sc.adv[0].to])
-        # print(route);exit()
-        # route = Sc.adv[0].traj
+
+    if config['Agents'][index]['Behavior']['Use_route'] == True:
 
         trajectory = xosc.Trajectory('selfDefineTrajectory',False)
         road_center = list(map(float,config['Center'].split(' ')))
