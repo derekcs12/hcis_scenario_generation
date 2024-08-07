@@ -107,12 +107,13 @@ def generate(config, company='HCISLab'):
     for i in range(len(Agents)):
         agentManeuver = generate_Adv_Maneuver(config,i)
         sb.add_maneuver(agentManeuver, f"Agent{i}")
+        
 
 
     ### Create Scenario
     sce = xosc.Scenario( 
         name="hct_"+config['Scenario_name'],
-        author="HCIS_YuSheng",
+        author="HCIS_ChengYuSheng",
         parameters = paramdec,
         entities=entities,
         storyboard=sb,
@@ -150,7 +151,7 @@ def generate_Adv_Maneuver(config,index):
         nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(road_center[0],road_center[1]),weight = 0.5)) #路口中心
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End'],s = 0))) #目的地
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))) #目的地
-        nurbs.add_knots([0,0,0,0,1,1,1,1,1])
+        nurbs.add_knots([0,0,0,0,1,2,2,2,2])
 
         trajectory.add_shape(nurbs)
 

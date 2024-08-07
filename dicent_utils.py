@@ -16,7 +16,7 @@ except IndexError:
 
 
 import carla
-from agents.navigation.global_route_planner import GlobalRoutePlanner
+# from agents.navigation.global_route_planner import GlobalRoutePlanner
 
 global carla_map
 with open('hct_6.xodr', 'r') as fp:
@@ -236,7 +236,7 @@ def create_Trigger_following_previous(previousEventName, delay = 0):
         )
     
     
-
+"""
 def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
     if method == 'greedy':
 
@@ -262,3 +262,27 @@ def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
         route = [wp for wp,r in route]
         # print(route)
         return route
+"""
+
+
+import os
+import re
+
+def get_next_scenario_id(directory='./scenario_config'):
+    # Regular expression to match filenames with format {party}_{scenario_id}
+    pattern = re.compile(r'^[^_]+_(\d+)_.*$')
+    
+    max_scenario_id = 0
+    
+    # List all files in the directory
+    for filename in os.listdir(directory):
+        match = pattern.match(filename)
+        if match:
+            scenario_id = int(match.group(1))
+            if scenario_id > max_scenario_id:
+                max_scenario_id = scenario_id
+    
+    # Calculate the next scenario ID
+    next_scenario_id = max_scenario_id + 1
+    
+    return next_scenario_id

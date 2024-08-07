@@ -1,0 +1,24 @@
+Agents:
+- Behavior:
+    Dynamic_duration: '3'
+    Dynamic_shape: linear
+    End_speed: '40'
+    Start_speed: '40'
+    type: keeping
+  End: 1 -1 20
+  Start: 0 2 20
+  Trigger:
+    lane: 1
+    road: 0
+    s: 30
+    type: absolute
+Center: 685.61 -134.05
+Ego:
+  End: 2 -1 40
+  Start: 0 1 40
+Map:
+- 121
+- 17
+- 144
+- 16
+Scenario_name: hcis_6_01FR-TL

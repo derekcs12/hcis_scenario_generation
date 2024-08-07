@@ -7,7 +7,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 # import glob
-# import os
+import os
 # import sys
 # import numpy as np
 import yaml
@@ -62,18 +62,22 @@ def main():
         default='config_example.yaml',
         help='Config file path')
     args = argparser.parse_args()
+    
+    configFile = [f'hcis_{i}_01SR-TL.yaml' for  i in range(11,16)]
 
-    with open(args.config,'r') as f:
-        config = yaml.safe_load(f)
+    
+    for filename in os.listdir('./scenario_config'):
+        with open('./scenario_config/'+filename,'r') as f:
+            config = yaml.safe_load(f)
 
-    """ 
-    Build xosc 
-    """
-    sce = generate(config)
-    sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
+        """ 
+        Build xosc 
+        """
+        sce = generate(config)
+        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{config['Scenario_name']}.xosc")
 
-    sce = generate(config,company="ITRI")
-    sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
+        sce = generate(config,company="ITRI")
+        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
     
     # if sc.topo == '4way':
     #     sce = generate_4way(Map, sc)
