@@ -2,11 +2,11 @@ Agents:
 - Behavior:
     Dynamic_duration: '3'
     Dynamic_shape: linear
-    End_speed: 0
+    End_speed: '10'
     Start_speed: '40'
-    type: braking_halt
-  End: 3 -1 20
-  Start: 0 1 20
+    type: braking
+  End: 2 1 20
+  Start: 3 1 20
   Trigger:
     lane: 2
     road: 0
@@ -21,4 +21,4 @@ Map:
 - 17
 - 144
 - 16
-Scenario_name: hcis_43_01SL-TR
+Scenario_name: hcis_52_01FR-TR
