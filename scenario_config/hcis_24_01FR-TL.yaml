@@ -1,14 +1,14 @@
 Agents:
 - Behavior:
-    Dynamic_delay: '2'
-    Dynamic_duration: '1.5'
+    Dynamic_delay: '1'
+    Dynamic_duration: '1'
     Dynamic_shape: sinusoidal
     End_speed: 0
     Start_speed: '40'
     Use_route: false
     type: sudden_braking_halt
   End: 3 -1 20
-  Start: 2 -1 20
+  Start: 2 1 10
   Trigger:
     lane: 1
     road: 0

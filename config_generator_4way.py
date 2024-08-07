@@ -10,16 +10,16 @@ if 'init':
     egoStraightAsideLeft = {'Start': '0 1 40', 'End': '2 -1 40'}
     egoStraightAsideRight = {'Start': '0 2 40', 'End': '2 -2 40'}
     
-    agentFromSameDirectionAsideLeft = '0 1 20'
-    agentFromSameDirectionAsideRight = '0 2 20'
-    agentFromOppositeDirectionAsideLeft = '2 -1 20'
-    # agentFromOppositeDirectionAsideRight = '2 -2 20'
-    agentToSameDirectionAsideLeft = '2 1 20'
-    agentToSameDirectionAsideRight = '2 2 20'
+    agentFromSameDirectionAsideLeft = '0 1 10'
+    agentFromSameDirectionAsideRight = '0 2 10'
+    agentFromOppositeDirectionAsideLeft = '2 1 10'
+    # agentFromOppositeDirectionAsideRight = '2 2 20'
+    agentToSameDirectionAsideLeft = '2 -1 20'
+    agentToSameDirectionAsideRight = '2 -2 20'
     agentToSameRoadOppositeDirectionAsideLeft = '0 -1 20'
     # agentToOppositeDirectionAsideRight = '2 -2 20'
-    agentFromLeft = '1 1 20'
-    agentFromRight = '3 1 20'
+    agentFromLeft = '1 1 10'
+    agentFromRight = '3 1 10'
     agentToLeft = '1 -1 20'
     agentToRight = '3 -1 20'
     
@@ -34,8 +34,8 @@ if 'init':
     AgentSpeed = '40'
     AgentLowSpeed = '10'
     DynamicDuration = '3' #3.0
-    DynamicHaltDuration = '1.5' #1
-    DynamicDelay = '2' #1
+    DynamicHaltDuration = '1' #1
+    DynamicDelay = '1' #1
     # AgentDelay = '0.5' # 0.45
     
     
