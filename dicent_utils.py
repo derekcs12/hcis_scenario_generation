@@ -123,11 +123,11 @@ def create_TransitionDynamics_from_sc(agent_sc):
     dynamic_shape = getattr(xosc.DynamicsShapes, agent_sc.dynamic_shape)
     return xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, agent_sc.dynamic_duration)
 
-def create_TransitionDynamics_from_config(Behavior):
+def create_TransitionDynamics_from_config(Behavior,index):
     dynamic_shape = getattr(xosc.DynamicsShapes, Behavior['Dynamic_shape'])
-    transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, Behavior['Dynamic_duration'])
+    transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"$Agent{index}DynamicDuration")
     
-    return xosc.AbsoluteSpeedAction(Behavior['End_speed'], transition_dynamics)
+    return xosc.AbsoluteSpeedAction(f'${{$Agent{index}LowSpeed/3.6}}', transition_dynamics)
 
 def create_ValueTrigger_from_sc(agent_sc=None, agent_name=None, ego_name=None):
     if agent_sc == None:

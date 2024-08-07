@@ -63,47 +63,31 @@ def main():
         help='Config file path')
     args = argparser.parse_args()
     
-    configFile = [f'hcis_{i}_01SR-TL.yaml' for  i in range(11,16)]
+    configFile = []
 
-    
-    for filename in os.listdir('./scenario_config'):
-        with open('./scenario_config/'+filename,'r') as f:
+    if(args.config == 'all'):
+        for filename in os.listdir('./scenario_config'):
+            with open('./scenario_config/'+filename,'r') as f:
+                config = yaml.safe_load(f)
+            configFile.append(config)
+    else:
+        with open(args.config,'r') as f:
             config = yaml.safe_load(f)
+        configFile.append(config)
 
+    print("total config: ", len(configFile))
+    for config in configFile:
         """ 
         Build xosc 
         """
         sce = generate(config)
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{config['Scenario_name']}.xosc")
 
         sce = generate(config,company="ITRI")
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
-    
-    # if sc.topo == '4way':
-    #     sce = generate_4way(Map, sc)
-    # # if sc.topo == 'straight_cutin':
-    # #     sce = generate_straight_cutin(Map, sc)
-    # # if sc.topo == 'straight':
-    # #     sce = generate_straight(Map, sc)
-    # # if sc.topo == 'straight_static':
-    # #     sce = generate_straight_obstacle(Map, sc)
-    #     # sce.write_xml(f"../../esmini-demo/resources/xosc/{scenario_name}TEST.xosc")
-    #     sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{scenario_name}_TEST.xosc")
-
-    # if sc.topo == '4way':
-    #     sce = generate_4way(Map, sc, company="ITRI")
-    # # if sc.topo == 'straight_cutin':
-    # #     sce = generate_straight_cutin(Map, sc, company="ITRI")
-    # # if sc.topo == 'straight':
-    # #     sce = generate_straight(Map, sc, company="ITRI")
-    # # if sc.topo == 'straight_static':
-    # #     sce = generate_straight_obstacle(Map, sc, company="ITRI")
-    #     # sce.write_xml(f"../xosc/0722/{scenario_name}.xosc")
-    #     sce.write_xml(f"./xosc_itri/{scenario_name}.xosc")
-    """
-    """
-    # prettyprint(sce.get_element())
-
+        sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
+ 
 
 
 def get_waypoint(location, lanetype=' driving'):

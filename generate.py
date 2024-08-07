@@ -96,7 +96,7 @@ def generate(config, company='HCISLab'):
 
     # Agents 初始化
     for i in range(len(Agents)):
-        agentStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],Agents[i]['Start']))
+        agentStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],Agents[i]['Start'],s=f"$Agent{i}_S"))
         init.add_init_action(f"Agent{i}", agentStart)
     
 
@@ -127,7 +127,7 @@ def generate(config, company='HCISLab'):
 def generate_Adv_Maneuver(config,index):
     ## Event1: Adv Behavior
     Behavior = config['Agents'][index]['Behavior']
-    advspeed = xosc.AbsoluteSpeedAction(Behavior['Start_speed'], xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
+    advspeed = xosc.AbsoluteSpeedAction(f'${{$Agent{index}Speed / 3.6}}', xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
     # advcontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
 
     # if Sc.adv[0].traj == None:
@@ -180,13 +180,12 @@ def generate_Adv_Maneuver(config,index):
 
 
         ## Adv1 - Event2: Speed Behavior
-        advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'])
+        advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'],index=index)
         trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", 0)
 
         advEndSpeedEvent = xosc.Event(f"Adv{index}EndSpeedEvent", xosc.Priority.parallel)
         advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEventAction", advEndSpeed)
         advEndSpeedEvent.add_trigger(trigger)
-
 
         ### Storyboard - Story & Maneuver
         advManeuver = xosc.Maneuver(f"Adv{index}Maneuver")
