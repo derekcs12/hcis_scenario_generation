@@ -5,6 +5,7 @@ Agents:
     Dynamic_shape: linear
     End_speed: 0
     Start_speed: '40'
+    Use_route: false
     type: braking_halt
   End: 3 -1 20
   Start: 2 -1 20

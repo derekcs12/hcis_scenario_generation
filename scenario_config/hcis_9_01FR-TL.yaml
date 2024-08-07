@@ -5,6 +5,7 @@ Agents:
     Dynamic_shape: sinusoidal
     End_speed: 0
     Start_speed: '40'
+    Use_route: true
     type: sudden_braking_halt
   End: 1 -1 20
   Start: 0 2 20

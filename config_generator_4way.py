@@ -85,6 +85,11 @@ if "Agent Position:2,3,5 - Turn Left":
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
             agent1['Behavior']['Dynamic_delay'] = behavior[4]
             
+            if agentPos[2] == '2':
+                agent1['Behavior']['Use_route'] = True
+            else:
+                agent1['Behavior']['Use_route'] = False
+            
             
             config['Agents'] = [agent1]
             
@@ -123,6 +128,7 @@ if "Agent From Oncoming - Turn Left":
             agent1['Behavior']['Dynamic_duration'] = behavior[2]
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
             agent1['Behavior']['Dynamic_delay'] = behavior[4]
+            agent1['Behavior']['Use_route'] = False
             
             
             config['Agents'] = [agent1]
@@ -157,6 +163,7 @@ if "Agent From Oncoming - U-turn to Same lane":
         agent1['Behavior']['Dynamic_duration'] = behavior[2]
         agent1['Behavior']['Dynamic_shape'] = behavior[3]
         agent1['Behavior']['Dynamic_delay'] = behavior[4]
+        agent1['Behavior']['Use_route'] = True
         
         config['Agents'] = [agent1]
         
@@ -203,6 +210,10 @@ if "Agent Position:1,2,4 - Turn Right":
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
             agent1['Behavior']['Dynamic_delay'] = behavior[4]
             
+            if agentPos[2] == '1':
+                agent1['Behavior']['Use_route'] = True
+            else:
+                agent1['Behavior']['Use_route'] = False
             
             config['Agents'] = [agent1]
             
@@ -225,7 +236,7 @@ if "Agent From Oncoming - Turn Right":
     agent1['Trigger']['lane'] = trigger[2]
     agent1['Trigger']['s'] = trigger[3]
     
-    if agentPos[2] == 1 or agentPos[2] == 2:
+    if agentPos[2] == '1' or agentPos[2] == '2':
         initRelPostAbbvLat = 'L'
     else:
         initRelPostAbbvLat = 'R'
@@ -240,6 +251,7 @@ if "Agent From Oncoming - Turn Right":
         agent1['Behavior']['Dynamic_duration'] = behavior[2]
         agent1['Behavior']['Dynamic_shape'] = behavior[3]
         agent1['Behavior']['Dynamic_delay'] = behavior[4]
+        agent1['Behavior']['Use_route'] = False
         
         
         config['Agents'] = [agent1]
@@ -274,6 +286,7 @@ if "Agent From Oncoming - U-turn":
         agent1['Behavior']['Dynamic_duration'] = behavior[2]
         agent1['Behavior']['Dynamic_shape'] = behavior[3]
         agent1['Behavior']['Dynamic_delay'] = behavior[4]
+        agent1['Behavior']['Use_route'] = True
         
         
         config['Agents'] = [agent1]
@@ -290,7 +303,8 @@ if "Agent From Oncoming - U-turn":
 config['Ego'] = egoStraightAsideLeft
 config['Map'] = [98, 119, 141, 106]
 config['Center'] =  '257 30.5'
-
+agentFromLeft = '1 1 10'
+agentFromRight = '3 1 10'
 
 # Agent From Oncoming - Keeping
 if "Agent From Oncoming - Keeping":
@@ -308,7 +322,7 @@ if "Agent From Oncoming - Keeping":
         agent1['Trigger']['lane'] = trigger[2]
         agent1['Trigger']['s'] = trigger[3]
         
-        if agentPos[0] == 1 or agentPos[0] == 2:
+        if agentPos[0] == '1' or agentPos[0] == '2':
             initRelPostAbbvLat = 'L'
         else:
             initRelPostAbbvLat = 'R'
@@ -323,6 +337,7 @@ if "Agent From Oncoming - Keeping":
             agent1['Behavior']['Dynamic_duration'] = behavior[2]
             agent1['Behavior']['Dynamic_shape'] = behavior[3]
             agent1['Behavior']['Dynamic_delay'] = behavior[4]
+            agent1['Behavior']['Use_route'] = False
             
             
             config['Agents'] = [agent1]

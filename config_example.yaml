@@ -22,6 +22,7 @@ Agents:
       End_speed: 0
       Dynamic_duration: 3
       Dynamic_shape: linear
+      Use_route: True
     Trigger:
       type: absolute
       road:  0 # -1:後 0:同 1:前
