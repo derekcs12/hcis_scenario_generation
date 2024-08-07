@@ -200,6 +200,36 @@ def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName):
                                                                         tolerance = 2), 
                               triggerentity = EntityName, triggeringrule = "any")
 
+def create_EntityTrigger_at_relativePos(Map, Ego, Trigger, EntityName):
+    longitude , lateral , s = Trigger['road'], Trigger['lane'], Trigger['s']
+    
+    ego_wp = Ego['Start'].split(' ')
+    ego_road = int(Map[int(ego_wp[0])])
+    ego_lane = int(ego_wp[1])
+    ego_s = int(ego_wp[2])
+
+    if lateral == 0:
+        lane_id = ego_lane
+    elif lateral > 0:
+        lane_id = ego_lane + np.sign(ego_lane) * lateral
+    else:
+        lane_id = ego_lane - np.sign(ego_lane) * lateral
+        
+    if longitude == 0:
+        s = 0
+    elif longitude > 0:
+        s = ego_s - np.sign(ego_lane) * s * longitude
+    else:
+        s = ego_s + np.sign(ego_lane) * s * longitude
+    print("lane_id", lane_id, "road_id", ego_road, "s", s)
+    position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
+    return xosc.EntityTrigger(name = "EgoApproachInitWp", 
+                              delay = 0,
+                              conditionedge = xosc.ConditionEdge.rising,
+                              entitycondition = xosc.ReachPositionCondition(position,tolerance = 2),
+                              triggerentity = EntityName, triggeringrule = "any")
+
+
 
 def create_StopTrigger(egoName, distance=130, time=11,agent_count=1):
     stopdist_group = xosc.ConditionGroup()

@@ -170,27 +170,28 @@ def generate_Adv_Maneuver(config,index):
         advgoal = xosc.AcquirePositionAction(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))
 
     if config['Agents'][index]['Trigger']['type'] == 'relative':
-        ...
+        trigger = create_EntityTrigger_at_relativePos(config['Map'], config['Ego'], config['Agents'][index]['Trigger'],'Ego')
     else: #absolute
         trigger = create_EntityTrigger_at_absolutePos(config['Map'],config['Agents'][index]['Trigger'],'Ego')
 
-        advStartSpeedEvent = xosc.Event(f"Adv{index}StartSpeedEvent", xosc.Priority.overwrite)
-        advStartSpeedEvent.add_action(f"Adv{index}StartSpeedAction", advspeed)
-        # advStartSpeedEvent.add_action("AdvControlAction", advcontl)
-        advStartSpeedEvent.add_action("AcquirePositionAction", advgoal)
-        advStartSpeedEvent.add_trigger(trigger)
+    advStartSpeedEvent = xosc.Event(f"Adv{index}StartSpeedEvent", xosc.Priority.overwrite)
+    advStartSpeedEvent.add_action(f"Adv{index}StartSpeedAction", advspeed)
+    # advStartSpeedEvent.add_action("AdvControlAction", advcontl)
+    advStartSpeedEvent.add_action("AcquirePositionAction", advgoal)
+    advStartSpeedEvent.add_trigger(trigger)
 
 
-        ## Adv1 - Event2: Speed Behavior
-        advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'],index=index)
-        trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", f'$Agent{index}DynamicDelay')
+    ## Adv1 - Event2: Speed Behavior
+    advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'],index=index)
+    trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", f'$Agent{index}DynamicDelay')
 
-        advEndSpeedEvent = xosc.Event(f"Adv{index}EndSpeedEvent", xosc.Priority.parallel)
-        advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEventAction", advEndSpeed)
-        advEndSpeedEvent.add_trigger(trigger)
+    advEndSpeedEvent = xosc.Event(f"Adv{index}EndSpeedEvent", xosc.Priority.parallel)
+    advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEventAction", advEndSpeed)
+    advEndSpeedEvent.add_trigger(trigger)
 
-        ### Storyboard - Story & Maneuver
-        advManeuver = xosc.Maneuver(f"Adv{index}Maneuver")
-        advManeuver.add_event(advStartSpeedEvent)
-        advManeuver.add_event(advEndSpeedEvent)
+    ### Storyboard - Story & Maneuver
+    advManeuver = xosc.Maneuver(f"Adv{index}Maneuver")
+    advManeuver.add_event(advStartSpeedEvent)
+    advManeuver.add_event(advEndSpeedEvent)
+    
     return advManeuver
