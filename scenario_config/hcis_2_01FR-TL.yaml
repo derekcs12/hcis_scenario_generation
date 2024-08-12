@@ -1,18 +1,18 @@
 Agents:
 - Behavior:
-    Dynamic_delay: '1'
-    Dynamic_duration: '3'
+    Dynamic_delay: 1
+    Dynamic_duration: 3
     Dynamic_shape: linear
-    End_speed: '10'
-    Start_speed: '40'
+    End_speed: 10
+    Start_speed: 40
     Use_route: false
     type: braking
   End: 1 -1 20
-  Start: 0 1 10
+  Start: 0 1 15
   Trigger:
     lane: 1
     road: 0
-    s: 30
+    s: 34
     type: absolute
 Center: 685.61 -134.05
 Ego:

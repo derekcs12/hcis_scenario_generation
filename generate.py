@@ -11,7 +11,7 @@ def generate(config, company='HCISLab'):
     
     ### ParameterDeclarations (document:xosc.utiles)
     egoInit  = xosc.Parameter(name="EgoVehicle",parameter_type="string",value="car_white")
-    egoSpeed = xosc.Parameter(name="EgoSpeed",parameter_type="double",value="60")
+    egoSpeed = xosc.Parameter(name="EgoSpeed",parameter_type="double",value="50")
     egoS     = xosc.Parameter(name="Ego_S",parameter_type="double",value="27")
     paraList = [egoInit, egoSpeed, egoS]
 

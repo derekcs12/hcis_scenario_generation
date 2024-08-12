@@ -316,3 +316,46 @@ def get_next_scenario_id(directory='./scenario_config'):
     next_scenario_id = max_scenario_id + 1
     
     return next_scenario_id
+
+import csv
+def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.csv'):
+    """
+    Writes the given content to a CSV file with the specified scenario_id.
+
+    :param scenario_id: The scenario ID to be included in the CSV file.
+    :param content: List of dictionaries or list of lists to write to the CSV file.
+    :param file_path: Path to the CSV file. Default is 'scenario_table.csv'.
+    
+    # Example input
+    content_dicts = [
+        {'Name': 'Alice', 'Age': 30, 'City': 'New York'},
+        {'Name': 'Bob', 'Age': 25, 'City': 'Los Angeles'},
+        {'Name': 'Charlie', 'Age': 35, 'City': 'Chicago'}
+    ]
+    """
+    print(f"write {scenario_id}, description: {content[0]['description']}.")
+    
+    file_exists = os.path.isfile(file_path)
+    columns = ['scenario_id', 'scenario_name', 'description']
+    # Check if content is a list of dictionaries
+    if isinstance(content, list) and all(isinstance(row, dict) for row in content):
+        # Add scenario_id to each dictionary
+        for row in content:
+            row['scenario_id'] = scenario_id
+        
+        
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=columns)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerows(content)
+    else:
+        # Add scenario_id to each list
+        content_with_id = [[scenario_id] + row for row in content]
+        
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                # Write header if file does not exist
+                writer.writerow(columns)
+            writer.writerows(content_with_id)

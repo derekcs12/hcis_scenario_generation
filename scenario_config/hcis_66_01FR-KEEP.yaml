@@ -1,13 +1,13 @@
 Agents:
 - Behavior:
-    Dynamic_delay: '1'
-    Dynamic_duration: '3'
+    Dynamic_delay: 1
+    Dynamic_duration: 3
     Dynamic_shape: linear
-    End_speed: '40'
-    Start_speed: '40'
+    End_speed: 40
+    Start_speed: 40
     Use_route: false
     type: keeping
-  End: 1 -1 20
+  End: 1 1 20
   Start: 3 1 10
   Trigger:
     lane: 1
