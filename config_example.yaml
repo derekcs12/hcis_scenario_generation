@@ -1,0 +1,26 @@
+Agents:
+- Behavior:
+    Dynamic_delay: '0'
+    Dynamic_duration: '3'
+    Dynamic_shape: linear
+    End_speed: '40'
+    Start_speed: 0
+    type: speed_up
+    Use_route: False
+  End: 1 1 20
+  Start: 3 1 0
+  Trigger:
+    lane: 0
+    road: 1
+    s: 40
+    type: relative
+Center: 257 30.5
+Ego:
+  End: 2 -1 40
+  Start: 0 1 40
+Map:
+- 98
+- 119
+- 141
+- 106
+Scenario_name: example

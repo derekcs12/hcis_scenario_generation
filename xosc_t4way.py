@@ -154,7 +154,7 @@ def generate_4way(Map, Sc, sc_name=None, company='HCISLab'):
 
 
 
-    sb = xosc.StoryBoard(init, create_StopTrigger(egoName))
+    sb = xosc.StoryBoard(init, create_StopTrigger(egoName,event_name='AdvEndSpeedEvent',distance=130))
     sb.add_maneuver(adv1Maneuver, agent1Name)
 
 

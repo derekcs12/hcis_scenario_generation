@@ -16,7 +16,7 @@ except IndexError:
 
 
 import carla
-from agents.navigation.global_route_planner import GlobalRoutePlanner
+# from agents.navigation.global_route_planner import GlobalRoutePlanner
 
 global carla_map
 with open('hct_6.xodr', 'r') as fp:
@@ -100,11 +100,34 @@ def create_LanePosition_from_wp(waypoint, s=None, s_offset=0, lane_offset=0, ori
         orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
     )
 
+def create_LanePosition_from_config(Map, position, orientation=False, s=None):
+    if s == None:
+        index, lane_id , s = map(int,position.split(' '))
+    else:
+        index, lane_id , _ = map(int,position.split(' '))
+    
+    # print("index, lane_id , s", index, lane_id , s)
+    # exit()
+    road = int(Map[index])
+    return xosc.LanePosition(
+        s=s,
+        offset=0,
+        lane_id=lane_id,
+        road_id=road,
+        orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
+    )
+
+
 
 def create_TransitionDynamics_from_sc(agent_sc):
     dynamic_shape = getattr(xosc.DynamicsShapes, agent_sc.dynamic_shape)
     return xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, agent_sc.dynamic_duration)
 
+def create_TransitionDynamics_from_config(Behavior,index):
+    dynamic_shape = getattr(xosc.DynamicsShapes, Behavior['Dynamic_shape'])
+    transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"$Agent{index}DynamicDuration")
+    
+    return xosc.AbsoluteSpeedAction(f'${{$Agent{index}LowSpeed/3.6}}', transition_dynamics)
 
 def create_ValueTrigger_from_sc(agent_sc=None, agent_name=None, ego_name=None):
     if agent_sc == None:
@@ -163,28 +186,75 @@ def create_EntityTrigger_at_egoInitWp(egoName, ego_wp,s="$Ego_S", tolerance=1):
                               conditionedge = xosc.ConditionEdge.rising,
                               entitycondition = reachPosCondition, 
                               triggerentity = egoName, triggeringrule = "any")
+
+def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName):
+    road_index , lane_id , s = Trigger['road'], Trigger['lane'], Trigger['s']
+    road = int(Map[road_index])
+    return xosc.EntityTrigger(name = "EgoApproachInitWp", 
+                              delay = 0,
+                              conditionedge = xosc.ConditionEdge.rising,
+                              entitycondition = xosc.ReachPositionCondition(xosc.LanePosition(s = s,
+                                                                                          offset = 0,  
+                                                                                          lane_id = lane_id, 
+                                                                                          road_id = road),
+                                                                        tolerance = 2), 
+                              triggerentity = EntityName, triggeringrule = "any")
+
+def create_EntityTrigger_at_relativePos(Map, Ego, Trigger, EntityName):
+    longitude , lateral , s = Trigger['road'], Trigger['lane'], Trigger['s']
     
-def create_StopTrigger(egoName, distance=130, time=11):
+    ego_wp = Ego['Start'].split(' ')
+    ego_road = int(Map[int(ego_wp[0])])
+    ego_lane = int(ego_wp[1])
+    ego_s = int(ego_wp[2])
+
+    if lateral == 0:
+        lane_id = ego_lane
+    elif lateral > 0:
+        lane_id = ego_lane + np.sign(ego_lane) * lateral
+    else:
+        lane_id = ego_lane - np.sign(ego_lane) * lateral
+        
+    if longitude == 0:
+        s = 0
+    elif longitude > 0:
+        s = ego_s - np.sign(ego_lane) * s * longitude
+    else:
+        s = ego_s + np.sign(ego_lane) * s * longitude
+    print("lane_id", lane_id, "road_id", ego_road, "s", s)
+    position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
+    return xosc.EntityTrigger(name = "EgoApproachInitWp", 
+                              delay = 0,
+                              conditionedge = xosc.ConditionEdge.rising,
+                              entitycondition = xosc.ReachPositionCondition(position,tolerance = 2),
+                              triggerentity = EntityName, triggeringrule = "any")
+
+
+
+def create_StopTrigger(egoName, distance=130, time=11,agent_count=1):
+    stopdist_group = xosc.ConditionGroup()
+    element_group = xosc.ConditionGroup()
 
     stopdist_trigger = xosc.EntityTrigger(
             "stoptrigger", 0, xosc.ConditionEdge.none, xosc.TraveledDistanceCondition(value = distance), egoName
     )
-    stoptime_trigger = xosc.ValueTrigger(
-            "stoptrigger", 0, xosc.ConditionEdge.none, xosc.SimulationTimeCondition(value = time, rule= xosc.Rule.greaterThan)
-    )
-    stopdist_group = xosc.ConditionGroup()
     stopdist_group.add_condition(stopdist_trigger)
-    stoptime_group = xosc.ConditionGroup()
-    stoptime_group.add_condition(stoptime_trigger)
+
+    for i in range(agent_count):
+        event_name = f"Adv{i}EndSpeedEvent"
+        element_trigger = xosc.ValueTrigger(
+            "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
+        )
+        element_group.add_condition(element_trigger)
 
     # create trigger and add the two conditiongroups (or logic)
     stopTrigger = xosc.Trigger('stop')
     stopTrigger.add_conditiongroup(stopdist_group)
-    stopTrigger.add_conditiongroup(stoptime_group)
+    stopTrigger.add_conditiongroup(element_group)
 
     return stopTrigger
 
-def create_Trigger_following_previous(previousEventName, delay):
+def create_Trigger_following_previous(previousEventName, delay = 0):
     return xosc.ValueTrigger(
             name = "FollowingPreviosTrigger",
             delay = delay,
@@ -196,7 +266,7 @@ def create_Trigger_following_previous(previousEventName, delay):
         )
     
     
-
+"""
 def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
     if method == 'greedy':
 
@@ -222,3 +292,70 @@ def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
         route = [wp for wp,r in route]
         # print(route)
         return route
+"""
+
+
+import os
+import re
+
+def get_next_scenario_id(directory='./scenario_config'):
+    # Regular expression to match filenames with format {party}_{scenario_id}
+    pattern = re.compile(r'^[^_]+_(\d+)_.*$')
+    
+    max_scenario_id = 0
+    
+    # List all files in the directory
+    for filename in os.listdir(directory):
+        match = pattern.match(filename)
+        if match:
+            scenario_id = int(match.group(1))
+            if scenario_id > max_scenario_id:
+                max_scenario_id = scenario_id
+    
+    # Calculate the next scenario ID
+    next_scenario_id = max_scenario_id + 1
+    
+    return next_scenario_id
+
+import csv
+def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.csv'):
+    """
+    Writes the given content to a CSV file with the specified scenario_id.
+
+    :param scenario_id: The scenario ID to be included in the CSV file.
+    :param content: List of dictionaries or list of lists to write to the CSV file.
+    :param file_path: Path to the CSV file. Default is 'scenario_table.csv'.
+    
+    # Example input
+    content_dicts = [
+        {'Name': 'Alice', 'Age': 30, 'City': 'New York'},
+        {'Name': 'Bob', 'Age': 25, 'City': 'Los Angeles'},
+        {'Name': 'Charlie', 'Age': 35, 'City': 'Chicago'}
+    ]
+    """
+    print(f"write {scenario_id}, description: {content[0]['description']}.")
+    
+    file_exists = os.path.isfile(file_path)
+    columns = ['scenario_id', 'scenario_name', 'description']
+    # Check if content is a list of dictionaries
+    if isinstance(content, list) and all(isinstance(row, dict) for row in content):
+        # Add scenario_id to each dictionary
+        for row in content:
+            row['scenario_id'] = scenario_id
+        
+        
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=columns)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerows(content)
+    else:
+        # Add scenario_id to each list
+        content_with_id = [[scenario_id] + row for row in content]
+        
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                # Write header if file does not exist
+                writer.writerow(columns)
+            writer.writerows(content_with_id)
