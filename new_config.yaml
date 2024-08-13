@@ -1,0 +1,80 @@
+Scenario_name: example_straight
+
+Ego:
+  End_pos: [1,2,0]
+  Start_pos: 0 -2 0
+
+Map:
+- 139
+- 166
+
+Agent:
+  # Agent 1
+  - Start_pos: 0 -1 40
+    Start_speed: 40
+    Start_Trigger: # (reach init pos)
+      lane: 1
+      road: 0
+      s: 0
+      type: relative
+    - Event: # Agent1's Event1
+      - Action: cut # Action1 (cut (in))
+        Dynamic_delay: '1'
+        Dynamic_duration: '3'
+        Dynamic_shape: linear
+        End: -2
+        Use_route: null
+      - Action: speed # Action2 (speed)
+        Dynamic_delay: '1'
+        Dynamic_duration: '3'
+        Dynamic_shape: linear
+        End: 10 
+        Use_route: null
+    - Event: # Agent1's Event2
+      - Action: # Action1 (cut (out))
+          Dynamic_delay: '1'
+          Dynamic_duration: '3'
+          Dynamic_shape: linear
+          End: -2
+          Use_route: null
+        - Action: # Action2 (speed)
+          Dynamic_delay: '1'
+          Dynamic_duration: '3'
+          Dynamic_shape: linear
+          End: 10 
+          Use_route: null
+
+  # Agent 2
+  - Start_pos: 0 -1 40 
+    Start_speed: 40
+    Start_Trigger: # (reach init pos)
+      lane: 1
+      road: 0
+      s: 0
+      type: relative
+    - Event: # Agent2's Event1
+      - Action: position # Action1 (cut (in))
+        Dynamic_delay: '1'
+        Dynamic_duration: '3'
+        Dynamic_shape: linear
+        End: -2
+        Use_route: [257,30.5]
+      - Action: speed # Action2 (speed)
+        Dynamic_delay: '1'
+        Dynamic_duration: '3'
+        Dynamic_shape: linear
+        End: 10 
+        Use_route: null
+    - Event: # Agent2's Event2
+      - Action: # Action1 (cut (out))
+        Dynamic_delay: '1'
+        Dynamic_duration: '3'
+        Dynamic_shape: linear
+        End: -2
+        Use_route: null
+      - Action: # Action2 (speed)
+        Dynamic_delay: '1'
+        Dynamic_duration: '3'
+        Dynamic_shape: linear
+        End: 10 
+        Use_route: null

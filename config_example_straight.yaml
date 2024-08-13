@@ -1,0 +1,47 @@
+Agents:
+- Behavior:
+    - Type: cut
+      Dynamic_delay: '1'
+      Dynamic_duration: '3'
+      Dynamic_shape: linear
+      End: -2
+      # Start: -1
+      Use_route: False
+    - Type: speed
+      Dynamic_delay: '3'
+      Dynamic_duration: '3'
+      Dynamic_shape: linear
+      End: 10
+      # Start: 40
+      Use_route: False
+    - Type: cut
+      Dynamic_delay: '7'
+      Dynamic_duration: '3'
+      Dynamic_shape: linear
+      End: -1
+      # Start: -1
+      Use_route: False
+    - Type: speed
+      Dynamic_delay: '9'
+      Dynamic_duration: '3'
+      Dynamic_shape: linear
+      End: 10
+      # Start: 40
+      Use_route: False
+
+  End_pos: 1 -2 70
+  Start_pos: 0 -1 40
+  Start_speed: 40
+  Trigger:
+    lane: 1
+    road: 0
+    s: 0
+    type: relative
+Center: 257 30.5
+Ego:
+  End_pos: 1 2 0
+  Start_pos: 0 -2 0
+Map:
+- 139
+- 166
+Scenario_name: example_straight

@@ -132,49 +132,57 @@ def generate_Adv_Maneuver(config,index):
     advspeed = xosc.AbsoluteSpeedAction(f'${{$Agent{index}Speed / 3.6}}', xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
     # advcontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
 
-
-    if config['Agents'][index]['Behavior']['Use_route'] == True:
-
-        trajectory = xosc.Trajectory('selfDefineTrajectory',False)
-        road_center = list(map(float,config['Center'].split(' ')))
-        nurbs = xosc.Nurbs(4)
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start']))) #出發點
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start'], s = 0))) #與出發點同道之進入路口點，家這個點軌跡比較自然
-        nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(road_center[0],road_center[1]),weight = 0.5)) #路口中心
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End'],s = 0))) #目的地
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))) #目的地
-        nurbs.add_knots([0,0,0,0,1,2,2,2,2])
-
-        trajectory.add_shape(nurbs)
-
-        # Create a FollowTrajectory action
-        advgoal = xosc.FollowTrajectoryAction(trajectory, xosc.FollowingMode.position)
-
-        ## AssignRouteAction
-        # route = xosc.Route(f"Adv{index}Route")
-        # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start']),routestrategy=xosc.RouteStrategy.fastest)
-        # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start'],s=0),routestrategy=xosc.RouteStrategy.fastest)
-        # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End'],s=0),routestrategy=xosc.RouteStrategy.fastest)
-        # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']),routestrategy=xosc.RouteStrategy.fastest)
-        # advgoal = xosc.AssignRouteAction(route)
+    if Behavior['Catagory'] == 'cut_in':
+        dynamic_shape = getattr(xosc.DynamicsShapes, Behavior['Dynamic_shape'])
+        transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"$Agent{index}DynamicDuration")
+        advgoal = xosc.AbsoluteLaneChangeAction(int(config['Agents'][index]['End'].split(' ')[1]),transition_dynamics)
     else:
-        advgoal = xosc.AcquirePositionAction(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))
+        if Behavior['Use_route'] == True:
+
+            trajectory = xosc.Trajectory('selfDefineTrajectory',False)
+            road_center = list(map(float,config['Center'].split(' ')))
+            nurbs = xosc.Nurbs(4)
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start']))) #出發點
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start'], s = 0))) #與出發點同道之進入路口點，家這個點軌跡比較自然
+            nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(road_center[0],road_center[1]),weight = 0.5)) #路口中心
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End'],s = 0))) #目的地
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))) #目的地
+            nurbs.add_knots([0,0,0,0,1,2,2,2,2])
+
+            trajectory.add_shape(nurbs)
+
+            # Create a FollowTrajectory action
+            advgoal = xosc.FollowTrajectoryAction(trajectory, xosc.FollowingMode.position)
+
+            ## AssignRouteAction
+            # route = xosc.Route(f"Adv{index}Route")
+            # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start']),routestrategy=xosc.RouteStrategy.fastest)
+            # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['Start'],s=0),routestrategy=xosc.RouteStrategy.fastest)
+            # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End'],s=0),routestrategy=xosc.RouteStrategy.fastest)
+            # route.add_waypoint(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']),routestrategy=xosc.RouteStrategy.fastest)
+            # advgoal = xosc.AssignRouteAction(route)
+        else:
+            advgoal = xosc.AcquirePositionAction(create_LanePosition_from_config(config['Map'],config['Agents'][index]['End']))
 
     if config['Agents'][index]['Trigger']['type'] == 'relative':
-        trigger = create_EntityTrigger_at_relativePos(config['Map'], config['Ego'], config['Agents'][index]['Trigger'],'Ego')
+        # trigger = create_EntityTrigger_at_relativePos(config['Map'], config['Ego'], config['Agents'][index]['Trigger'],'Ego')
+        trigger = create_EntityTrigger_at_relativePos2(config['Map'], config['Agents'][index],'Ego')
     else: #absolute
         trigger = create_EntityTrigger_at_absolutePos(config['Map'],config['Agents'][index]['Trigger'],'Ego')
 
     advStartSpeedEvent = xosc.Event(f"Adv{index}StartSpeedEvent", xosc.Priority.overwrite)
     advStartSpeedEvent.add_action(f"Adv{index}StartSpeedAction", advspeed)
-    # advStartSpeedEvent.add_action("AdvControlAction", advcontl)
-    advStartSpeedEvent.add_action("AcquirePositionAction", advgoal)
     advStartSpeedEvent.add_trigger(trigger)
+    # advStartSpeedEvent.add_action("AdvControlAction", advcontl)
+    advActionEvent = xosc.Event(f"Adv{index}ActionEvent", xosc.Priority.parallel)
+    trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", f'$Agent{index}DynamicDelay')
+    advActionEvent.add_action(f"Adv{index}AcquirePositionAction", advgoal)
+    advActionEvent.add_trigger(trigger)
 
 
     ## Adv1 - Event2: Speed Behavior
-    advEndSpeed = create_TransitionDynamics_from_config(config['Agents'][index]['Behavior'],index=index)
-    trigger = create_Trigger_following_previous(f"Adv{index}StartSpeedEvent", f'$Agent{index}DynamicDelay')
+    advEndSpeed = create_TransitionDynamics_from_config(Behavior,index=index)
+    trigger = create_Trigger_following_previous(f"Adv{index}ActionEvent", f'$Agent{index}DynamicDelay')
 
     advEndSpeedEvent = xosc.Event(f"Adv{index}EndSpeedEvent", xosc.Priority.parallel)
     advEndSpeedEvent.add_action(f"Adv{index}EndSpeedEventAction", advEndSpeed)
@@ -184,5 +192,7 @@ def generate_Adv_Maneuver(config,index):
     advManeuver = xosc.Maneuver(f"Adv{index}Maneuver")
     advManeuver.add_event(advStartSpeedEvent)
     advManeuver.add_event(advEndSpeedEvent)
+    advManeuver.add_event(advActionEvent)
+
     
     return advManeuver

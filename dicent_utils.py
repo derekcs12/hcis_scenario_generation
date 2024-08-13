@@ -229,6 +229,34 @@ def create_EntityTrigger_at_relativePos(Map, Ego, Trigger, EntityName):
                               entitycondition = xosc.ReachPositionCondition(position,tolerance = 2),
                               triggerentity = EntityName, triggeringrule = "any")
 
+def create_EntityTrigger_at_relativePos2(Map, Agent, EntityName):
+    Trigger = Agent['Trigger']
+    longitude , lateral , s = Trigger['road'], Trigger['lane'], Trigger['s']
+    
+    ego_wp = Agent['Start'].split(' ')
+    ego_road = int(Map[int(ego_wp[0])])
+    ego_lane = int(ego_wp[1])
+    ego_s = int(ego_wp[2])
+
+    if lateral == 0:
+        lane_id = ego_lane
+    elif lateral > 0:
+        lane_id = ego_lane + np.sign(ego_lane) * lateral
+    else:
+        lane_id = ego_lane - np.sign(ego_lane) * lateral
+        
+    if longitude == 0:
+        s = ego_s
+    else:
+        s = ego_s - np.sign(ego_lane) * s * longitude
+
+    print("lane_id", lane_id, "road_id", ego_road, "s", s)
+    position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
+    return xosc.EntityTrigger(name = "EgoApproachInitWp", 
+                              delay = 0,
+                              conditionedge = xosc.ConditionEdge.rising,
+                              entitycondition = xosc.ReachPositionCondition(position,tolerance = 2),
+                              triggerentity = EntityName, triggeringrule = "any")
 
 
 def create_StopTrigger(egoName, distance=130, time=11,agent_count=1):
@@ -243,9 +271,15 @@ def create_StopTrigger(egoName, distance=130, time=11,agent_count=1):
     for i in range(agent_count):
         event_name = f"Adv{i}EndSpeedEvent"
         element_trigger = xosc.ValueTrigger(
-            "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
+            "stoptrigger", 10, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
         )
         element_group.add_condition(element_trigger)
+
+        # event_name = f"Adv{i}StartSpeedEvent"
+        # element_trigger = xosc.ValueTrigger(
+        #     "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
+        # )
+        # element_group.add_condition(element_trigger)
 
     # create trigger and add the two conditiongroups (or logic)
     stopTrigger = xosc.Trigger('stop')

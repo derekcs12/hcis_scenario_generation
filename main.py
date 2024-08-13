@@ -81,30 +81,13 @@ def main():
         Build xosc 
         """
         sce = generate(config)
-        # sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{config['Scenario_name']}.xosc")
 
         sce = generate(config,company="ITRI")
-        # sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
  
-
-
-def get_waypoint(location, lanetype=' driving'):
-    carla_lane_type = carla.LaneType.Driving
-    if lanetype == 'parking':
-        carla_lane_type = carla.LaneType.Parking
-    elif lanetype == 'road_shoulder':
-        carla_lane_type = carla.LaneType.RoadShoulder
-    elif lanetype == 'Sidewalk':
-        carla_lane_type = carla.LaneType.Sidewalk
-    elif lanetype == 'any':
-        carla_lane_type = carla.LaneType.Any
-
-    return carla_map.get_waypoint(location, project_to_road=True, lane_type=carla_lane_type)
-
-
-
 
 if __name__ == '__main__':
     try:
