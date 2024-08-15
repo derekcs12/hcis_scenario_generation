@@ -335,7 +335,7 @@ def create_Trigger_following_previous(previousEventName, delay = 0,state='init')
             delay = delay,
             conditionedge = xosc.ConditionEdge.none,
             valuecondition = xosc.StoryboardElementStateCondition(
-                     ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p -crf 20 out.mp4           element='event',
+                                element='event',
                                 reference=name,
                                 state=state)
         )
@@ -372,14 +372,24 @@ def generate_Speed_Event(agentIndex, actIndex, eventIndex, event, previousEventN
     advEndSpeed = xosc.AbsoluteSpeedAction(f'${{$Agent{agentIndex}_{actIndex}_{eventIndex}_EndSpeed/3.6}}',transitionDynamic)
     trigger = create_Trigger_following_previous(previousEventName, f'$Agent{agentIndex}_{actIndex}_{eventIndex}_DynamicDelay', state='complete')
 
-    advSpeedEvent = xosc.Event(f"Adv{agentIndex}_SpeedEvent", xosc.Priority.parallel)
+    advSpeedEvent = xosc.Event(f"Adv{agentIndex}_SpeedEvent", xosc.Priority.overwrite)
     advSpeedEvent.add_action(f"Adv{agentIndex}_SpeedAction", advEndSpeed)
     advSpeedEvent.add_trigger(trigger)
 
     return advSpeedEvent
 
-def generate_Offset_Event(agentIndex, actIndex, eventIndex):
-    ...
+def generate_Offset_Event(agentIndex, actIndex, eventIndex, event, previousEventName, currentPosition):
+    advgoal = xosc.AbsoluteLaneOffsetAction(event['End'],getattr(xosc.DynamicsShapes, event['Dynamic_shape']),maxlatacc=abs(event['End']/event['Dynamic_duration']))
+
+    trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
+
+    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
+    advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction", advgoal)
+    advgoalEvent.add_trigger(trigger)
+    currentPosition[2] = event['End']
+
+    return advgoalEvent, currentPosition
+
 def generate_Cut_Event(agentIndex, actIndex, eventIndex, event, previousEventName, currentPosition):
     advgoal = xosc.AbsoluteLaneChangeAction(event['End'],create_TransitionDynamics_from_config(event, agentIndex, actIndex, eventIndex))
 
@@ -413,7 +423,7 @@ def generate_Position_Event(agentIndex, actIndex, event, Map, previousEventName,
 
     trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
 
-    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent", xosc.Priority.overwrite)
+    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
     advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction", advgoal)
     advgoalEvent.add_trigger(trigger)
     currentPosition = event['End']
