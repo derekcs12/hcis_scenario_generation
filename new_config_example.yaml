@@ -1,0 +1,88 @@
+Scenario_name: example
+
+Ego:
+  End_pos: [2,-2,45] # [road index, lane id, s]
+  Start_pos: [0,2,66]
+  Start_speed: 50
+
+Map:
+  - 121
+  - 17
+  - 144
+  - 16
+
+Agents:
+  # Agent 1
+  - Start_pos: [0,1,55]
+    Start_speed: 50
+    Start_trigger: # (reach init pos)
+      lane: 2
+      road: 0
+      s: 60
+      type: absolute
+    Acts:
+      - Type: cut_in # Agent1's Event1 
+        Events:
+        - Type: cut
+          Dynamic_delay: 0
+          Dynamic_duration: 2
+          Dynamic_shape: linear
+          End: 2
+          Use_route: null
+        - Type: speed # Action2 (speed)
+          Dynamic_delay: 0
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 20
+          Use_route: null
+      - Type: cut_in # Agent1's Event1 
+        Events:
+        - Type: cut
+          Dynamic_delay: 0.5
+          Dynamic_duration: 2
+          Dynamic_shape: linear
+          End: 1
+          Use_route: null
+        - Type: speed # Action2 (speed)
+          Dynamic_delay: 0
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 70
+          Use_route: null
+      - Type: pos # Agent1's Event1 
+        Events:
+        - Type: position
+          Dynamic_delay: 0
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: [2,-1,50]
+          Use_route: null
+        - Type: speed # Action2 (speed)
+          Dynamic_delay: 2
+          Dynamic_duration: 1
+          Dynamic_shape: linear
+          End: 10
+          Use_route: null
+
+  - Start_pos: [2,1,5]
+    Start_speed: 60
+    Start_trigger: # (reach init pos)
+      lane: 2
+      road: 0
+      s: 10
+      type: absolute
+    Acts:
+      - Type: turn # Agent1's Event1 
+        Events:
+        - Type: position
+          Dynamic_delay: 0
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: [3,-1,20]
+          Use_route: null
+        - Type: speed # Action2 (speed)
+          Dynamic_delay: 0
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 60
+          Use_route: null

@@ -1,45 +1,7 @@
-# topo.py
-#!/usr/bin/env python
-
-# Copyright (c) 2019 Marc G Puig. All rights reserved.
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-# import glob
 import os
-# import sys
-# import numpy as np
 import yaml
-
-# try:
-#     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
-#         sys.version_info.major,
-#         sys.version_info.minor,
-#         'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
-# except IndexError:
-#     print('carla not found')
-#     pass
-
-# import carla
 import argparse
-# from random import sample 
-# from copy import copy
-# from pprint import pprint
-
-
-# import matplotlib.pyplot as plt
-
-# from dicent_utils import *
-# from init_scenario import ScenarioCategory
-# from xosc_t4way import generate_4way
-# from xosc_striaght_cutin import generate_straight_cutin
-# from xosc_striaght import generate_straight
-# from xosc_striaght_obstacle import generate_straight_obstacle
-
-
 from generate import generate
-
 
 def main():
     argparser = argparse.ArgumentParser()
@@ -63,8 +25,8 @@ def main():
         help='Config file path')
     args = argparser.parse_args()
     
+    
     configFile = []
-
     if(args.config == 'all'):
         for filename in os.listdir('./scenario_config'):
             with open('./scenario_config/'+filename,'r') as f:
