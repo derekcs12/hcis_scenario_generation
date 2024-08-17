@@ -1,4 +1,3 @@
-#from scenariogeneration import xodr
 import os
 from scenariogeneration import xosc, prettyprint
 from dicent_utils import *
@@ -60,10 +59,7 @@ def generate(config, company='HCISLab'):
         agentStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],agent['Start_pos'],s=f"$Agent{agentIndex}_S"))
         init.add_init_action(f"Agent{agentIndex}", agentStart)
     
-
     
-    
-    # sb = xosc.StoryBoard(init, create_StopTrigger('Ego',agent_count=len(config['Agents']),distance=130))
 
     ### Storyboard - Event
     allEvent = []
@@ -74,9 +70,9 @@ def generate(config, company='HCISLab'):
         allManeuver.append(agentManeuver)
         # sb.add_maneuver(agentManeuver, f"Agent{agentIndex}")
         
-    sb = xosc.StoryBoard(init, create_StopTrigger2('Ego',distance=500,allEventName=allEvent))
-    for i in allManeuver:
-        sb.add_maneuver(i, f"Agent{allManeuver.index(i)+1}")
+    sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500,allEventName=allEvent))
+    for man in allManeuver:
+        sb.add_maneuver(man, f"Agent{allManeuver.index(i)+1}")
 
     ### Create Scenario
     sce = xosc.Scenario( 
