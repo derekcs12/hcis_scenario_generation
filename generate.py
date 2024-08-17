@@ -176,7 +176,23 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
     for actIndex, act in enumerate(agent['Acts'], start=1):
         currentEventName = []
         if act['Type'] == 'zigzag':
-            ...
+            for eventIndex, event in enumerate(act['Events'], start=1):
+                if event['Type'] == 'speed':
+                    currentEvent = generate_Speed_Event(agentIndex, actIndex, eventIndex, event, previousEventName,type='zigzag')
+                    currentEventName.append(currentEvent.name)
+                    advManeuver.add_event(currentEvent)
+
+                elif event['Type'] == 'offset':
+                    zigzagEvent, currentPosition = generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, currentPosition) 
+                    for currentEvent in zigzagEvent:
+                        currentEventName.append(currentEvent.name)
+                        advManeuver.add_event(currentEvent)
+                else:
+                    print('Event Type Error')
+                    break
+                # previousEventName = currentEvent.name
+                print("zigzagEvent: ", len(zigzagEvent))
+            previousEventName = currentEventName
         else:
             for eventIndex, event in enumerate(act['Events'], start=1):
                 if event['Type'] == 'speed':
@@ -194,6 +210,5 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
                 currentEventName.append(currentEvent.name)
                 advManeuver.add_event(currentEvent)
             previousEventName = currentEventName
-
 
     return advManeuver, previousEventName
