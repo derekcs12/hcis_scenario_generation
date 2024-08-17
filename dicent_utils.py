@@ -232,13 +232,16 @@ def create_EntityTrigger_at_relativePos(Map, Ego, Trigger, EntityName):
                               triggerentity = EntityName, triggeringrule = "any")
 
 def create_EntityTrigger_at_relativePos2(Map, Agent, EntityName):
-    Trigger = Agent['Trigger']
+    Trigger = Agent['Start_trigger']
     longitude , lateral , s = Trigger['road'], Trigger['lane'], Trigger['s']
     
-    ego_wp = Agent['Start'].split(' ')
-    ego_road = int(Map[int(ego_wp[0])])
-    ego_lane = int(ego_wp[1])
-    ego_s = int(ego_wp[2])
+    # ego_wp = Agent['Start_pos'].split(' ')
+    # ego_road = int(Map[int(ego_wp[0])])
+    # ego_lane = int(ego_wp[1])
+    # ego_s = int(ego_wp[2])
+
+    ego_road, ego_lane, ego_s = Agent['Start_pos']
+    ego_road = int(Map[ego_road])
 
     if lateral == 0:
         lane_id = ego_lane

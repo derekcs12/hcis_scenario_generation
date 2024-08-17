@@ -1,0 +1,86 @@
+Scenario_name: config_example_zigzag
+
+Ego:
+  Start_pos: [0,-2,0]
+  Start_speed: 50
+  End_pos: [1,2,0] # [road index, lane id, s]
+
+Map:
+  - 139
+  - 166
+
+Agents:
+  # Agent 1
+  - Start_pos: [0,-2,15]
+    Start_speed: 10
+    Start_trigger: # (reach init pos)
+      lane: 0
+      road: -1
+      s: 10
+      type: relative
+    Acts:
+      - Type: offset # Agent1's Event1 
+        Events:
+        - Type: offset
+          Dynamic_delay: 0.1
+          Dynamic_duration: 0.1
+          Dynamic_shape: linear
+          End: -1
+          Use_route: null
+        - Type: speed # Action2 (speed)
+          Dynamic_delay: 0
+          Dynamic_duration: 2
+          Dynamic_shape: linear
+          End: 40
+          Use_route: null
+      - Type: offset # Agent1's Event1 
+        Events:
+        - Type: offset
+          Dynamic_delay: 1
+          Dynamic_duration: 10
+          Dynamic_shape: linear
+          End: -2
+          Use_route: null
+        - Type: speed # Action2 (speed)
+          Dynamic_delay: 0
+          Dynamic_duration: 2
+          Dynamic_shape: linear
+          End: 10
+          Use_route: null
+  # - Start_pos: [1,2,15]
+  #   Start_speed: 40
+  #   Start_trigger: # (reach init pos)
+  #     lane: -2
+  #     road: 1
+  #     s: 5
+  #     type: absolute
+  #   Acts:
+  #     - Type: offset # Agent1's Event1 
+  #       Events:
+  #       - Type: offset
+  #         Dynamic_delay: 0.1
+  #         Dynamic_duration: 1
+  #         Dynamic_shape: linear
+  #         End: -2
+  #         Use_route: null
+  #       - Type: speed # Action2 (speed)
+  #         Dynamic_delay: 0
+  #         Dynamic_duration: 2
+  #         Dynamic_shape: linear
+  #         End: 40
+  #         Use_route: null
+  #     - Type: offset # Agent1's Event1 
+  #       Events:
+  #       - Type: offset
+  #         Dynamic_delay: 1
+  #         Dynamic_duration: 3
+  #         Dynamic_shape: linear
+  #         End: 2
+  #         Use_route: null
+  #       - Type: speed # Action2 (speed)
+  #         Dynamic_delay: 0
+  #         Dynamic_duration: 2
+  #         Dynamic_shape: linear
+  #         End: 10
+  #         Use_route: null
+      

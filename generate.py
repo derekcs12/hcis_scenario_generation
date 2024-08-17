@@ -72,7 +72,7 @@ def generate(config, company='HCISLab'):
         
     sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500,allEventName=allEvent))
     for man in allManeuver:
-        sb.add_maneuver(man, f"Agent{allManeuver.index(i)+1}")
+        sb.add_maneuver(man, f"Agent{allManeuver.index(man)+1}")
 
     ### Create Scenario
     sce = xosc.Scenario( 
@@ -104,6 +104,7 @@ def parameter_Declaration(config):
         agentVehicle  = xosc.Parameter(name=f"Agent{agentIndex}_Vehicle",parameter_type="string",value="car_red")
         agentInitSpeed = xosc.Parameter(name=f"Agent{agentIndex}_Speed",parameter_type="double",value=str(agent['Start_speed']))
         agentInitS     = xosc.Parameter(name=f"Agent{agentIndex}_S",parameter_type="double",value=str(agent['Start_pos'][-1]))
+        # print("start pos: ",agentIndex,agent['Start_pos'])
         paraList.extend([agentVehicle, agentInitSpeed, agentInitS])
 
         # agent's Event parameter
@@ -169,7 +170,7 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
     agentStartEvent = generate_Agent_Start_Event(agentIndex, agent, Map)
     advManeuver.add_event(agentStartEvent)
     previousEventName = [agentStartEvent.name]
-    currentPosition = agent['Start_pos']
+    currentPosition = agent['Start_pos'].copy()
 
 
     for actIndex, act in enumerate(agent['Acts'], start=1):

@@ -2,6 +2,13 @@ import os
 import yaml
 import argparse
 from generate import generate
+import argcomplete
+
+def valid_path(path):
+    """验证路径是否有效"""
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError(f"路径无效: {path}")
+    return path
 
 def main():
     argparser = argparse.ArgumentParser()
@@ -21,8 +28,11 @@ def main():
     argparser.add_argument(
         '-c', '--config',
         metavar='C',
+        type=valid_path,
         default='config_example.yaml',
         help='Config file path')
+    
+    argcomplete.autocomplete(argparser)
     args = argparser.parse_args()
     
     
