@@ -103,13 +103,13 @@ class ScenarioTagTree:
                     "lateralPosition": row[f'agent{i}_init_lat_pos'],
                     "longitudinalPosition": row[f'agent{i}_init_long_pos']
                 },
-                # "leadVehicle": {
-                #     "mode": lead_mode,
-                #     "appearingMode": lead_appearing_mode
-                # },
+                "leadVehicle": {
+                    "mode": 'appearing',
+                    "appearingMode": 'gapClosing'
+                },
             }
-            actor = self._set_longitudinal_activity(row[f'agent{i}_long_mode'], row[f'agent{i}_long_mode_type'])
-            actor = self._set_lateral_activity(row[f'agent{i}_lat_mode'], row[f'agent{i}_lat_direction'])
+            actor['vehicleLongitudinalActivity'] = self._set_longitudinal_activity(row[f'agent{i}_long_mode'], row[f'agent{i}_long_mode_type'])
+            actor['vehicleLateralActivity'] = self._set_lateral_activity(row[f'agent{i}_lat_mode'], row[f'agent{i}_lat_direction'])
             self.tagTree["actors"].append(actor)
 
     def set_road_layout(self, row):
@@ -179,7 +179,7 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
     if not os.path.exists(file_path):
         df = pd.DataFrame(columns=columns)
         df.to_csv(file_path, index=False)
-
+    # print(content);exit()
             
     # Check if content is a list of dictionaries
     if isinstance(content, list) and all(isinstance(row, dict) for row in content):

@@ -145,7 +145,7 @@ if "Agent Position:2,3,5 - Turn Left":
             yaml.dump(config, open(f'./scenario_config/{scenario_name}.yaml', 'a+'))
             
             #Write scenario description
-            content = ScenarioContent('junction', cetranNo)
+            content = ScenarioContent('junction', cetran_number=cetranNo)
             content.ego_long_mode = 'drivingForward'
             content.ego_long_mode_type = 'cruising'
             content.ego_lat_mode = 'goingStraight'
@@ -216,7 +216,7 @@ if "Agent From Oncoming - Turn Left":
             yaml.dump(config, open(f'./scenario_config/{scenario_name}.yaml', 'a+'))
             
             #Write scenario description
-            content = ScenarioContent('junction', cetranNo)
+            content = ScenarioContent('junction', cetran_number=cetranNo)
             content.ego_long_mode = 'drivingForward'
             content.ego_long_mode_type = 'cruising'
             content.ego_lat_mode = 'goingStraight'
@@ -358,7 +358,7 @@ if "Agent Position:1,2,4 - Turn Right":
             yaml.dump(config, open(f'./scenario_config/{scenario_name}.yaml', 'a+'))
             
             #Write scenario description
-            content = ScenarioContent('junction', cetranNo)
+            content = ScenarioContent('junction', cetran_number=cetranNo)
             content.ego_long_mode = 'drivingForward'
             content.ego_long_mode_type = 'cruising'
             content.ego_lat_mode = 'goingStraight'
@@ -424,7 +424,7 @@ if "Agent From Oncoming - Turn Right":
         yaml.dump(config, open(f'./scenario_config/{scenario_name}.yaml', 'a+'))
         
         #Write scenario description
-        content = ScenarioContent('junction', 31)
+        content = ScenarioContent('junction', cetran_number=31)
         content.ego_long_mode = 'drivingForward'
         content.ego_long_mode_type = 'cruising'
         content.ego_lat_mode = 'goingStraight'
@@ -486,7 +486,7 @@ if "Agent From Oncoming - U-turn":
         yaml.dump(config, open(f'./scenario_config/{scenario_name}.yaml', 'a+'))
         
         #Write scenario description
-        content = ScenarioContent('junction', cetranNo)
+        content = ScenarioContent('junction', cetran_number=cetranNo)
         content.ego_long_mode = 'drivingForward'
         content.ego_long_mode_type = 'cruising'
         content.ego_lat_mode = 'goingStraight'
@@ -568,7 +568,7 @@ if "Agent From Oncoming - Keeping":
 
             
             #Write scenario description
-            content = ScenarioContent('junction', cetranNo)
+            content = ScenarioContent('junction', cetran_number=cetranNo)
             content.ego_long_mode = 'drivingForward'
             content.ego_long_mode_type = 'cruising'
             content.ego_lat_mode = 'goingStraight'
