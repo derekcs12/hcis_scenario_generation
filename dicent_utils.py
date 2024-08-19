@@ -100,20 +100,19 @@ def create_LanePosition_from_wp(waypoint, s=None, s_offset=0, lane_offset=0, ori
         orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
     )
 
-def create_LanePosition_from_config(Map, position, orientation=False, s=None):
+def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=0):
     if s == None:
         # index, lane_id , s = map(int,position.split(' '))
-        index, lane_id , s = position
+        index, lane_id , s, offset = position
     else:
         # index, lane_id , _ = map(int,position.split(' '))
-        index, lane_id , _ = position
+        index, lane_id , _ , offset= position
     
     # print("index, lane_id , s", index, lane_id , s)
-    # exit()
     road = int(Map[index])
     return xosc.LanePosition(
         s=s,
-        offset=0,
+        offset=offset*np.sign(lane_id),
         lane_id=lane_id,
         road_id=road,
         orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
@@ -164,18 +163,18 @@ def create_ValueTrigger_from_sc(agent_sc=None, agent_name=None, ego_name=None):
                 triggeringrule = "any" 
             )
     
-def create_EntityTrigger_from_sc(egoName, agent_sc=None,):
-    return xosc.EntityTrigger(
-                name = "EgoCloseToAgent",  
-                delay = 0,
-                conditionedge = xosc.ConditionEdge.rising,
-                entitycondition = xosc.TimeHeadwayCondition(
-                                    entity=agent_name, 
-                                    value=agent_sc.dyn_start, 
-                                    rule=xosc.Rule.lessThan if agent_sc.from_opposite else xosc.Rule.greaterThan),
-                triggerentity = egoName, 
-                triggeringrule = "any" 
-            )
+# def create_EntityTrigger_from_sc(egoName, agent_sc=None,):
+#     return xosc.EntityTrigger(
+#                 name = "EgoCloseToAgent",  
+#                 delay = 0,
+#                 conditionedge = xosc.ConditionEdge.rising,
+#                 entitycondition = xosc.TimeHeadwayCondition(
+#                                     entity=agent_name, 
+#                                     value=agent_sc.dyn_start, 
+#                                     rule=xosc.Rule.lessThan if agent_sc.from_opposite else xosc.Rule.greaterThan),
+#                 triggerentity = egoName, 
+#                 triggeringrule = "any" 
+#             )
 
 def create_EntityTrigger_at_egoInitWp(egoName, ego_wp,s="$Ego_S", tolerance=1):
     sign = -np.sign(ego_wp.lane_id)
@@ -194,57 +193,28 @@ def create_EntityTrigger_at_egoInitWp(egoName, ego_wp,s="$Ego_S", tolerance=1):
                               triggerentity = egoName, triggeringrule = "any")
 
 def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName):
-    road_index , lane_id , s = Trigger['road'], Trigger['lane'], Trigger['s']
+    road_index , lane_id , s , offset= Trigger['road'], Trigger['lane'], Trigger['s'], Trigger['offset']
     road = int(Map[road_index])
     return xosc.EntityTrigger(name = "EgoApproachInitWp", 
                               delay = 0,
                               conditionedge = xosc.ConditionEdge.rising,
                               entitycondition = xosc.ReachPositionCondition(xosc.LanePosition(s = s,
-                                                                                          offset = 0,  
+                                                                                          offset = offset,  
                                                                                           lane_id = lane_id, 
                                                                                           road_id = road),
                                                                         tolerance = 2), 
                               triggerentity = EntityName, triggeringrule = "any")
 
-def create_EntityTrigger_at_relativePos(Map, Ego, Trigger, EntityName):
-    longitude , lateral , s = Trigger['road'], Trigger['lane'], Trigger['s']
-    
-    ego_wp = Ego['Start'].split(' ')
-    ego_road = int(Map[int(ego_wp[0])])
-    ego_lane = int(ego_wp[1])
-    ego_s = int(ego_wp[2])
-
-    if lateral == 0:
-        lane_id = ego_lane
-    elif lateral > 0:
-        lane_id = ego_lane + np.sign(ego_lane) * lateral
-    else:
-        lane_id = ego_lane - np.sign(ego_lane) * lateral
-        
-    if longitude == 0:
-        s = 0
-    elif longitude > 0:
-        s = ego_s - np.sign(ego_lane) * s * longitude
-    else:
-        s = ego_s + np.sign(ego_lane) * s * longitude
-
-    position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
-    return xosc.EntityTrigger(name = "EgoApproachInitWp", 
-                              delay = 0,
-                              conditionedge = xosc.ConditionEdge.rising,
-                              entitycondition = xosc.ReachPositionCondition(position,tolerance = 2),
-                              triggerentity = EntityName, triggeringrule = "any")
-
-def create_EntityTrigger_at_relativePos2(Map, Agent, EntityName):
+def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
     Trigger = Agent['Start_trigger']
-    longitude , lateral , s = Trigger['road'], Trigger['lane'], Trigger['s']
+    longitude , lateral , s , offset = Trigger['road'], Trigger['lane'], Trigger['s'], Trigger['offset']
     
     # ego_wp = Agent['Start_pos'].split(' ')
     # ego_road = int(Map[int(ego_wp[0])])
     # ego_lane = int(ego_wp[1])
     # ego_s = int(ego_wp[2])
 
-    ego_road, ego_lane, ego_s = Agent['Start_pos']
+    ego_road, ego_lane, ego_s , ego_offset = Agent['Start_pos']
     ego_road = int(Map[ego_road])
 
     if lateral == 0:
@@ -259,7 +229,7 @@ def create_EntityTrigger_at_relativePos2(Map, Agent, EntityName):
     else:
         s = ego_s - np.sign(ego_lane) * s * longitude
 
-    position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
+    position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=ego_offset)
     return xosc.EntityTrigger(name = "EgoApproachInitWp", 
                               delay = 0,
                               conditionedge = xosc.ConditionEdge.rising,
@@ -338,7 +308,7 @@ def create_Trigger_following_previous(previousEventName, delay = 0,state='init')
 def generate_Agent_Start_Event(actorName, agent, Map):
     agentInitSpeed = xosc.AbsoluteSpeedAction(f'${{${actorName}_Speed / 3.6}}', xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
     if agent['Start_trigger']['type'] == 'relative':
-        agentStartTrigger = create_EntityTrigger_at_relativePos2(Map, agent,'Ego')
+        agentStartTrigger = create_EntityTrigger_at_relativePos(Map, agent,'Ego')
     else: #absolute
         agentStartTrigger = create_EntityTrigger_at_absolutePos(Map,agent['Start_trigger'],'Ego')
 
@@ -371,7 +341,7 @@ def generate_Offset_Event(actorName, actIndex, eventIndex, event, previousEventN
     advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
     advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction", advgoal)
     advgoalEvent.add_trigger(trigger)
-    currentPosition[2] = event['End']
+    currentPosition[3] = event['End']
 
     return advgoalEvent, currentPosition
 
@@ -422,28 +392,25 @@ def generate_Zigzag_Event(actorName, actIndex, event, previousEventName, current
     times = event['End']
     dir_id = 1
     allEvent = []
-    
+    init_offset = currentPosition[3]
     for i in range(times*2):
-        advgoal = xosc.AbsoluteLaneOffsetAction(amplidute * dir_id, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
-
+        advgoal = xosc.AbsoluteLaneOffsetAction(init_offset + amplidute * dir_id, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
         trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
         advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent_{i+1}", xosc.Priority.parallel)
         advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction_{i+1}", advgoal)
         advgoalEvent.add_trigger(trigger)
         previousEventName = [advgoalEvent.name]
 
-        currentPosition[2] = amplidute
         allEvent.append(advgoalEvent)
 
         dir_id *= -1
 
-    advgoal = xosc.AbsoluteLaneOffsetAction(0, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
+    advgoal = xosc.AbsoluteLaneOffsetAction(init_offset, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
     trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
     advgoalEvent = xosc.Event(f"Adv{actorName}_Event{actIndex}_TrajectoryEvent_{times*2+1}", xosc.Priority.parallel)
     advgoalEvent.add_action(f"Adv{actorName}_Event{actIndex}_TrajectoryAction_{times*2+1}", advgoal)
     advgoalEvent.add_trigger(trigger)
     allEvent.append(advgoalEvent)
-    currentPosition[2] = 0
 
     return allEvent, currentPosition
 

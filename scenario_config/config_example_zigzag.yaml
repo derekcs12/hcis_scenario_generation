@@ -1,9 +1,9 @@
 Scenario_name: config_example_zigzag
 
 Ego:
-  Start_pos: [0,-2,0]
+  Start_pos: [0,-2,0,0]
   Start_speed: 50
-  End_pos: [1,2,0] # [road index, lane id, s]
+  End_pos: [1,2,0,0] # [road index, lane id, s]
 
 Map:
   - 139
@@ -13,12 +13,13 @@ Actors:
   Agents:
     # Agent 1
     - Type: car_red
-      Start_pos: [0,-2,15]
+      Start_pos: [0,-2,15,0]
       Start_speed: 30
       Start_trigger: # (reach init pos)
         lane: 0
         road: -1
         s: 10
+        offset: 0
         type: relative
       Acts:
         - Type: zigzag
@@ -46,12 +47,13 @@ Actors:
             End: 1
             Use_route: null
     - Type: 'car_white'
-      Start_pos: [0,-1,15]
+      Start_pos: [0,-1,15,0]
       Start_speed: 10
       Start_trigger: # (reach init pos)
         lane: 1
         road: -1
         s: 10
+        offset: 0
         type: relative
       Acts:
         - Type: zigzag 
@@ -70,12 +72,13 @@ Actors:
             End: 40
             Use_route: null
     - Type: 'truck_yellow'
-      Start_pos: [0,-1,30]
+      Start_pos: [0,-1,30,0]
       Start_speed: 50
       Start_trigger: # (reach init pos)
         lane: 1
         road: -1
         s: 10
+        offset: 0
         type: relative
       Acts:
         - Type: zigzag 

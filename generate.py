@@ -10,36 +10,31 @@ def generate(config, company='HCISLab'):
     ### CatalogLocations & RoadNetwork (document:xosc.utiles)
     catalog = xosc.Catalog()
     if company == 'HCISLab':
-        if 'Agents' in Actors:
-            catalog.add_catalog("VehicleCatalog", "./Catalogs/Vehicles")
+        catalog.add_catalog("VehicleCatalog", "./Catalogs/Vehicles")
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
         road = xosc.RoadNetwork(roadfile="hct_6.xodr")
 
         # ACC controller
-        egoControllerProperties = xosc.Properties()
-        egoControllerProperties.add_property(name="timeGap", value="1.0")
-        egoControllerProperties.add_property(name="mode", value="override")
-        egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
-        egoController = xosc.Controller(name="ACCController", properties=egoControllerProperties)
-
+        controllerName = "ACCController"
 
     else: # ITRI
         # CatalogLocations
-        if 'Agents' in Actors:
-            catalog.add_catalog("VehicleCatalog", "../Catalogs/Vehicles")
+        catalog.add_catalog("VehicleCatalog", "../Catalogs/Vehicles")
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "../Catalogs/Pedestrians")
 
         # RoadNetwork
         road = xosc.RoadNetwork(roadfile="../../xodr/itri/hct_6.xodr")
 
-        #construct ego controller - ROS
-        egoControllerProperties = xosc.Properties()
-        egoControllerProperties.add_property(name="timeGap", value="1.0")
-        egoControllerProperties.add_property(name="mode", value="override")
-        egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
-        egoController = xosc.Controller(name="ROSController", properties=egoControllerProperties)
+        # construct ego controller - ROS
+        controllerName = "ROSController"
+    
+    egoControllerProperties = xosc.Properties()
+    egoControllerProperties.add_property(name="timeGap", value="1.0")
+    egoControllerProperties.add_property(name="mode", value="override")
+    egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
+    egoController = xosc.Controller(name=controllerName, properties=egoControllerProperties)
 
 
     ### Entities (document:xosc.Entities)
@@ -75,14 +70,12 @@ def generate(config, company='HCISLab'):
             actorName = f"{actors[:-1]}{actorIndex}"
             agentManeuver, previousEventNames = generate_Adv_Maneuver(actorName, actor, config['Map'])
             allEvent.extend(previousEventNames)
-            # allAgentManeuver.append(agentManeuver)
             allManeuver[actorName] = agentManeuver
     
 
-    sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500,allEventName=allEvent))
+    sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500, allEventName=allEvent))
     for man in allManeuver:
         sb.add_maneuver(allManeuver[man], man)
-
 
     ### Create Scenario
     sce = xosc.Scenario( 
@@ -104,7 +97,7 @@ def parameter_Declaration(Actors, Ego):
     ### ParameterDeclarations (document:xosc.utiles)
     egoInit  = xosc.Parameter(name="Ego_Vehicle",parameter_type="string",value="car_white")
     egoSpeed = xosc.Parameter(name="Ego_Speed",parameter_type="double",value=Ego['Start_speed'])
-    egoS     = xosc.Parameter(name="Ego_S",parameter_type="double",value=Ego['Start_pos'][-1])
+    egoS     = xosc.Parameter(name="Ego_S",parameter_type="double",value=Ego['Start_pos'][2])
     paraList = [egoInit, egoSpeed, egoS]
 
     # catas = ['Agents', 'Pedestrians']
@@ -114,7 +107,7 @@ def parameter_Declaration(Actors, Ego):
             # actor's Init parameter
             actorType  = xosc.Parameter(name=f"{actorName}_Type",parameter_type="string",value=actor['Type'])
             actorInitSpeed = xosc.Parameter(name=f"{actorName}_Speed",parameter_type="double",value=str(actor['Start_speed']))
-            actorInitS     = xosc.Parameter(name=f"{actorName}_S",parameter_type="double",value=str(actor['Start_pos'][-1]))
+            actorInitS     = xosc.Parameter(name=f"{actorName}_S",parameter_type="double",value=str(actor['Start_pos'][2]))
             paraList.extend([actorType, actorInitSpeed, actorInitS])
 
             # actor's Event parameter
@@ -193,8 +186,8 @@ def generate_Adv_Maneuver(actorName, agent, Map):
     advManeuver.add_event(agentStartEvent)
     previousEventName = [agentStartEvent.name]
     currentPosition = agent['Start_pos'].copy()
-
-
+    # currentPosition[3] *= np.sign(currentPosition[2])
+    currentPosition[3] = currentPosition[3] * np.sign(currentPosition[1])
     for actIndex, act in enumerate(agent['Acts'], start=1):
         # Add dummy event first to avoid the action disappear and support overall delay
         dummyEvent = create_Dummy_Event(actorName ,actIndex,act['Delay'],previousEventName)
