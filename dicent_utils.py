@@ -125,12 +125,12 @@ def create_TransitionDynamics_from_sc(agent_sc):
     dynamic_shape = getattr(xosc.DynamicsShapes, agent_sc.dynamic_shape)
     return xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, agent_sc.dynamic_duration)
 
-def create_TransitionDynamics_from_config(event, agentIndex, actIndex, eventIndex,type='other'):
+def create_TransitionDynamics_from_config(event, actorName, actIndex, eventIndex,type='other'):
     dynamic_shape = getattr(xosc.DynamicsShapes, event['Dynamic_shape'])
     if type == 'other':
-        transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"$Agent{agentIndex}_{actIndex}_{eventIndex}_DynamicDuration")
+        transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"${actorName}_{actIndex}_{eventIndex}_DynamicDuration")
     elif type == 'zigzag':
-        transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"$Agent{agentIndex}_{actIndex}_DynamicDuration")
+        transition_dynamics = xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, f"${actorName}_{actIndex}_DynamicDuration")
         
     return transition_dynamics
 
@@ -335,59 +335,59 @@ def create_Trigger_following_previous(previousEventName, delay = 0,state='init')
     #     )
     
 
-def generate_Agent_Start_Event(agentIndex, agent, Map):
-    agentInitSpeed = xosc.AbsoluteSpeedAction(f'${{$Agent{agentIndex}_Speed / 3.6}}', xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
+def generate_Agent_Start_Event(actorName, agent, Map):
+    agentInitSpeed = xosc.AbsoluteSpeedAction(f'${{${actorName}_Speed / 3.6}}', xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0))
     if agent['Start_trigger']['type'] == 'relative':
         agentStartTrigger = create_EntityTrigger_at_relativePos2(Map, agent,'Ego')
     else: #absolute
         agentStartTrigger = create_EntityTrigger_at_absolutePos(Map,agent['Start_trigger'],'Ego')
 
-    advStartSpeedEvent = xosc.Event(f"Adv{agentIndex}_StartSpeedEvent", xosc.Priority.overwrite)
-    advStartSpeedEvent.add_action(f"Adv{agentIndex}_StartSpeedAction", agentInitSpeed)
+    advStartSpeedEvent = xosc.Event(f"{actorName}_StartSpeedEvent", xosc.Priority.overwrite)
+    advStartSpeedEvent.add_action(f"{actorName}_StartSpeedAction", agentInitSpeed)
     advStartSpeedEvent.add_trigger(agentStartTrigger)
 
     return advStartSpeedEvent
 
-def generate_Speed_Event(agentIndex, actIndex, eventIndex, event, previousEventName,type='other'):
-    transitionDynamic = create_TransitionDynamics_from_config(event,agentIndex, actIndex, eventIndex,type)
+def generate_Speed_Event(actorName, actIndex, eventIndex, event, previousEventName,type='other'):
+    transitionDynamic = create_TransitionDynamics_from_config(event, actorName, actIndex, eventIndex,type)
     if type == 'other':
-        advEndSpeed = xosc.AbsoluteSpeedAction(f'${{$Agent{agentIndex}_{actIndex}_{eventIndex}_EndSpeed/3.6}}',transitionDynamic)
-        trigger = create_Trigger_following_previous(previousEventName, f'$Agent{agentIndex}_{actIndex}_{eventIndex}_DynamicDelay', state='complete')
+        advEndSpeed = xosc.AbsoluteSpeedAction(f'${{${actorName}_{actIndex}_{eventIndex}_EndSpeed/3.6}}',transitionDynamic)
+        trigger = create_Trigger_following_previous(previousEventName, f'${actorName}_{actIndex}_{eventIndex}_DynamicDelay', state='complete')
     elif type == 'zigzag':
-        advEndSpeed = xosc.AbsoluteSpeedAction(f'${{$Agent{agentIndex}_{actIndex}_EndSpeed/3.6}}',transitionDynamic)
-        trigger = create_Trigger_following_previous(previousEventName, f'$Agent{agentIndex}_{actIndex}_DynamicDelay', state='complete')
+        advEndSpeed = xosc.AbsoluteSpeedAction(f'${{${actorName}_{actIndex}_EndSpeed/3.6}}',transitionDynamic)
+        trigger = create_Trigger_following_previous(previousEventName, f'${actorName}_{actIndex}_DynamicDelay', state='complete')
     
-    advSpeedEvent = xosc.Event(f"Adv{agentIndex}_SpeedEvent", xosc.Priority.parallel)
-    advSpeedEvent.add_action(f"Adv{agentIndex}_SpeedAction", advEndSpeed)
+    advSpeedEvent = xosc.Event(f"{actorName}_SpeedEvent", xosc.Priority.parallel)
+    advSpeedEvent.add_action(f"{actorName}_SpeedAction", advEndSpeed)
     advSpeedEvent.add_trigger(trigger)
 
     return advSpeedEvent
 
-def generate_Offset_Event(agentIndex, actIndex, eventIndex, event, previousEventName, currentPosition):
+def generate_Offset_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition):
     advgoal = xosc.AbsoluteLaneOffsetAction(event['End'],getattr(xosc.DynamicsShapes, event['Dynamic_shape']),maxlatacc=abs(event['End']/event['Dynamic_duration']))
 
     trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
 
-    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
-    advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction", advgoal)
+    advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
+    advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction", advgoal)
     advgoalEvent.add_trigger(trigger)
     currentPosition[2] = event['End']
 
     return advgoalEvent, currentPosition
 
-def generate_Cut_Event(agentIndex, actIndex, eventIndex, event, previousEventName, currentPosition):
-    advgoal = xosc.AbsoluteLaneChangeAction(event['End'],create_TransitionDynamics_from_config(event, agentIndex, actIndex, eventIndex))
+def generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition):
+    advgoal = xosc.AbsoluteLaneChangeAction(event['End'],create_TransitionDynamics_from_config(event, actorName, actIndex, eventIndex))
 
     trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
 
-    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
-    advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction", advgoal)
+    advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
+    advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction", advgoal)
     advgoalEvent.add_trigger(trigger)
     currentPosition[1] = event['End']
 
     return advgoalEvent, currentPosition
 
-def generate_Position_Event(agentIndex, actIndex, event, Map, previousEventName, currentPosition):
+def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, currentPosition):
     if event['Use_route'] != None:
         trajectory = xosc.Trajectory('selfDefineTrajectory',False)
         road_center = event['Use_route']
@@ -408,14 +408,14 @@ def generate_Position_Event(agentIndex, actIndex, event, Map, previousEventName,
 
     trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
 
-    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
-    advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction", advgoal)
+    advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
+    advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction", advgoal)
     advgoalEvent.add_trigger(trigger)
     currentPosition = event['End']
 
     return advgoalEvent, currentPosition
 
-def generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, currentPosition):
+def generate_Zigzag_Event(actorName, actIndex, event, previousEventName, currentPosition):
     delay = event['Dynamic_delay']
     period = event['Dynamic_duration']
     amplidute = event['Dynamic_shape']
@@ -427,30 +427,30 @@ def generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, curren
         advgoal = xosc.AbsoluteLaneOffsetAction(amplidute * dir_id, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
 
         trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
-        advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent_{i+1}", xosc.Priority.parallel)
-        advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction_{i+1}", advgoal)
+        advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent_{i+1}", xosc.Priority.parallel)
+        advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction_{i+1}", advgoal)
         advgoalEvent.add_trigger(trigger)
         previousEventName = [advgoalEvent.name]
 
         currentPosition[2] = amplidute
         allEvent.append(advgoalEvent)
-        
+
         dir_id *= -1
 
     advgoal = xosc.AbsoluteLaneOffsetAction(0, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
     trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
-    advgoalEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_TrajectoryEvent_{times*2+1}", xosc.Priority.parallel)
-    advgoalEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_TrajectoryAction_{times*2+1}", advgoal)
+    advgoalEvent = xosc.Event(f"Adv{actorName}_Event{actIndex}_TrajectoryEvent_{times*2+1}", xosc.Priority.parallel)
+    advgoalEvent.add_action(f"Adv{actorName}_Event{actIndex}_TrajectoryAction_{times*2+1}", advgoal)
     advgoalEvent.add_trigger(trigger)
     allEvent.append(advgoalEvent)
     currentPosition[2] = 0
 
     return allEvent, currentPosition
 
-def create_Dummy_Event(agentIndex, actIndex, delay, previousEventName):
+def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
     trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
-    dummyEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_DummyEvent", xosc.Priority.parallel)
-    dummyEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_DummyAction", xosc.VisibilityAction(True,True,True))
+    dummyEvent = xosc.Event(f"{actorName}_Event{actIndex}_DummyEvent", xosc.Priority.parallel)
+    dummyEvent.add_action(f"{actorName}_Event{actIndex}_DummyAction", xosc.VisibilityAction(True,True,True))
     dummyEvent.add_trigger(trigger)
 
     return dummyEvent

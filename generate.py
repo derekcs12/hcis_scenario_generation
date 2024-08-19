@@ -52,7 +52,6 @@ def generate(config, company='HCISLab'):
     ### Storyboard - Init 初始設定
     # Ego 初始化
     init = xosc.Init()
-    # egoInitS = config['Ego']['Start_pos'][-1]
     egostart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],config['Ego']['Start_pos']))
     egospeed = xosc.AbsoluteSpeedAction("${$Ego_Speed / 3.6}", step_time)
     egocontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
@@ -68,42 +67,22 @@ def generate(config, company='HCISLab'):
             actorStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],actor['Start_pos'],s=f"${cata[:-1]}{actorIndex}_S"))
             init.add_init_action(f"{cata[:-1]}{actorIndex}", actorStart)
 
-    # if 'Agents' in Actors:
-    #     for agentIndex, agent in enumerate(Actors['Agents'], start=1):
-    #         agentStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],agent['Start_pos'],s=f"$Agent{agentIndex}_S"))
-    #         init.add_init_action(f"Agent{agentIndex}", agentStart)
-    
-    # # Pedestrians 初始化
-    # if 'Pedestrians' in Actors:
-    #     for pedIndex, ped in enumerate(Actors['Pedestrians'], start=1):
-    #         pedStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],ped['Start_pos'], s=f"$Pedestrian{pedIndex}_S"))
-    #         init.add_init_action(f"Pedestrian{agentCount+pedIndex}", pedStart)
-
     ### Storyboard - Event
     allEvent = []
-    # Agent Maneuver
-    allAgentManeuver = []
-    if 'Agents' in Actors:
-        for agentIndex, agent in enumerate(Actors['Agents'],start=1):
-            agentManeuver, previousEventNames = generate_Adv_Maneuver(agentIndex, agent, config['Map'])
+    allManeuver = {}
+    for actors in Actors:
+        for actorIndex, actor in enumerate(Actors[actors],start=1):
+            actorName = f"{actors[:-1]}{actorIndex}"
+            agentManeuver, previousEventNames = generate_Adv_Maneuver(actorName, actor, config['Map'])
             allEvent.extend(previousEventNames)
-            allAgentManeuver.append(agentManeuver)
-            # sb.add_maneuver(agentManeuver, f"Agent{agentIndex}")
-        
-    # Pedestrian Maneuver    
-    allPedManeuver = []
-    if 'Pedestrians' in Actors:
-        for pedIndex, ped in enumerate(Actors['Pedestrians'], start=1):
-            agentManeuver, previousEventNames = generate_Adv_Maneuver(pedIndex, ped, config['Map'])
-            allEvent.extend(previousEventNames)
-            allPedManeuver.append(agentManeuver)
-
+            # allAgentManeuver.append(agentManeuver)
+            allManeuver[actorName] = agentManeuver
+    
 
     sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500,allEventName=allEvent))
-    for man in allAgentManeuver:
-        sb.add_maneuver(man, f"Agent{allAgentManeuver.index(man)+1}")
-    for man in allPedManeuver:
-        sb.add_maneuver(man, f"Pedestrian{allPedManeuver.index(man)+1}")
+    for man in allManeuver:
+        sb.add_maneuver(allManeuver[man], man)
+
 
     ### Create Scenario
     sce = xosc.Scenario( 
@@ -193,6 +172,7 @@ def create_Entity(egoController, agentCount, pedCount):
 
     # create entity
     entities = xosc.Entities()
+
     # ego
     entities.add_scenario_object(name = "Ego", entityobject = egoObject, controller = egoController)
 
@@ -202,15 +182,14 @@ def create_Entity(egoController, agentCount, pedCount):
         
     # pedestrians
     for i in range(pedCount):
-        # ped = xosc.CatalogReference(catalogname="PedestrianCatalog", entryname="pedestrian_adult")
         entities.add_scenario_object(name = f"Pedestrian{i+1}", entityobject = pedObjectList[i])
 
     return entities
 
 
-def generate_Adv_Maneuver(agentIndex, agent, Map):
-    advManeuver = xosc.Maneuver(f"Adv{agentIndex}_Maneuver")
-    agentStartEvent = generate_Agent_Start_Event(agentIndex, agent, Map)
+def generate_Adv_Maneuver(actorName, agent, Map):
+    advManeuver = xosc.Maneuver(f"{actorName}_Maneuver")
+    agentStartEvent = generate_Agent_Start_Event(actorName, agent, Map)
     advManeuver.add_event(agentStartEvent)
     previousEventName = [agentStartEvent.name]
     currentPosition = agent['Start_pos'].copy()
@@ -218,7 +197,7 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
 
     for actIndex, act in enumerate(agent['Acts'], start=1):
         # Add dummy event first to avoid the action disappear and support overall delay
-        dummyEvent = create_Dummy_Event(agentIndex ,actIndex,act['Delay'],previousEventName)
+        dummyEvent = create_Dummy_Event(actorName ,actIndex,act['Delay'],previousEventName)
         advManeuver.add_event(dummyEvent)
         previousEventName = [dummyEvent.name]
 
@@ -226,33 +205,34 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
         if act['Type'] == 'zigzag':
             for eventIndex, event in enumerate(act['Events'], start=1):
                 if event['Type'] == 'speed':
-                    currentEvent = generate_Speed_Event(agentIndex, actIndex, eventIndex, event, previousEventName,type='zigzag')
+                    currentEvent = generate_Speed_Event(actorName, actIndex, eventIndex, event, previousEventName,type='zigzag')
                     currentEventName.append(currentEvent.name)
                     advManeuver.add_event(currentEvent)
 
                 elif event['Type'] == 'offset':
-                    zigzagEvent, currentPosition = generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, currentPosition) 
+                    zigzagEvent, currentPosition = generate_Zigzag_Event(actorName, actIndex, event, previousEventName, currentPosition) 
                     for currentEvent in zigzagEvent:
                         currentEventName.append(currentEvent.name)
                         advManeuver.add_event(currentEvent)
                 else:
                     print('Event Type Error')
                     break
+
             previousEventName = currentEventName
         else:
             for eventIndex, event in enumerate(act['Events'], start=1):
                 if event['Type'] == 'speed':
-                    currentEvent = generate_Speed_Event(agentIndex, actIndex, eventIndex, event, previousEventName)
+                    currentEvent = generate_Speed_Event(actorName, actIndex, eventIndex, event, previousEventName)
                 elif event['Type'] == 'offset':
-                    currentEvent, currentPosition = generate_Offset_Event(agentIndex, actIndex, eventIndex, event, previousEventName, currentPosition)
+                    currentEvent, currentPosition = generate_Offset_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition)
                 elif event['Type'] == 'cut':
-                    currentEvent, currentPosition = generate_Cut_Event(agentIndex, actIndex, eventIndex, event, previousEventName, currentPosition)
+                    currentEvent, currentPosition = generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition)
                 elif event['Type'] == 'position':
-                    currentEvent , currentPosition = generate_Position_Event(agentIndex, actIndex, event, Map, previousEventName ,currentPosition)
+                    currentEvent , currentPosition = generate_Position_Event(actorName, actIndex, event, Map, previousEventName ,currentPosition)
                 else:
                     print('Event Type Error')
                     break
-                # previousEventName = currentEvent.name
+
                 currentEventName.append(currentEvent.name)
                 advManeuver.add_event(currentEvent)
             previousEventName = currentEventName

@@ -12,7 +12,7 @@ Map:
 Actors:
   Agents:
     # Agent 1
-    - Type: pedestrian
+    - Type: car_red
       Start_pos: [0,-2,15]
       Start_speed: 30
       Start_trigger: # (reach init pos)
@@ -47,7 +47,8 @@ Actors:
             Use_route: null
 
   Pedestrians:
-    - Start_pos: [0,-1,30]
+    - Type: pedestrian_adult
+      Start_pos: [0,-1,30]
       Start_speed: 50
       Start_trigger: # (reach init pos)
         lane: 1
