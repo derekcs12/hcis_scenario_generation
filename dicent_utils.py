@@ -227,7 +227,7 @@ def create_EntityTrigger_at_relativePos(Map, Ego, Trigger, EntityName):
         s = ego_s - np.sign(ego_lane) * s * longitude
     else:
         s = ego_s + np.sign(ego_lane) * s * longitude
-    print("lane_id", lane_id, "road_id", ego_road, "s", s)
+
     position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
     return xosc.EntityTrigger(name = "EgoApproachInitWp", 
                               delay = 0,
@@ -259,7 +259,6 @@ def create_EntityTrigger_at_relativePos2(Map, Agent, EntityName):
     else:
         s = ego_s - np.sign(ego_lane) * s * longitude
 
-    print("lane_id", lane_id, "road_id", ego_road, "s", s)
     position = xosc.LanePosition(s = s, lane_id=lane_id, road_id=ego_road,offset=0)
     return xosc.EntityTrigger(name = "EgoApproachInitWp", 
                               delay = 0,
@@ -308,9 +307,9 @@ def create_Trigger_following_previous(previousEventName, delay = 0,state='init')
     
     conditionGroup = xosc.ConditionGroup()
     for name in previousEventName:
-        if "StartSpeedEvent" in name:
-            print("delay", delay)
-            delay = 0.5
+        # if "StartSpeedEvent" in name:
+        #     print("delay", delay)
+        #     delay = 0.5
         conditionGroup.add_condition(
             xosc.ValueTrigger(
             name = "FollowingPreviosTrigger",
@@ -421,7 +420,6 @@ def generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, curren
     period = event['Dynamic_duration']
     amplidute = event['Dynamic_shape']
     times = event['End']
-    direction = (1,0,-1,0)
     dir_id = 1
     allEvent = []
     
@@ -436,7 +434,7 @@ def generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, curren
 
         currentPosition[2] = amplidute
         allEvent.append(advgoalEvent)
-        # dir_id = (dir_id + 1) % 4
+        
         dir_id *= -1
 
     advgoal = xosc.AbsoluteLaneOffsetAction(0, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
@@ -449,7 +447,13 @@ def generate_Zigzag_Event(agentIndex, actIndex, event, previousEventName, curren
 
     return allEvent, currentPosition
 
+def create_Dummy_Event(agentIndex, actIndex, delay, previousEventName):
+    trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
+    dummyEvent = xosc.Event(f"Adv{agentIndex}_Event{actIndex}_DummyEvent", xosc.Priority.parallel)
+    dummyEvent.add_action(f"Adv{agentIndex}_Event{actIndex}_DummyAction", xosc.VisibilityAction(True,True,True))
+    dummyEvent.add_trigger(trigger)
 
+    return dummyEvent
 """
 def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
     if method == 'greedy':

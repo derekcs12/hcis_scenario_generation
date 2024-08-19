@@ -104,7 +104,6 @@ def parameter_Declaration(config):
         agentVehicle  = xosc.Parameter(name=f"Agent{agentIndex}_Vehicle",parameter_type="string",value="car_red")
         agentInitSpeed = xosc.Parameter(name=f"Agent{agentIndex}_Speed",parameter_type="double",value=str(agent['Start_speed']))
         agentInitS     = xosc.Parameter(name=f"Agent{agentIndex}_S",parameter_type="double",value=str(agent['Start_pos'][-1]))
-        # print("start pos: ",agentIndex,agent['Start_pos'])
         paraList.extend([agentVehicle, agentInitSpeed, agentInitS])
 
         # agent's Event parameter
@@ -135,7 +134,6 @@ def parameter_Declaration(config):
 
     for i in paraList:
         paramdec.add_parameter(i)
-        # print(i.name, i.value)
     
     return paramdec
 
@@ -174,6 +172,11 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
 
 
     for actIndex, act in enumerate(agent['Acts'], start=1):
+        # Add dummy event first to avoid the action disappear and support overall delay
+        dummyEvent = create_Dummy_Event(agentIndex ,actIndex,act['Delay'],previousEventName)
+        advManeuver.add_event(dummyEvent)
+        previousEventName = [dummyEvent.name]
+
         currentEventName = []
         if act['Type'] == 'zigzag':
             for eventIndex, event in enumerate(act['Events'], start=1):
@@ -190,8 +193,6 @@ def generate_Adv_Maneuver(agentIndex, agent, Map):
                 else:
                     print('Event Type Error')
                     break
-                # previousEventName = currentEvent.name
-                print("zigzagEvent: ", len(zigzagEvent))
             previousEventName = currentEventName
         else:
             for eventIndex, event in enumerate(act['Events'], start=1):
