@@ -1,4 +1,4 @@
-Scenario_name: config_example_zigzag
+Scenario_name: config_example_ped
 
 Ego:
   Start_pos: [0,-2,0]
@@ -12,7 +12,7 @@ Map:
 Actors:
   Agents:
     # Agent 1
-    - Type: car_red
+    - Type: pedestrian
       Start_pos: [0,-2,15]
       Start_speed: 30
       Start_trigger: # (reach init pos)
@@ -45,32 +45,9 @@ Actors:
             Dynamic_shape: sinusoidal
             End: 1
             Use_route: null
-    - Type: 'car_white'
-      Start_pos: [0,-1,15]
-      Start_speed: 10
-      Start_trigger: # (reach init pos)
-        lane: 1
-        road: -1
-        s: 10
-        type: relative
-      Acts:
-        - Type: zigzag 
-          Delay: 1
-          Events:
-          - Type: offset 
-            Dynamic_delay: 0 # (delay)
-            Dynamic_duration: 2 # (period)
-            Dynamic_shape: -5 # (offset)
-            End: 3 # (times)
-            Use_route: null
-          - Type: speed
-            Dynamic_delay: 0
-            Dynamic_duration: 3
-            Dynamic_shape: linear
-            End: 40
-            Use_route: null
-    - Type: 'truck_yellow'
-      Start_pos: [0,-1,30]
+
+  Pedestrians:
+    - Start_pos: [0,-1,30]
       Start_speed: 50
       Start_trigger: # (reach init pos)
         lane: 1

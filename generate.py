@@ -4,12 +4,16 @@ from dicent_utils import *
 
 def generate(config, company='HCISLab'):
 
-    paramdec = parameter_Declaration(config)
+    Actors = config['Actors']
+    paramdec = parameter_Declaration(Actors, config['Ego'])
 
     ### CatalogLocations & RoadNetwork (document:xosc.utiles)
     catalog = xosc.Catalog()
     if company == 'HCISLab':
-        catalog.add_catalog("VehicleCatalog", "./Catalogs/Vehicles")
+        if 'Agents' in Actors:
+            catalog.add_catalog("VehicleCatalog", "./Catalogs/Vehicles")
+        if 'Pedestrians' in Actors:
+            catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
         road = xosc.RoadNetwork(roadfile="hct_6.xodr")
 
         # ACC controller
@@ -22,7 +26,10 @@ def generate(config, company='HCISLab'):
 
     else: # ITRI
         # CatalogLocations
-        catalog.add_catalog("VehicleCatalog", "../Catalogs/Vehicles")
+        if 'Agents' in Actors:
+            catalog.add_catalog("VehicleCatalog", "../Catalogs/Vehicles")
+        if 'Pedestrians' in Actors:
+            catalog.add_catalog("PedestrianCatalog", "../Catalogs/Pedestrians")
 
         # RoadNetwork
         road = xosc.RoadNetwork(roadfile="../../xodr/itri/hct_6.xodr")
@@ -35,9 +42,10 @@ def generate(config, company='HCISLab'):
         egoController = xosc.Controller(name="ROSController", properties=egoControllerProperties)
 
 
-
     ### Entities (document:xosc.Entities)
-    entities = create_Entity(egoController, len(config['Agents']))
+    agentCount = len(Actors['Agents']) if 'Agents' in Actors else 0
+    pedCount = len(Actors['Pedestrians']) if 'Pedestrians' in Actors else 0
+    entities = create_Entity(egoController, agentCount, pedCount)
 
     step_time = xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0)
 
@@ -54,25 +62,48 @@ def generate(config, company='HCISLab'):
     init.add_init_action('Ego', egocontl)
     init.add_init_action('Ego', egofinal)
 
-    # Agents 初始化
-    for agentIndex, agent in enumerate(config['Agents'], start=1):
-        agentStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],agent['Start_pos'],s=f"$Agent{agentIndex}_S"))
-        init.add_init_action(f"Agent{agentIndex}", agentStart)
+    # Actor 初始化
+    for cata in Actors:
+        for actorIndex, actor in enumerate(Actors[cata], start=1):
+            actorStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],actor['Start_pos'],s=f"${cata[:-1]}{actorIndex}_S"))
+            init.add_init_action(f"{cata[:-1]}{actorIndex}", actorStart)
+
+    # if 'Agents' in Actors:
+    #     for agentIndex, agent in enumerate(Actors['Agents'], start=1):
+    #         agentStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],agent['Start_pos'],s=f"$Agent{agentIndex}_S"))
+    #         init.add_init_action(f"Agent{agentIndex}", agentStart)
     
-    
+    # # Pedestrians 初始化
+    # if 'Pedestrians' in Actors:
+    #     for pedIndex, ped in enumerate(Actors['Pedestrians'], start=1):
+    #         pedStart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],ped['Start_pos'], s=f"$Pedestrian{pedIndex}_S"))
+    #         init.add_init_action(f"Pedestrian{agentCount+pedIndex}", pedStart)
 
     ### Storyboard - Event
     allEvent = []
-    allManeuver = []
-    for agentIndex, agent in enumerate(config['Agents'],start=1):
-        agentManeuver, previousEventNames = generate_Adv_Maneuver(agentIndex, agent, config['Map'])
-        allEvent.extend(previousEventNames)
-        allManeuver.append(agentManeuver)
-        # sb.add_maneuver(agentManeuver, f"Agent{agentIndex}")
+    # Agent Maneuver
+    allAgentManeuver = []
+    if 'Agents' in Actors:
+        for agentIndex, agent in enumerate(Actors['Agents'],start=1):
+            agentManeuver, previousEventNames = generate_Adv_Maneuver(agentIndex, agent, config['Map'])
+            allEvent.extend(previousEventNames)
+            allAgentManeuver.append(agentManeuver)
+            # sb.add_maneuver(agentManeuver, f"Agent{agentIndex}")
         
+    # Pedestrian Maneuver    
+    allPedManeuver = []
+    if 'Pedestrians' in Actors:
+        for pedIndex, ped in enumerate(Actors['Pedestrians'], start=1):
+            agentManeuver, previousEventNames = generate_Adv_Maneuver(pedIndex, ped, config['Map'])
+            allEvent.extend(previousEventNames)
+            allPedManeuver.append(agentManeuver)
+
+
     sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500,allEventName=allEvent))
-    for man in allManeuver:
-        sb.add_maneuver(man, f"Agent{allManeuver.index(man)+1}")
+    for man in allAgentManeuver:
+        sb.add_maneuver(man, f"Agent{allAgentManeuver.index(man)+1}")
+    for man in allPedManeuver:
+        sb.add_maneuver(man, f"Pedestrian{allPedManeuver.index(man)+1}")
 
     ### Create Scenario
     sce = xosc.Scenario( 
@@ -88,49 +119,50 @@ def generate(config, company='HCISLab'):
 
     return sce
 
-def parameter_Declaration(config):
+def parameter_Declaration(Actors, Ego):
     paramdec = xosc.ParameterDeclarations()
 
     ### ParameterDeclarations (document:xosc.utiles)
     egoInit  = xosc.Parameter(name="Ego_Vehicle",parameter_type="string",value="car_white")
-    egoSpeed = xosc.Parameter(name="Ego_Speed",parameter_type="double",value=config['Ego']['Start_speed'])
-    egoS     = xosc.Parameter(name="Ego_S",parameter_type="double",value=config['Ego']['Start_pos'][-1])
+    egoSpeed = xosc.Parameter(name="Ego_Speed",parameter_type="double",value=Ego['Start_speed'])
+    egoS     = xosc.Parameter(name="Ego_S",parameter_type="double",value=Ego['Start_pos'][-1])
     paraList = [egoInit, egoSpeed, egoS]
 
-    Agents = config['Agents']
-    for agentIndex, agent in enumerate(Agents, start=1):
+    # catas = ['Agents', 'Pedestrians']
+    for cata in Actors:
+        for actorIndex, actor in enumerate(Actors[cata], start=1):
+            actorName = f"{cata[:-1]}{actorIndex}"
+            # actor's Init parameter
+            actorType  = xosc.Parameter(name=f"{actorName}_Type",parameter_type="string",value=actor['Type'])
+            actorInitSpeed = xosc.Parameter(name=f"{actorName}_Speed",parameter_type="double",value=str(actor['Start_speed']))
+            actorInitS     = xosc.Parameter(name=f"{actorName}_S",parameter_type="double",value=str(actor['Start_pos'][-1]))
+            paraList.extend([actorType, actorInitSpeed, actorInitS])
 
-        # agent's Init parameter
-        agentVehicle  = xosc.Parameter(name=f"Agent{agentIndex}_Vehicle",parameter_type="string",value="car_red")
-        agentInitSpeed = xosc.Parameter(name=f"Agent{agentIndex}_Speed",parameter_type="double",value=str(agent['Start_speed']))
-        agentInitS     = xosc.Parameter(name=f"Agent{agentIndex}_S",parameter_type="double",value=str(agent['Start_pos'][-1]))
-        paraList.extend([agentVehicle, agentInitSpeed, agentInitS])
-
-        # agent's Event parameter
-        for actIndex, act in enumerate(agent['Acts'], start=1):
-            if act['Type'] == 'zigzag':
-                for eventIndex, event in enumerate(act['Events'], start=1):
-                    if event['Type'] == 'offset':
-                        delay = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_Deley",parameter_type="double",value=str(event['Dynamic_delay']))
-                        offset = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_Offset",parameter_type="double",value=str(event['Dynamic_shape']))
-                        period = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_Period",parameter_type="double",value=str(event['Dynamic_duration']))
-                        times = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_Times",parameter_type="double",value=str(event['End']))
-                        paraList.extend([delay, offset, period, times])
-                    if event['Type'] == 'speed':
-                        dynamicDelay = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
-                        dynamicDuration = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
-                        dynamicShape = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_DynamicShape",parameter_type="double",value=str(event['Dynamic_shape']))
-                        endSpeed = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_EndSpeed",parameter_type="double",value=str(event['End']))
-                        paraList.extend([dynamicDelay, dynamicShape, dynamicDuration, endSpeed])
-            else:
-                for eventIndex, event in enumerate(act['Events'], start=1):
-                    if event['Type'] == 'speed':
-                        endSpeed = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_{eventIndex}_EndSpeed",parameter_type="double",value=str(event['End']))
-                        paraList.append(endSpeed)
-                    dynamicDelay = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_{eventIndex}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
-                    dynamicDuration = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_{eventIndex}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
-                    dynamicShape = xosc.Parameter(name=f"Agent{agentIndex}_{actIndex}_{eventIndex}_DynamicShape",parameter_type="string",value=event['Dynamic_shape'])
-                    paraList.extend([dynamicDelay, dynamicDuration, dynamicShape])
+            # actor's Event parameter
+            for actIndex, act in enumerate(actor['Acts'], start=1):
+                if act['Type'] == 'zigzag':
+                    for eventIndex, event in enumerate(act['Events'], start=1):
+                        if event['Type'] == 'offset':
+                            delay = xosc.Parameter(name=f"{actorName}_{actIndex}_Deley",parameter_type="double",value=str(event['Dynamic_delay']))
+                            offset = xosc.Parameter(name=f"{actorName}_{actIndex}_Offset",parameter_type="double",value=str(event['Dynamic_shape']))
+                            period = xosc.Parameter(name=f"{actorName}_{actIndex}_Period",parameter_type="double",value=str(event['Dynamic_duration']))
+                            times = xosc.Parameter(name=f"{actorName}_{actIndex}_Times",parameter_type="double",value=str(event['End']))
+                            paraList.extend([delay, offset, period, times])
+                        if event['Type'] == 'speed':
+                            dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
+                            dynamicDuration = xosc.Parameter(name=f"{actorName}_{actIndex}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
+                            dynamicShape = xosc.Parameter(name=f"{actorName}_{actIndex}_DynamicShape",parameter_type="double",value=str(event['Dynamic_shape']))
+                            endSpeed = xosc.Parameter(name=f"{actorName}_{actIndex}_EndSpeed",parameter_type="double",value=str(event['End']))
+                            paraList.extend([dynamicDelay, dynamicShape, dynamicDuration, endSpeed])
+                else:
+                    for eventIndex, event in enumerate(act['Events'], start=1):
+                        if event['Type'] == 'speed':
+                            endSpeed = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_EndSpeed",parameter_type="double",value=str(event['End']))
+                            paraList.append(endSpeed)
+                        dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
+                        dynamicDuration = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
+                        dynamicShape = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_DynamicShape",parameter_type="string",value=event['Dynamic_shape'])
+                        paraList.extend([dynamicDelay, dynamicDuration, dynamicShape])
 
     for i in paraList:
         paramdec.add_parameter(i)
@@ -142,23 +174,36 @@ def create_Catalog_and_RoadNetwork():
     ...
 
 
-def create_Entity(egoController, agentCount):
+def create_Entity(egoController, agentCount, pedCount):
     # construct CatalogReference
     egoObject = xosc.CatalogReference(catalogname="VehicleCatalog", entryname="$Ego_Vehicle") #xosc.utils
     
     # Create agent object
     agentObjectList = []
     for i in range(agentCount):
-        agentObject = xosc.CatalogReference(catalogname="VehicleCatalog", entryname=f"$Agent{i+1}_Vehicle")
+        agentObject = xosc.CatalogReference(catalogname="VehicleCatalog", entryname=f"$Agent{i+1}_Type")
         agentObjectList.append(agentObject)
+
+    # Create Pedestrian object
+    pedObjectList = []
+    for i in range(pedCount):
+        pedObject = xosc.CatalogReference(catalogname="PedestrianCatalog", entryname=f"$Pedestrian{i+1}_Type")
+        pedObjectList.append(pedObject)
 
 
     # create entity
     entities = xosc.Entities()
-    egoName = "Ego"
-    entities.add_scenario_object(name = egoName, entityobject = egoObject, controller = egoController)
+    # ego
+    entities.add_scenario_object(name = "Ego", entityobject = egoObject, controller = egoController)
+
+    # agents
     for i in range(agentCount):
         entities.add_scenario_object(name = f"Agent{i+1}", entityobject = agentObjectList[i])
+        
+    # pedestrians
+    for i in range(pedCount):
+        # ped = xosc.CatalogReference(catalogname="PedestrianCatalog", entryname="pedestrian_adult")
+        entities.add_scenario_object(name = f"Pedestrian{i+1}", entityobject = pedObjectList[i])
 
     return entities
 
