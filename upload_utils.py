@@ -113,7 +113,6 @@ class ScenarioTagTree:
             self.tagTree["actors"].append(actor)
 
     def set_road_layout(self, row):
-        print(row['road_layout'], row['road_layout_mode'])
         self.tagTree["roadLayout"]["mode"] = row['road_layout']
         self.tagTree["roadLayout"][f"{row['road_layout']}Mode"] = row['road_layout_mode']
 
