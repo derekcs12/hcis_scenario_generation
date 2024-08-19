@@ -358,23 +358,40 @@ def generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName
     return advgoalEvent, currentPosition
 
 def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, currentPosition):
-    if event['Use_route'] != None:
+    targetPoint = xosc.WorldPosition(event['End'][0],event['End'][1]) if len(event['End']) == 2 else create_LanePosition_from_config(Map,event['End'])
+    if event['Dynamic_shape'] == 'Straight':
+        trajectory = xosc.Trajectory('selfDefineTrajectory',False)
+        print("currentPosition", currentPosition)
+        print(event['End'])
+        nurbs = xosc.Nurbs(2)
+        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
+        nurbs.add_control_point(xosc.ControlPoint(targetPoint)) #目的地
+        nurbs.add_knots([0,0,1,1])
+        trajectory.add_shape(nurbs)
+        
+        # Create a FollowTrajectory action
+        advgoal = xosc.FollowTrajectoryAction(trajectory, xosc.FollowingMode.position)
+    elif event['Dynamic_shape'] == 'Curve':
         trajectory = xosc.Trajectory('selfDefineTrajectory',False)
         road_center = event['Use_route']
         nurbs = xosc.Nurbs(4)
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s = 0))) #與出發點同道之進入路口點，家這個點軌跡比較自然
-        nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(road_center[0],road_center[1]),weight = 0.5)) #路口中心
+        if event['Use_route'] != None:
+            nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(road_center[0],road_center[1]),weight = 0.5)) #路口中心
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,event['End'],s = 0))) #目的地
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,event['End']))) #目的地
-        nurbs.add_knots([0,0,0,0,1,2,2,2,2])
+        nurbs.add_control_point(xosc.ControlPoint(targetPoint)) #目的地
+        if event['Use_route'] != None:
+            nurbs.add_knots([0,0,0,0,1,2,2,2,2])
+        else:
+            nurbs.add_knots([0,0,0,0,2,2,2,2])
 
         trajectory.add_shape(nurbs)
 
         # Create a FollowTrajectory action
         advgoal = xosc.FollowTrajectoryAction(trajectory, xosc.FollowingMode.position)
     else:
-        advgoal = xosc.AcquirePositionAction(create_LanePosition_from_config(Map,event['End']))
+        advgoal = xosc.AcquirePositionAction(targetPoint)
 
     trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
 
