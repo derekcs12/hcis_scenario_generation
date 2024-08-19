@@ -103,11 +103,12 @@ def create_LanePosition_from_wp(waypoint, s=None, s_offset=0, lane_offset=0, ori
 def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=0):
     if s == None:
         # index, lane_id , s = map(int,position.split(' '))
-        index, lane_id , s, offset = position
+        index, lane_id , s, offset, orientation = position
     else:
         # index, lane_id , _ = map(int,position.split(' '))
-        index, lane_id , _ , offset= position
+        index, lane_id , _ , offset, orientation = position
     
+    orientation = True if orientation == -1 else False
     # print("index, lane_id , s", index, lane_id , s)
     road = int(Map[index])
     return xosc.LanePosition(
