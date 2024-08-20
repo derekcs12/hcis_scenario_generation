@@ -215,7 +215,7 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
     # ego_lane = int(ego_wp[1])
     # ego_s = int(ego_wp[2])
 
-    ego_road, ego_lane, ego_s , ego_offset = Agent['Start_pos']
+    ego_road, ego_lane, ego_s , ego_offset , _ = Agent['Start_pos']
     ego_road = int(Map[ego_road])
 
     if lateral == 0:
@@ -347,7 +347,10 @@ def generate_Offset_Event(actorName, actIndex, eventIndex, event, previousEventN
     return advgoalEvent, currentPosition
 
 def generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition):
-    advgoal = xosc.AbsoluteLaneChangeAction(event['End'],create_TransitionDynamics_from_config(event, actorName, actIndex, eventIndex))
+    targetLane = event['End'][0]
+    targetOffset = event['End'][1]
+    targetOffset = targetOffset * np.sign(targetLane)
+    advgoal = xosc.AbsoluteLaneChangeAction(targetLane,create_TransitionDynamics_from_config(event, actorName, actIndex, eventIndex),target_lane_offset=targetOffset)
 
     trigger = create_Trigger_following_previous(previousEventName, delay = event['Dynamic_delay'], state='complete')
 
