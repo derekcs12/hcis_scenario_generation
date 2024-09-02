@@ -1,0 +1,82 @@
+Scenario_name: example_straight
+
+Ego:
+  End_pos: [1,2,0] # [road index, lane id, s]
+  Start_pos: [0,-2,0]
+  Start_speed: 50
+
+Map:
+  - 139
+  - 166
+
+Agents:
+  # Agent 1
+  - Start_pos: [0,-1,40]
+    Start_speed: 40
+    Start_trigger: # (reach init pos)
+      lane: 1
+      road: 0
+      s: 0
+      type: relative
+    Act:
+      - Type: cut_in # Agent1's Event1 
+        - Event: cut # Event (cut (in))
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: -2
+          Use_route: null
+        - Event: speed # Event2 (speed)
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 10 
+          Use_route: null
+      - Type: zigzag # Agent1's Event2
+        - Event: offest # Event1 (cut (in))
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: -2
+          Use_route: null
+        - Event: speed # Event2 (speed)
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 10 
+          Use_route: null
+  # Agent 2
+  - Start_pos: [0,-1,40]
+    Start_speed: 40
+    Start_trigger: # (reach init pos)
+      lane: 1
+      road: 0
+      s: 0
+      type: relative
+    Event:
+      -  # Agent2's Event1 
+        - Action: cut # Action1 (cut (in))
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: -2
+          Use_route: null
+        - Action: speed # Action2 (speed)
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 10 
+          Use_route: null
+      -  # Agent2's Event2
+        - Action: cut # Action1 (cut (in))
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: -2
+          Use_route: null
+        - Action: speed # Action2 (speed)
+          Dynamic_delay: 1
+          Dynamic_duration: 3
+          Dynamic_shape: linear
+          End: 10 
+          Use_route: null
