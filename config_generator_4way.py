@@ -1,33 +1,10 @@
-
 from dicent_utils import *
 from upload_utils import *
 import yaml
 
 
-
-import os
-import glob
-
-def remove_yaml_files(directory='./scenario_config'):
-    # Construct the pattern for YAML files
-    pattern = os.path.join(directory, '*.yaml')
-    
-    # Find all files matching the pattern
-    yaml_files = glob.glob(pattern)
-    
-    # Remove each file
-    for file in yaml_files:
-        os.remove(file)
-        print(f"Removed: {file}")
-        
-    try:
-        os.remove('./HCIS_scenarios.csv')
-        print(f"Removed: ./HCIS_scenarios.csv")
-    except:
-        pass
-
 # Call the function
-remove_yaml_files()
+remove_yaml_files('./scenario_config/keeping')
 
 
 if 'init':
@@ -52,12 +29,12 @@ if 'init':
     agentToLeft = '1 -1 20'
     agentToRight = '3 -1 20'
     
-    # BehaviorMode
-    AgentSpeed = '${$Agent0Speed / 3.6}'
-    AgentLowSpeed = '${$Agent0LowSpeed / 3.6}'
-    DynamicDuration = '$Agent0DynamicDuration' #3.0
-    DynamicHaltDuration = '${$Agent1DynamicDuration / 3}' #1
-    AgentDelay = '$Agent0Delay' # 0.45
+    # # BehaviorMode
+    # AgentSpeed = '${$Agent0Speed / 3.6}'
+    # AgentLowSpeed = '${$Agent0LowSpeed / 3.6}'
+    # DynamicDuration = '$Agent0DynamicDuration' #3.0
+    # DynamicHaltDuration = '${$Agent1DynamicDuration / 3}' #1
+    # AgentDelay = '$Agent0Delay' # 0.45
     
     # BehaviorMode
     AgentSpeed = 40
