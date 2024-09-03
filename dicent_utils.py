@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
-
 import glob
 
 sys.path.append('../')
@@ -54,6 +53,60 @@ class MapPlot():
         self.plt.xlim(center[0] - zoom, center[0] + zoom)
         self.plt.ylim(center[1] - zoom, center[1] + zoom)
         self.plt.show()
+
+
+
+from collections import OrderedDict
+import json
+def sort_event(event):
+    d = OrderedDict([
+           ('Type', event['Type']),
+           ('Dynamic_delay', event['Dynamic_delay']),
+           ('Dynamic_duration', event['Dynamic_duration']),
+           ('Dynamic_shape', event['Dynamic_shape']),
+           ('End', event['End']),
+           ('Use_route', event['Use_route'])
+        ])
+    return d
+def sort_act(act):
+    d = OrderedDict([
+            ('Type', act['Type']),
+            ('Delay', act['Delay']),
+            ('Events', [sort_event(e) for e in act['Events']])
+        ])
+    return d
+    
+def sort_agent_dict(agent):
+    d = OrderedDict([
+               ('Type', agent['Type']),
+               ('Start_pos', agent['Start_pos']),
+               ('Start_speed', agent['Start_speed']),
+               ('Start_trigger', OrderedDict([
+                   ('lane', agent['Start_trigger']['lane']),
+                   ('road', agent['Start_trigger']['road']),
+                   ('s', agent['Start_trigger']['s']),
+                   ('offset', agent['Start_trigger']['offset']),
+                   ('type', agent['Start_trigger']['type'])
+               ])),
+               ('Acts', [sort_act(act) for act in agent['Acts']])
+        ])
+    return d
+
+def sort_config_dict(data):
+    d = OrderedDict([
+            ('Scenario_name', data['Scenario_name']),
+            ('Ego', OrderedDict([
+                ('Start_pos', data['Ego']['Start_pos']),
+                ('Start_speed', data['Ego']['Start_speed']),
+                ('End_pos', data['Ego']['End_pos'])
+            ])),
+            ('Map', data['Map']),
+            ('Actors', OrderedDict([
+                ('Agents', [sort_agent_dict(ag) for ag in data['Actors']['Agents']])
+            ]))
+        ])
+  
+    return json.loads(json.dumps(d))
 
 
 
@@ -535,3 +588,51 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
                 # Write header if file does not exist
                 writer.writerow(columns)
             writer.writerows(content_with_id)
+            
+def remove_yaml_files(directory='./scenario_config'):
+    # Construct the pattern for YAML files
+    pattern = os.path.join(directory, '*.yaml')
+    
+    # Find all files matching the pattern
+    yaml_files = glob.glob(pattern)
+    
+    # Remove each file
+    for file in yaml_files:
+        os.remove(file)
+        print(f"Removed: {file}")
+        
+    try:
+        os.remove('./HCIS_scenarios.csv')
+        print(f"Removed: ./HCIS_scenarios.csv")
+    except:
+        pass
+    
+def get_behavior_mode(AgentSpeed=40, AgentEndSpeed=10, DynamicDuration=3, DynamicHaltDuration=1, DynamicDelay=1):
+    BehaviorMode = {}
+    BehaviorMode['keeping']  = ('Autocruise.',AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay) #等速
+    BehaviorMode['braking'] = ('braking.',AgentSpeed, AgentEndSpeed, DynamicDuration, 'linear', DynamicDelay)  #減速
+    BehaviorMode['braking_halt'] = ('Braking & Halted halfway.',AgentSpeed, 0, DynamicHaltDuration, 'linear', DynamicDelay) #減速|未完成
+    BehaviorMode['sudden_braking_halt'] = ('Sudden braking & Halted halfway.',AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', DynamicDelay)  #急煞|未完成
+    BehaviorMode['speed_up'] = ( 'Speed up.',0, AgentSpeed, DynamicDuration-1, 'linear', DynamicDelay-1) #加速
+    
+    return BehaviorMode
+
+def create_scenario_configs_by_behavior_mode(scenario_name, description, config, BehaviorMode):
+    # Multiple 待完成
+    car['Start_speed'] = behavior[1]
+    gostraightAct[1]['End'] = behavior[2]
+    gostraightAct[1]['Dynamic_duration'] = behavior[3]
+    gostraightAct[1]['Dynamic_shape'] = behavior[4]
+    gostraightAct[1]['Dynamic_delay'] = behavior[5]
+    car['Acts'] = [{'Type': 'gostraight','Delay':0, 'Events':gostraightAct}]
+    
+    config['Actors'] = {'Agents':[car]}
+    
+    scenario_config = {
+        'scenario_id': scenario_id,
+        'scenario_name': scenario_name,
+        'description': description,
+        'config': config
+    }
+    
+    return scenario_config
