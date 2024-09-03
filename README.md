@@ -8,8 +8,8 @@
 Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_config'
 
 ### Code
-- main.py : main program, read config file and write Openscenario file.
-- dicent_utils.py : some useful function.
+- main.py : main program, read config file and write OpenScenario file.
+- dicent_utils.py : some useful function for sceanrio generation.
 - generate.py : all generation pipeline, include parameter setting, create entity, event generation, and so on.
 - scenario_upload.py : upload scenario to MongoDB
 - upload_utils.py : build tag tree, tags and corresponding params for scenarios
