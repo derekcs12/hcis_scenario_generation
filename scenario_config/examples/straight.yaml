@@ -1,0 +1,92 @@
+Scenario_name: straight_example
+
+Ego:
+  Start_pos: [0,-2,10,0,1]
+  Start_speed: 30
+  End_pos: [1,2,0,0,1] # [road index, lane id, s]
+
+Map:
+  - 139
+  - 166
+
+Actors:
+  Agents:
+    # Agent 1
+    - Type: car_red
+      Start_pos: [0,-1,20,0,1]
+      Start_speed: 50
+      Start_trigger: # (reach init pos)
+        road: 1
+        lane: 1
+        s: 10
+        offset: 0
+        type: relative
+      Acts:
+        - Type: position
+          Delay: 2
+          Events:
+          - Type: position 
+            Dynamic_delay: 0
+            Dynamic_duration: 3
+            Dynamic_shape: Straight
+            End: [0,-2,50,0,1] #[488,-48] # [0,-2,50,0,1]
+            Use_route: null
+          - Type: speed
+            Dynamic_delay: 0
+            Dynamic_duration: 1
+            Dynamic_shape: linear
+            End: 10
+            Use_route: null
+        - Type: position
+          Delay: 0
+          Events:
+          - Type: position 
+            Dynamic_delay: 0
+            Dynamic_duration: 3
+            Dynamic_shape: Straight
+            End: [1,-1,10,0,1] #[446,-64] #[1,-1,10,0,1]
+            Use_route: null
+          - Type: speed
+            Dynamic_delay: 0
+            Dynamic_duration: 3
+            Dynamic_shape: linear
+            End: 50
+            Use_route: null
+        - Type: cut
+          Delay: 0
+          Events:
+          - Type: cut 
+            Dynamic_delay: 0
+            Dynamic_duration: 3
+            Dynamic_shape: sinusoidal
+            End: [1,0] #[1,-1,10,0,1]
+            Use_route: null
+
+  # Pedestrians:
+  #   - Type: pedestrian_adult
+  #     Start_pos: [0,-1,70,0.5,1]
+  #     Start_speed: 15
+  #     Start_trigger: # (reach init pos)
+  #       road: 0
+  #       lane: -2
+  #       s: 55
+  #       offset: 0
+  #       type: absolute
+  #     Acts:
+  #       - Type: position 
+  #         Delay: 0
+  #         Events:
+  #         - Type: position 
+  #           Dynamic_delay: 0
+  #           Dynamic_duration: 10
+  #           Dynamic_shape: Straight
+  #           End: [0,-2,70,1,1] 
+  #           Use_route: null
+  #         - Type: speed
+  #           Dynamic_delay: 0
+  #           Dynamic_duration: 2
+  #           Dynamic_shape: linear
+  #           End: 0
+  #           Use_route: null
+
+          

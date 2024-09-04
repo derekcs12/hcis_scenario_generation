@@ -1,0 +1,67 @@
+Scenario_name: uturn_example
+
+Ego:
+  Start_pos: [0,1,30,0,1]
+  Start_speed: 50
+  End_pos: [2,-1,70,0,1] # [road index, lane id, s]
+
+Map:
+  - 121
+  - 17
+  - 144
+  - 16
+
+Actors:
+  Agents:
+    # Agent 1
+    - Type: car_red
+      Start_pos: [1,1,5,0,1]
+      Start_speed: 50
+      Start_trigger: # (reach init pos)
+        road: 0
+        lane: 1
+        s: 15
+        offset: 0
+        type: absolute
+      Acts:
+        - Type: position
+          Delay: 0
+          Events:
+          - Type: position 
+            Dynamic_delay: 0
+            Dynamic_duration: 3
+            Dynamic_shape: Straight
+            End: [3,-1,15,0,1]
+            Use_route: null
+          # - Type: speed
+          #   Dynamic_delay: 0
+          #   Dynamic_duration: 3
+          #   Dynamic_shape: linear
+          #   End: 50
+          #   Use_route: null
+    # Agent 2
+    - Type: truck_yellow
+      Start_pos: [2,1,10,0,1]
+      Start_speed: 30
+      Start_trigger: # (reach init pos)
+        road: 0
+        lane: 1
+        s: 20
+        offset: 0
+        type: absolute
+      Acts:
+        - Type: position
+          Delay: 0
+          Events:
+          - Type: position 
+            Dynamic_delay: 0
+            Dynamic_duration: 3
+            Dynamic_shape: Route
+            End: [3,-1,15,0,1]
+            Use_route: null
+          # - Type: speed
+          #   Dynamic_delay: 0
+          #   Dynamic_duration: 3
+          #   Dynamic_shape: linear
+          #   End: 50
+          #   Use_route: null
