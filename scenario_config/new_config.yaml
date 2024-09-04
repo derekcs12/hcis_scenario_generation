@@ -3,7 +3,7 @@ Scenario_name: example_straight
 Ego:
   End_pos: [1,2,0] # [road index, lane id, s]
   Start_pos: [0,-2,0]
-  Start_speed: 50
+  Start_speed: 40
 
 Map:
   - 139

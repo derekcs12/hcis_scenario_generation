@@ -69,8 +69,9 @@ def generate(config, company='HCISLab'):
         for actorIndex, actor in enumerate(Actors[actors],start=1):
             actorName = f"{actors[:-1]}{actorIndex}"
             agentManeuver, previousEventNames = generate_Adv_Maneuver(actorName, actor, config['Map'])
-            allEvent.extend(previousEventNames)
-            allManeuver[actorName] = agentManeuver
+            if agentManeuver is not None:
+                allEvent.extend(previousEventNames)
+                allManeuver[actorName] = agentManeuver
     
 
     sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500, allEventName=allEvent))
@@ -109,6 +110,11 @@ def parameter_Declaration(Actors, Ego):
             actorInitSpeed = xosc.Parameter(name=f"{actorName}_Speed",parameter_type="double",value=str(actor['Start_speed']))
             actorInitS     = xosc.Parameter(name=f"{actorName}_S",parameter_type="double",value=str(actor['Start_pos'][2]))
             paraList.extend([actorType, actorInitSpeed, actorInitS])
+
+            # check if actor has 'Acts'
+            if 'Acts' not in actor:
+                print(f"{actorName} has no 'Acts'")
+                continue
 
             # actor's Event parameter
             for actIndex, act in enumerate(actor['Acts'], start=1):
@@ -181,6 +187,11 @@ def create_Entity(egoController, agentCount, pedCount):
 
 
 def generate_Adv_Maneuver(actorName, agent, Map):
+    # check if actor has 'Acts'
+    if 'Acts' not in agent:
+        print(f"{actorName} has no 'Acts'")
+        return None, None
+
     advManeuver = xosc.Maneuver(f"{actorName}_Maneuver")
     agentStartEvent = generate_Agent_Start_Event(actorName, agent, Map)
     advManeuver.add_event(agentStartEvent)
@@ -221,7 +232,7 @@ def generate_Adv_Maneuver(actorName, agent, Map):
                 elif event['Type'] == 'cut':
                     currentEvent, currentPosition = generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition)
                 elif event['Type'] == 'position':
-                    currentEvent , currentPosition = generate_Position_Event(actorName, actIndex, event, Map, previousEventName ,currentPosition)
+                    currentEvent , _ = generate_Position_Event(actorName, actIndex, event, Map, previousEventName ,currentPosition)
                 else:
                     print('Event Type Error')
                     break

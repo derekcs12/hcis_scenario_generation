@@ -121,6 +121,8 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
         orientation= xosc.Orientation(h=3.14159, reference='relative') if orientation else xosc.Orientation()
     )
 
+def get_entity_position(entityName):
+    return xosc.RelativeLanePosition(lane_id=0,entity=entityName,dsLane=0)
 
 
 def create_TransitionDynamics_from_sc(agent_sc):
@@ -359,7 +361,8 @@ def generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName
     advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
     advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction", advgoal)
     advgoalEvent.add_trigger(trigger)
-    currentPosition[1] = event['End']
+    currentPosition[1] = event['End'][0]
+    currentPosition[3] = event['End'][1]
 
     return advgoalEvent, currentPosition
 
@@ -367,10 +370,9 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
     targetPoint = xosc.WorldPosition(event['End'][0],event['End'][1]) if len(event['End']) == 2 else create_LanePosition_from_config(Map,event['End'])
     if event['Dynamic_shape'] == 'Straight':
         trajectory = xosc.Trajectory('selfDefineTrajectory',False)
-        print("currentPosition", currentPosition)
-        print(event['End'])
         nurbs = xosc.Nurbs(2)
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
+        # nurbs.add_control_point(xosc.ControlPoint(get_entity_position(actorName))) #出發點
         nurbs.add_control_point(xosc.ControlPoint(targetPoint)) #目的地
         nurbs.add_knots([0,0,1,1])
         trajectory.add_shape(nurbs)
@@ -416,7 +418,7 @@ def generate_Zigzag_Event(actorName, actIndex, event, previousEventName, current
     dir_id = 1
     allEvent = []
     init_offset = currentPosition[3]
-    for i in range(times*2):
+    for i in range(int(times*2)):
         advgoal = xosc.AbsoluteLaneOffsetAction(init_offset + amplidute * dir_id, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
         trigger = create_Trigger_following_previous(previousEventName, delay = delay, state='complete')
         advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent_{i+1}", xosc.Priority.parallel)
