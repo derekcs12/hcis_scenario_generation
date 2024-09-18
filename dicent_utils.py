@@ -5,6 +5,8 @@ import os
 import glob
 import pandas as pd
 
+from config import RELATIVE_POSITIONS
+
 sys.path.append('../')
 try:
     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
@@ -498,6 +500,24 @@ def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
     dummyEvent.add_trigger(trigger)
 
     return dummyEvent
+
+
+def set_trigger_dict_from_relative_pos(relative_pos):
+    position_vals = RELATIVE_POSITIONS[relative_pos]
+    trigger_dict = dict.fromkeys(['type','lane', 'road','s','offset'],'')
+    trigger_dict.update(zip(trigger_dict, position_vals))
+    
+    return trigger_dict
+
+def set_behavior_dict(behavior_type, behavior_mode):
+    extracted_elements = [behavior_mode[5], behavior_mode[3], behavior_mode[4], behavior_mode[2], behavior_mode[0]]
+    
+    # behavior_dict = dict.fromkeys(['type','Start_speed', 'End_speed','Dynamic_duration','Dynamic_shape'],'')
+    behavior_dict = dict.fromkeys(['Type','Dynamic_delay', 'Dynamic_duration','Dynamic_shape','End','Use_route'],'')
+    behavior_dict.update(zip(behavior_dict, [behavior_type] + extracted_elements))
+
+    return behavior_dict
+
 """
 def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
     if method == 'greedy':

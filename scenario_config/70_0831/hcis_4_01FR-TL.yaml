@@ -1,0 +1,26 @@
+Agents:
+- Behavior:
+    Dynamic_delay: 1
+    Dynamic_duration: 1
+    Dynamic_shape: sinusoidal
+    End_speed: 0
+    Start_speed: 40
+    Use_route: false
+    type: sudden_braking_halt
+  End: 1 -1 20
+  Start: 0 1 15
+  Trigger:
+    lane: 1
+    road: 0
+    s: 34
+    type: absolute
+Center: 685.61 -134.05
+Ego:
+  End: 2 -1 40
+  Start: 0 1 40
+Map:
+- 121
+- 17
+- 144
+- 16
+Scenario_name: hcis_4_01FR-TL

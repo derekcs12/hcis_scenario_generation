@@ -4,6 +4,7 @@ import glob
 import pandas as pd
 from typing import List
 import re
+import yaml
 
 class ScenarioContent:
     def __init__(self, road_layout, road_layout_mode='noTrafficLight', cetran_number=None, agent_number=1):
@@ -26,10 +27,11 @@ class ScenarioContent:
             'init_lat_pos': None,
             'init_long_pos': None,
             'S': '0-20',
-            'Speed': None,
-            'LowSpeed': None,
-            'DynamicDuration': None,
-            'DynamicDelay': None,
+            'Speed': '0-20',
+            '1_1_EndSpeed': None,
+            '1_1_DynamicDuration': None,
+            '1_1_DynamicDelay': None,
+            # 'Agent1_1_1_DynamicShape': None,
         }
         
         self.agents = []
@@ -49,7 +51,7 @@ class ScenarioContent:
         
         for i, agent in enumerate(self.agents):
             for key, value in agent.items():
-                re[f'agent{i+1}_{key}'] = value
+                re[f'Agent{i+1}_{key}'] = value
                 
         return re
     
@@ -118,8 +120,6 @@ class ScenarioTagTree:
 
 
 
-
-
 def get_tag(value, param_name):
     if param_name == 'init_dynm':
         return 'standingStill' if value == 0 else 'moving'
@@ -152,6 +152,25 @@ def get_next_scenario_id(directory='./scenario_config'):
     
     return next_scenario_id
 
+def get_next_id_in_folder(folder_name, directory='./scenario_config'):
+    # Regular expression to match filenames with format {party}_{scenario_id}
+    pattern = re.compile(r'^(\d+)\.csv$')
+    
+    max_scenario_id = 0
+    
+    # List all files in the directory
+    for filename in os.listdir(f'{directory}/{folder_name}'):
+        match = pattern.match(filename)
+        if match:
+            scenario_id = int(match.group(1))
+            if scenario_id > max_scenario_id:
+                max_scenario_id = scenario_id
+    
+    # Calculate the next scenario ID
+    next_scenario_id = max_scenario_id + 1
+    
+    return next_scenario_id
+
 def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.csv'):
     """
     Writes the given content to a CSV file with the specified scenario_id.
@@ -171,11 +190,13 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
     
 
     columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
-               'agent1_type', 'agent1_long_mode', 'agent1_long_mode_type', 'agent1_lat_mode', 'agent1_lat_direction',
-               'agent1_init_direction', 'agent1_init_dynm', 'agent1_init_lat_pos', 'agent1_init_long_pos',
-               'agent1_S','agent1_Speed','agent1_LowSpeed','agent1_DynamicDuration','agent1_DynamicDelay', # BehaviorMode Parameters
-               ]    # Check if the file exists
+               'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
+               'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
+               'Agent1_S','Agent1_Speed','Agent1_1_1_EndSpeed','Agent1_1_1_DynamicDuration','Agent1_1_1_DynamicDelay', # BehaviorMode Parameters
+              ]    # Check if the file exists
     if not os.path.exists(file_path):
+        ensure_folder_exists(file_path)
+            
         df = pd.DataFrame(columns=columns)
         df.to_csv(file_path, index=False)
     # print(content);exit()
@@ -198,8 +219,16 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
             writer = csv.writer(file)
             writer.writerows(content_with_id)
          
+def ensure_folder_exists(file_path):
+    folder_path = os.path.dirname(file_path)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
-
+def save_config_yaml(config, file_path):
+    ensure_folder_exists(file_path)
+    yaml.dump(config, open(file_path, 'a+'))
+    
+    
 def create_request_body(
             scenarioId: str,
             tags: List[str],

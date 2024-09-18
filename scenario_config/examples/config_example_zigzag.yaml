@@ -1,5 +1,4 @@
 Scenario_name: config_example_zigzag
-
 Ego:
   Start_pos: [0,-2,0,0]
   Start_speed: 50

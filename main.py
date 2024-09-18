@@ -54,7 +54,7 @@ def main():
         """
         sce = generate(config)
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
-        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/keeping/{config['Scenario_name']}.xosc")
 
         sce = generate(config,company="ITRI")
         sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
