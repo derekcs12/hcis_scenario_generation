@@ -276,10 +276,10 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
 
     if lateral == 0:
         lane_id = ego_lane
-    elif lateral > 0:
-        lane_id = ego_lane + np.sign(ego_lane) * lateral
+    # elif lateral > 0:
+    #     lane_id = ego_lane + np.sign(ego_lane) * lateral
     else:
-        lane_id = ego_lane - np.sign(ego_lane) * lateral
+        lane_id = ego_lane + np.sign(ego_lane) * lateral
         
     if longitude == 0:
         s = ego_s
