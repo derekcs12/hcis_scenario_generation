@@ -17,45 +17,45 @@ except IndexError:
     pass
 
 
-import carla
-# from agents.navigation.global_route_planner import GlobalRoutePlanner
+# import carla
+# # from agents.navigation.global_route_planner import GlobalRoutePlanner
 
-global carla_map
-with open('hct_6.xodr', 'r') as fp:
-    carla_map = carla.Map('hct_6', fp.read())
+# global carla_map
+# with open('hct_6.xodr', 'r') as fp:
+#     carla_map = carla.Map('hct_6', fp.read())
 
-class MapPlot():
-    def __init__(self) -> None:
-        self.plt = plt
-        self.plt.subplot()
-        # Invert the y axis since we follow UE4 coordinates
-        self.plt.gca().invert_yaxis()
-        self.plt.margins(x=0.0, y=0)
+# class MapPlot():
+#     def __init__(self) -> None:
+#         self.plt = plt
+#         self.plt.subplot()
+#         # Invert the y axis since we follow UE4 coordinates
+#         self.plt.gca().invert_yaxis()
+#         self.plt.margins(x=0.0, y=0)
 
-    def add_carla_points(self, points, color='blue', marker='o', markersize=5, linestyle=''):
-        if not isinstance(points, list):
-            points = [points]
+#     def add_carla_points(self, points, color='blue', marker='o', markersize=5, linestyle=''):
+#         if not isinstance(points, list):
+#             points = [points]
 
-        Xs = [waypoint.transform.location.x for waypoint in points]
-        Ys = [waypoint.transform.location.y for waypoint in points]
-        self.plt.plot(Xs, 
-                      Ys,
-                      color=color, marker=marker, markersize=markersize , linestyle=linestyle)
+#         Xs = [waypoint.transform.location.x for waypoint in points]
+#         Ys = [waypoint.transform.location.y for waypoint in points]
+#         self.plt.plot(Xs, 
+#                       Ys,
+#                       color=color, marker=marker, markersize=markersize , linestyle=linestyle)
         
-    def add_points(self, points, color='blue', marker='o', markersize=5, linestyle=''):
-        if not isinstance(points, list):
-            points = [points]
+#     def add_points(self, points, color='blue', marker='o', markersize=5, linestyle=''):
+#         if not isinstance(points, list):
+#             points = [points]
 
-        Xs = [waypoint[0] for waypoint in points]
-        Ys = [waypoint[1] for waypoint in points]
-        self.plt.plot(Xs, 
-                      Ys,
-                      color=color, marker=marker, markersize=markersize , linestyle=linestyle)
+#         Xs = [waypoint[0] for waypoint in points]
+#         Ys = [waypoint[1] for waypoint in points]
+#         self.plt.plot(Xs, 
+#                       Ys,
+#                       color=color, marker=marker, markersize=markersize , linestyle=linestyle)
 
-    def show(self, center=(50,50), zoom=50):
-        self.plt.xlim(center[0] - zoom, center[0] + zoom)
-        self.plt.ylim(center[1] - zoom, center[1] + zoom)
-        self.plt.show()
+#     def show(self, center=(50,50), zoom=50):
+#         self.plt.xlim(center[0] - zoom, center[0] + zoom)
+#         self.plt.ylim(center[1] - zoom, center[1] + zoom)
+#         self.plt.show()
 
 
 

@@ -18,8 +18,7 @@ def combine_scenario_name(name1, name2):
     return combined_scenario_name
 
 
-
-def combine_yaml(yaml1, yaml2):
+def combine_yaml(yaml1, yaml2, mode='agent'):
     # load yaml files
     yaml1 = yaml.load(open(yaml1), Loader=yaml.FullLoader)
     yaml2 = yaml.load(open(yaml2), Loader=yaml.FullLoader)
@@ -44,10 +43,17 @@ def combine_yaml(yaml1, yaml2):
     agents2 = list(actors2['Agents']) if 'Agents' in actors2 else []
     pedestrians1 = list(actors1['Pedestrians']) if 'Pedestrians' in actors1 else []
     pedestrians2 = list(actors2['Pedestrians']) if 'Pedestrians' in actors2 else []
-
-    # combine 2 list
-    combined_agents = agents1 + agents2
-    combined_pedestrians = pedestrians1 + pedestrians2
+    if mode == 'agent':
+        # combine 2 list
+        combined_agents = agents1 + agents2
+        combined_pedestrians = pedestrians1 + pedestrians2
+    elif mode == 'act':
+        acts1 = agents1[0]['Acts']
+        acts2 = agents2[0]['Acts']
+        combine_acts = acts1 + acts2
+        agents1[0]['Acts'] = combine_acts
+        combined_agents = agents1
+        combined_pedestrians = pedestrians1
 
     # reconstruct yaml
     combined_yaml = {
@@ -87,26 +93,23 @@ def combine_csv(csv1, csv2):
     return combined_csv
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser()
-    # # directory 1
-    # parser.add_argument('s1', type=str,default='scenario_config/01FL-CI/1.yaml',required=False)
-    # # directory 2
-    # parser.add_argument('s2', type=str,default='scenario_config/01FL-CI/2.yaml',required=False)
+    parser = argparse.ArgumentParser()
+    # directory 1
+    parser.add_argument('s1', type=str,default='scenario_config/01FL-CI/1',required=False)
+    # directory 2
+    parser.add_argument('s2', type=str,default='scenario_config/01FL-CI/2',required=False)
+    parser.add_argument('mode', type=str,default='agent',required=False)
+    args = parser.parse_args()
 
-    # args = parser.parse_args()
+    # yaml1 = 'scenario_config/01FL-CI/1.yaml'
+    # yaml2 = 'scenario_config/01SL-CI/2.yaml'
+    yaml1 = args.s1 + '.yaml'
+    yaml2 = args.s2 + '.yaml'
+    combined_yaml, folder_name = combine_yaml(yaml1, yaml2, mode=args.mode)
 
-    # yaml1 = args.s1 + '/data.yaml'
-    # yaml2 = args.s2 + '/data.yaml'
-    # csv1 = args.s1 + '/data.csv'
-    # csv2 = args.s2 + '/data.csv'
-
-    yaml1 = 'scenario_config/01FL-CI/1.yaml'
-    yaml2 = 'scenario_config/01SL-CI/2.yaml'
-    combined_yaml, folder_name = combine_yaml(yaml1, yaml2)
-
-    csv1 = 'scenario_config/01FL-CI/1.csv'
-    csv2 = 'scenario_config/01SL-CI/2.csv'
-    combined_csv = combine_csv(csv1, csv2)
+    csv1 = args.s1 + '.csv'
+    csv2 = args.s2 + '.csv'
+    combined_csv = combine_csv(csv1, csv2, mode=args.mode)
 
     # get the current scenario number in the folder
     save_folder = f'scenario_config/{folder_name}/'
