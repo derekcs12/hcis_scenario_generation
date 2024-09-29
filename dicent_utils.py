@@ -5,7 +5,7 @@ import os
 import glob
 import pandas as pd
 
-from config import RELATIVE_POSITIONS
+from config import RELATIVE_TRIGGER_POSITIONS
 
 sys.path.append('../')
 try:
@@ -502,15 +502,33 @@ def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
     return dummyEvent
 
 
+def set_agentpos_relative_to_egopos(egoPos, road_index=None, relative_lane=0, s_offset=0, lane_offset=0, orientation=1):
+    agentPos = egoPos.copy()
+    agentPos[0] = road_index if road_index != None else agentPos[0]
+    agentPos[1] += relative_lane
+    agentPos[2] += s_offset
+    agentPos[3] += lane_offset
+    agentPos[4] = orientation
+    # list(map(add, config['Ego']['Start_pos'], [0,0,20,0,0]))
+    
+    return agentPos
+    
+    
 def set_trigger_dict_from_relative_pos(relative_pos):
-    position_vals = RELATIVE_POSITIONS[relative_pos]
+    position_vals = RELATIVE_TRIGGER_POSITIONS[relative_pos]
+    trigger_dict = dict.fromkeys(['type','lane', 'road','s','offset'],'')
+    trigger_dict.update(zip(trigger_dict, position_vals))
+    
+    return trigger_dict
+def set_trigger_dict_from_absolute_pos(lane, road, s, offset, triggertype='absolute'):
+    position_vals = [triggertype, lane, road, s, offset]
     trigger_dict = dict.fromkeys(['type','lane', 'road','s','offset'],'')
     trigger_dict.update(zip(trigger_dict, position_vals))
     
     return trigger_dict
 
 def set_behavior_dict(behavior_type, behavior_mode):
-    extracted_elements = [behavior_mode[5], behavior_mode[3], behavior_mode[4], behavior_mode[2], behavior_mode[0]]
+    extracted_elements = [behavior_mode[5], behavior_mode[3], behavior_mode[4], behavior_mode[2], behavior_mode[0], 'null']
     
     # behavior_dict = dict.fromkeys(['type','Start_speed', 'End_speed','Dynamic_duration','Dynamic_shape'],'')
     behavior_dict = dict.fromkeys(['Type','Dynamic_delay', 'Dynamic_duration','Dynamic_shape','End','Use_route'],'')

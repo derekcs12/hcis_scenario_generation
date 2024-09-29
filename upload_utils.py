@@ -153,13 +153,15 @@ def get_next_scenario_id(directory='./scenario_config'):
     return next_scenario_id
 
 def get_next_id_in_folder(folder_name, directory='./scenario_config'):
+    file_path = f'{directory}/{folder_name}/'
+    ensure_folder_exists(file_path)
     # Regular expression to match filenames with format {party}_{scenario_id}
     pattern = re.compile(r'^(\d+)\.csv$')
     
     max_scenario_id = 0
     
     # List all files in the directory
-    for filename in os.listdir(f'{directory}/{folder_name}'):
+    for filename in os.listdir(file_path):
         match = pattern.match(filename)
         if match:
             scenario_id = int(match.group(1))
@@ -199,7 +201,8 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
             
         df = pd.DataFrame(columns=columns)
         df.to_csv(file_path, index=False)
-    # print(content);exit()
+    # print(file_path)
+    # print(df);exit()
             
     # Check if content is a list of dictionaries
     if isinstance(content, list) and all(isinstance(row, dict) for row in content):
@@ -260,5 +263,41 @@ def create_request_body(
         "egoTargetSpeed": egoTargetSpeed
     }
     
-
+def get_param_by_behaviormode(behavior_type):
+    if behavior_type == 'keeping':
+        # Agent1_S, Agent1Speed, Agent1LowSpeed, Agent1DynamicDuration, Agent1DynamicDelay
+        return ['0-20','40-60','40-60','5-5','0-3']
+    elif behavior_type == 'braking':
+        return ['0-20','40-60','10-20','3-5','0-3']
+    elif behavior_type == 'braking_halt':
+        return ['0-20','40-60','0-0','2-4','0-3']
+    elif behavior_type == 'sudden_braking_halt':    
+        return ['0-20','40-60','0-0','0.5-2','0-3'] 
+    elif behavior_type == 'speed_up':    
+        return ['0-20','0-10','40-60','2-4','0-2']
     
+def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo):
+    # Write scenario description
+    content = ScenarioContent('junction', cetran_number=cetranNo)
+    content.ego_long_mode = 'drivingForward'
+    content.ego_long_mode_type = 'cruising'
+    content.ego_lat_mode = 'goingStraight'
+    content.agents[0].update({
+                        'long_mode': behavior[6],
+                        'long_mode_type': behavior[7],
+                        'lat_mode': 'turning',
+                        'lat_direction': 'left',
+                        'init_direction': 'sameAsEgo',
+                        'init_dynm': get_tag(behavior[1], 'init_dynm'),
+                        'init_lat_pos': get_tag(initRelPostAbbvLat, 'init_lat_pos'),
+                        'init_long_pos': get_tag(initRelPostAbbvLon, 'init_long_pos'),
+                        'S': get_param_by_behaviormode(behavior_type)[0],
+                        'Speed': get_param_by_behaviormode(behavior_type)[1],
+                        '1_1_EndSpeed': get_param_by_behaviormode(behavior_type)[2],
+                        '1_1_DynamicDuration': get_param_by_behaviormode(behavior_type)[3],
+                        '1_1_DynamicDelay': get_param_by_behaviormode(behavior_type)[4],
+                    })
+    description = descript + behavior_type + lateral_behavior
+    csv_row = {'description': description, 'scenario_name': scenario_name}
+    csv_row.update(content.to_dict())
+    return csv_row

@@ -1,12 +1,12 @@
 # 共用變數
 
-RELATIVE_POSITIONS = { 
+RELATIVE_TRIGGER_POSITIONS = { 
     # Lat: L/S/R, Long: F/S/B | (Type, lane, road, s(road_offs), lane_offset)
-    "FL-1": ("relative", -1,  1, 20, 0),
-    "FS-2": ("relative",  0,  1, 20, 0),
-    "FR-3": ("relative",  1,  1, 20, 0),
-    "SL-4": ("relative", -1,  0, 20, 0),
-    "SR-5": ("relative",  1,  0, 20, 0),
+    "FL-1": ("relative", -1,  1, -20, 0),
+    "FS-2": ("relative",  0,  1, -20, 0),
+    "FR-3": ("relative",  1,  1, -20, 0),
+    "SL-4": ("relative", -1,  0, 0, 0),
+    "SR-5": ("relative",  1,  0, 0, 0),
     "BL-6": ("relative", -1, -1, 20, 0),
     "BS-7": ("relative",  0, -1, 20, 0),
     "BR-8": ("relative",  1, -1, 20, 0),
