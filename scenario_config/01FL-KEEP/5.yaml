@@ -22,7 +22,7 @@ Actors:
         Use_route: Speed up.
       Type: Keeping
     Start_pos:
-    - 1
+    - 0
     - -1
     - 80
     - -1.5

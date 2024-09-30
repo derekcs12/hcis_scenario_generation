@@ -527,6 +527,14 @@ def set_trigger_dict_from_absolute_pos(lane, road, s, offset, triggertype='absol
     
     return trigger_dict
 
+def set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos):
+    road_index = egoTriggerAt[0]#  + RELATIVE_TRIGGER_POSITIONS[relative_pos][2]
+    relative_lane = RELATIVE_TRIGGER_POSITIONS[relative_pos][1]
+    s_offset = RELATIVE_TRIGGER_POSITIONS[relative_pos][3] + 10
+    lane_offset = egoTriggerAt[3] + RELATIVE_TRIGGER_POSITIONS[relative_pos][4]
+
+    return set_agentpos_relative_to_egopos(egoTriggerAt, road_index=road_index, relative_lane=relative_lane, s_offset=s_offset, lane_offset=lane_offset) 
+
 def set_behavior_dict(behavior_type, behavior_mode):
     extracted_elements = [behavior_mode[5], behavior_mode[3], behavior_mode[4], behavior_mode[2], behavior_mode[0], 'null']
     

@@ -56,7 +56,7 @@ agent1['Type'] = 'car_red'
 
 
 # cut-in : Agent at 5 cut in
-if 0: 
+if 1: 
     lateral_behavior = 'CI'
     descript = "Agent at 5 cut in"
     # lateral_behavior = 'CI'
@@ -109,7 +109,7 @@ if 0:
 
 
 # cut-out : Agent at 2 cut out
-if 0: 
+if 1: 
     descript = "Agent at 2 cut out"
     lateral_behavior = 'CO'
     relative_pos = 'FS-2'
@@ -163,7 +163,7 @@ if 0:
 
 
 # keeping at 2
-if 0:
+if 1:
     lateral_behavior = 'KEEP'
     descript == "keeping at 2"
     relative_pos = 'FS-2'
@@ -212,7 +212,7 @@ if 0:
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
 # keeping at 2 far
-if 0:
+if 1:
     lateral_behavior = 'KEEP'
     descript == "keeping at 2 far"
     relative_pos = 'FS-2'
@@ -271,11 +271,7 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
         
         egoTriggerAt = [0, -1, 50, 0, 1]
-        road_index = egoTriggerAt[0] + RELATIVE_TRIGGER_POSITIONS[relative_pos][2]
-        relative_lane = RELATIVE_TRIGGER_POSITIONS[relative_pos][1]
-        s_offset = RELATIVE_TRIGGER_POSITIONS[relative_pos][3] + 10
-        lane_offset = egoTriggerAt[3] + RELATIVE_TRIGGER_POSITIONS[relative_pos][4]
-        agent1['Start_pos'] = set_agentpos_relative_to_egopos(egoTriggerAt, road_index=road_index, relative_lane=relative_lane, s_offset=s_offset, lane_offset=lane_offset) 
+        agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
         agent1['Start_speed'] = None
         agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
                                                                      lane=egoTriggerAt[1], 
@@ -294,7 +290,7 @@ if 1:
         agent1_lat_event['Dynamic_delay'] = 0
         agent1_lat_event['Dynamic_duration'] = 1
         agent1_lat_event['Dynamic_shape'] = 'Other'
-        agent1_lat_event['End'] = [1, 1, 30, lane_offset, 1]
+        agent1_lat_event['End'] = [1, 1, 30, RELATIVE_TRIGGER_POSITIONS[relative_pos][4], 1]
         agent1_lat_event['Use_route'] = None
 
             
@@ -308,6 +304,64 @@ if 1:
             agent1['Acts'] = [agent1_act]
             config['Actors'] = {'Agents': [agent1]}
                 
+            name_attribute = f'01{initRelPostAbbvLon}{initRelPostAbbvLat}-{lateral_behavior}'
+            next_id = get_next_id_in_folder(name_attribute)
+            scenario_name = f'{name_attribute}_{next_id}'
+            config['Scenario_name'] = scenario_name
+            save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
+
+            cetranNo = None
+            csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+            # print(csv_row);exit()
+            write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
+
+# Motot cut in to middle
+if 0:
+    config['Ego'] = egoStraightAsideLeft
+    agent1 = {}
+    agent1['Type'] = 'bicycle'
+    lateral_behavior = 'CI'
+    for relative_pos in ["FL-M1","FR-M1","SR-M1"]:
+        descript = f"Bike cutting in to middle {relative_pos[:2]}"
+        # relative_pos = 'FS-2'
+        initRelPostAbbvLon = relative_pos[0]
+        initRelPostAbbvLat = relative_pos[1]
+        
+        # 固定ego trigger 點，來設置agent 起始位置
+        egoTriggerAt = [0, -1, 50, 0, 1]
+        agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
+        agent1['Start_speed'] = None
+        agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                     lane=egoTriggerAt[1], 
+                                                                     s=egoTriggerAt[2], 
+                                                                     offset=egoTriggerAt[3])
+        agent1['Acts'] = []
+        
+
+        agent1_act = {}
+        agent1_act['Type'] = 'Cut-in'
+        agent1_act['Delay'] = 0
+        agent1_act['Events'] = []
+
+        agent1_lat_event = {}
+        agent1_lat_event['Type'] = 'cut'
+        agent1_lat_event['Dynamic_delay'] = 0
+        agent1_lat_event['Dynamic_duration'] = 1
+        agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
+        agent1_lat_event['End'] = [-1, 0]
+        agent1_lat_event['Use_route'] = None
+
+        
+        for behavior_type, behavior in BehaviorMode.items():
+
+            agent1['Start_speed'] = behavior[1]
+            agent1_long_event = set_behavior_dict('speed',behavior)
+            agent1_act['Events'] = []
+            agent1_act['Events'].append(agent1_lat_event)
+            agent1_act['Events'].append(agent1_long_event)
+            agent1['Acts'] = [agent1_act]
+            config['Actors'] = {'Agents': [agent1]}
+            
             name_attribute = f'01{initRelPostAbbvLon}{initRelPostAbbvLat}-{lateral_behavior}'
             next_id = get_next_id_in_folder(name_attribute)
             scenario_name = f'{name_attribute}_{next_id}'
