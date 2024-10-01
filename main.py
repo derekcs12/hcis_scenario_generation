@@ -6,6 +6,8 @@ import argcomplete
 
 def valid_path(path):
     """验证路径是否有效"""
+    if path == 'all':
+        return path
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(f"路径无效: {path}")
     return path
@@ -38,10 +40,13 @@ def main():
     
     configFile = []
     if(args.config == 'all'):
-        for filename in os.listdir('./scenario_config'):
-            with open('./scenario_config/'+filename,'r') as f:
-                config = yaml.safe_load(f)
-            configFile.append(config)
+        for root, dirs, files in os.walk('./scenario_config'):
+            for file in files:
+                if file.endswith('.yaml'):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        config = yaml.safe_load(f)
+                    configFile.append(config)
     else:
         with open(args.config,'r') as f:
             config = yaml.safe_load(f)

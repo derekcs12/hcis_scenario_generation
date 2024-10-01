@@ -505,8 +505,8 @@ def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
 def set_agentpos_relative_to_egopos(egoPos, road_index=None, relative_lane=0, s_offset=0, lane_offset=0, orientation=1):
     agentPos = egoPos.copy()
     agentPos[0] = road_index if road_index != None else agentPos[0]
-    agentPos[1] += relative_lane
-    agentPos[2] += s_offset
+    agentPos[1] += relative_lane * int(np.sign(agentPos[1]))
+    agentPos[2] += s_offset * -int(np.sign(agentPos[1]))
     agentPos[3] += lane_offset
     agentPos[4] = orientation
     # list(map(add, config['Ego']['Start_pos'], [0,0,20,0,0]))
@@ -530,7 +530,7 @@ def set_trigger_dict_from_absolute_pos(lane, road, s, offset, triggertype='absol
 def set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos):
     road_index = egoTriggerAt[0]#  + RELATIVE_TRIGGER_POSITIONS[relative_pos][2]
     relative_lane = RELATIVE_TRIGGER_POSITIONS[relative_pos][1]
-    s_offset = RELATIVE_TRIGGER_POSITIONS[relative_pos][3] + 10
+    s_offset = RELATIVE_TRIGGER_POSITIONS[relative_pos][3]
     lane_offset = egoTriggerAt[3] + RELATIVE_TRIGGER_POSITIONS[relative_pos][4]
 
     return set_agentpos_relative_to_egopos(egoTriggerAt, road_index=road_index, relative_lane=relative_lane, s_offset=s_offset, lane_offset=lane_offset) 

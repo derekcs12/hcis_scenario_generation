@@ -64,10 +64,13 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    agent1['Start_pos'] = set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=2, relative_lane=1) 
+    egoTriggerAt = [0, -1, 50, 0, 1]
+    agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
     agent1['Start_speed'] = None
-    agent1['Start_trigger'] = set_trigger_dict_from_relative_pos(relative_pos)
-    # print(agent1['Start_trigger']);exit()
+    agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                    lane=egoTriggerAt[1], 
+                                                                    s=egoTriggerAt[2], 
+                                                                    offset=egoTriggerAt[3])
     agent1['Acts'] = []
 
     agent1_act = {}
@@ -78,7 +81,7 @@ if 1:
     agent1_lat_event = {}
     agent1_lat_event['Type'] = 'cut'
     agent1_lat_event['Dynamic_delay'] = 0
-    agent1_lat_event['Dynamic_duration'] = 1
+    agent1_lat_event['Dynamic_duration'] = 2.5
     agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
     agent1_lat_event['End'] = [-1, 0]
     agent1_lat_event['Use_route'] = None
@@ -116,12 +119,16 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    # config['Ego']['Start_pos'][2] += 20  # 往前20m
-    # list( map(add, config['Ego']['Start_pos'], [0,0,20,0,0]) )
-    # print(list( map(add, config['Ego']['Start_pos'], [0,0,20,0,0]) ));exit()
-    agent1['Start_pos'] = set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=22) 
+    egoTriggerAt = [0, -1, 50, 0, 1]
+    agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
     agent1['Start_speed'] = None
-    agent1['Start_trigger'] = set_trigger_dict_from_relative_pos(relative_pos)
+    agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                    lane=egoTriggerAt[1], 
+                                                                    s=egoTriggerAt[2], 
+                                                                    offset=egoTriggerAt[3])
+    # agent1['Start_pos'] = set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=22) 
+    # agent1['Start_speed'] = None
+    # agent1['Start_trigger'] = set_trigger_dict_from_relative_pos(relative_pos)
     # print(agent1['Start_trigger']);exit()
     agent1['Acts'] = []
 
@@ -133,7 +140,7 @@ if 1:
     agent1_lat_event = {}
     agent1_lat_event['Type'] = 'cut'
     agent1_lat_event['Dynamic_delay'] = 0
-    agent1_lat_event['Dynamic_duration'] = 1
+    agent1_lat_event['Dynamic_duration'] = 2.5
     agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
     agent1_lat_event['End'] = [-2, 0] #set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=1) 
     agent1_lat_event['Use_route'] = None

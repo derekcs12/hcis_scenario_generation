@@ -4,7 +4,7 @@ Actors:
     - Delay: 0
       Events:
       - Dynamic_delay: 0
-        Dynamic_duration: 1
+        Dynamic_duration: 2.5
         Dynamic_shape: sinusoidal
         End:
         - -1
@@ -20,17 +20,17 @@ Actors:
       Type: cut
     Start_pos:
     - 0
-    - 0
-    - 42
+    - -2
+    - 50
     - 0
     - 1
     Start_speed: 0
     Start_trigger:
-      lane: 1
+      lane: -1
       offset: 0
       road: 0
-      s: 0
-      type: relative
+      s: 50
+      type: absolute
     Type: car_red
 Ego:
   End_pos:

@@ -24,7 +24,7 @@ Actors:
     Start_pos:
     - 0
     - -1
-    - 80
+    - 65
     - -1.5
     - 1
     Start_speed: 40
