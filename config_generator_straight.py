@@ -59,12 +59,17 @@ agent1['Type'] = 'car_red'
 if 1: 
     lateral_behavior = 'CI'
     descript = "Agent at 5 cut in"
+    itri_tags = ['']
     # lateral_behavior = 'CI'
     relative_pos = 'SR-5'
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
     egoTriggerAt = [0, -1, 50, 0, 1]
+    agent1_lat_mode = 'changingLane'
+    agent1_lat_direction = 'left'
+    agent1_init_direction = 'sameAsEgo'
+
     agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
     agent1['Start_speed'] = None
     agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
@@ -104,7 +109,7 @@ if 1:
         save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
         cetranNo = None
-        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
@@ -120,16 +125,17 @@ if 1:
     initRelPostAbbvLat = relative_pos[1]
 
     egoTriggerAt = [0, -1, 50, 0, 1]
+    agent1_lat_mode = 'changingLane'
+    agent1_lat_direction = 'right'
+    agent1_init_direction = 'sameAsEgo'
+
     agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
     agent1['Start_speed'] = None
     agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
                                                                     lane=egoTriggerAt[1], 
                                                                     s=egoTriggerAt[2], 
                                                                     offset=egoTriggerAt[3])
-    # agent1['Start_pos'] = set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=22) 
-    # agent1['Start_speed'] = None
-    # agent1['Start_trigger'] = set_trigger_dict_from_relative_pos(relative_pos)
-    # print(agent1['Start_trigger']);exit()
+
     agent1['Acts'] = []
 
     agent1_act = {}
@@ -163,7 +169,7 @@ if 1:
         save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
         cetranNo = None
-        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
@@ -177,9 +183,17 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
     
-    agent1['Start_pos'] = set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=22) 
+    egoTriggerAt = [0, -1, 50, 0, 1]
+    agent1_lat_mode = 'goingStraight'
+    agent1_lat_direction = ''
+    agent1_init_direction = 'sameAsEgo'
+
+    agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
     agent1['Start_speed'] = None
-    agent1['Start_trigger'] = set_trigger_dict_from_relative_pos(relative_pos)
+    agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                 lane=egoTriggerAt[1], 
+                                                                 s=egoTriggerAt[2], 
+                                                                 offset=egoTriggerAt[3])
     agent1['Acts'] = []
     
 
@@ -214,7 +228,7 @@ if 1:
         save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
         cetranNo = None
-        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
@@ -225,10 +239,19 @@ if 1:
     relative_pos = 'FS-2'
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
+
+    egoTriggerAt = [0, -1, 50, 0, 1]
+    agent1_lat_mode = 'goingStraight'
+    agent1_lat_direction = ''
+    agent1_init_direction = 'sameAsEgo'
     
-    agent1['Start_pos'] = set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=32) 
+    agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
     agent1['Start_speed'] = None
-    agent1['Start_trigger'] = set_trigger_dict_from_relative_pos(relative_pos)
+    agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                 lane=egoTriggerAt[1], 
+                                                                 s=egoTriggerAt[2], 
+                                                                 offset=egoTriggerAt[3])
+    
     agent1['Acts'] = []
     
 
@@ -263,7 +286,7 @@ if 1:
         save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
         cetranNo = None
-        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+        csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
@@ -278,6 +301,10 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
         
         egoTriggerAt = [0, -1, 50, 0, 1]
+        agent1_lat_mode = 'goingStraight'
+        agent1_lat_direction = ''
+        agent1_init_direction = 'sameAsEgo'
+
         agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
         agent1['Start_speed'] = None
         agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
@@ -318,7 +345,7 @@ if 1:
             save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
             cetranNo = None
-            csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+            csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
             # print(csv_row);exit()
             write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
@@ -336,6 +363,10 @@ if 0:
         
         # 固定ego trigger 點，來設置agent 起始位置
         egoTriggerAt = [0, -1, 50, 0, 1]
+        agent1_lat_mode = 'changingLane'
+        agent1_lat_direction = 'right' if relative_pos[1] == 'L' else 'left'
+        agent1_init_direction = 'sameAsEgo'
+
         agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
         agent1['Start_speed'] = None
         agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
@@ -376,6 +407,6 @@ if 0:
             save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
             cetranNo = None
-            csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo)
+            csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
             # print(csv_row);exit()
             write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')

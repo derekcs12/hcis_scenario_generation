@@ -63,7 +63,7 @@ def main():
 
         sce = generate(config,company="ITRI")
         # sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
-        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1004/{config['Scenario_name']}.xosc")
  
 
 if __name__ == '__main__':

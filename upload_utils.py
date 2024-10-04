@@ -31,7 +31,7 @@ class ScenarioContent:
             '1_1_EndSpeed': None,
             '1_1_DynamicDuration': None,
             '1_1_DynamicDelay': None,
-            # 'Agent1_1_1_DynamicShape': None,
+            # 'agent1_1_1_DynamicShape': None,
         }
         
         self.agents = []
@@ -51,7 +51,7 @@ class ScenarioContent:
         
         for i, agent in enumerate(self.agents):
             for key, value in agent.items():
-                re[f'Agent{i+1}_{key}'] = value
+                re[f'agent{i+1}_{key}'] = value
                 
         return re
     
@@ -124,7 +124,7 @@ def get_tag(value, param_name):
     if param_name == 'init_dynm':
         return 'standingStill' if value == 0 else 'moving'
     if param_name == 'init_lat_pos':
-        if value == 'S': return 'sameAsEgo'
+        if value == 'S': return 'sameLane'
         if value == 'R': return 'rightOfEgo'
         if value == 'L': return 'leftOfEgo'        
     if param_name == 'init_long_pos':
@@ -192,9 +192,9 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
     
 
     columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
-               'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
-               'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
-               'Agent1_S','Agent1_Speed','Agent1_1_1_EndSpeed','Agent1_1_1_DynamicDuration','Agent1_1_1_DynamicDelay', # BehaviorMode Parameters
+               'agent1_type', 'agent1_long_mode', 'agent1_long_mode_type', 'agent1_lat_mode', 'agent1_lat_direction',
+               'agent1_init_direction', 'agent1_init_dynm', 'agent1_init_lat_pos', 'agent1_init_long_pos',
+               'agent1_S','agent1_Speed','agent1_1_1_EndSpeed','agent1_1_1_DynamicDuration','agent1_1_1_DynamicDelay', # BehaviorMode Parameters
               ]    # Check if the file exists
     if not os.path.exists(file_path):
         ensure_folder_exists(file_path)
@@ -242,13 +242,12 @@ def create_request_body(
             usedRoute: str,
             tagTree: dict,
             testObjectives: dict,
-            validConditions: List[dict],
-            startObservationSamplingConditions: List[dict],
+            conditions: dict,
             observationRecordingAgents: List[dict],
             egoTargetSpeed: float
         ):
     return {
-        "id": scenarioId,
+        "scenarioId": scenarioId,
         "tags": tags,
         "description": description,
         "parameters": parameters,
@@ -257,15 +256,14 @@ def create_request_body(
         "usedRoute": usedRoute,
         "tagTree": tagTree,
         "testObjectives": testObjectives,
-        "validConditions": validConditions,
-        "startObservationSamplingConditions": startObservationSamplingConditions,
+        "conditions": conditions,
         "observationRecordingAgents": observationRecordingAgents,
         "egoTargetSpeed": egoTargetSpeed
     }
     
 def get_param_by_behaviormode(behavior_type):
     if behavior_type == 'keeping':
-        # Agent1_S, Agent1Speed, Agent1LowSpeed, Agent1DynamicDuration, Agent1DynamicDelay
+        # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay
         return ['0-20','40-60','40-60','5-5','0-3']
     elif behavior_type == 'braking':
         return ['0-20','40-60','10-20','3-5','0-3']
@@ -276,7 +274,7 @@ def get_param_by_behaviormode(behavior_type):
     elif behavior_type == 'speed_up':    
         return ['0-20','0-10','40-60','2-4','0-2']
     
-def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo):
+def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction):
     # Write scenario description
     content = ScenarioContent('junction', cetran_number=cetranNo)
     content.ego_long_mode = 'drivingForward'
@@ -285,9 +283,9 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
     content.agents[0].update({
                         'long_mode': behavior[6],
                         'long_mode_type': behavior[7],
-                        'lat_mode': 'turning',
-                        'lat_direction': 'left',
-                        'init_direction': 'sameAsEgo',
+                        'lat_mode':  agent1_lat_mode,
+                        'lat_direction': agent1_lat_direction,
+                        'init_direction': agent1_init_direction,
                         'init_dynm': get_tag(behavior[1], 'init_dynm'),
                         'init_lat_pos': get_tag(initRelPostAbbvLat, 'init_lat_pos'),
                         'init_long_pos': get_tag(initRelPostAbbvLon, 'init_long_pos'),
@@ -301,3 +299,63 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
     csv_row = {'description': description, 'scenario_name': scenario_name}
     csv_row.update(content.to_dict())
     return csv_row
+
+
+def add_itri_tags(csv):
+    tags = []
+    if csv['cetran_number'] != None:
+        for n in csv['cetran_number'].split(','):
+            tags.append(f"src:cetran:{n}")
+    if csv['ego_lat_mode'] == 'goingStraight':
+        tags.append('ego-behavior:go-straight')
+
+    if 'CO' in csv['scenario_name']:
+        tags.append('behavior:cut-out')
+    if 'CI' in csv['scenario_name']:
+        tags.append('behavior:cut-in')
+    if 'TL' in csv['scenario_name']:
+        tags.append('behavior:turn-left')
+    if 'TR' in csv['scenario_name']:
+        tags.append('behavior:turn-right')
+    if 'KEEP' in csv['scenario_name']:
+        tags.append('behavior:keeping')
+    if 'SWR' in csv['scenario_name']:
+        tags.append('behavior:swerving')
+    if 'ZZ' in csv['scenario_name']:
+        tags.append('behavior:zigzag')
+    if 'OT' in csv['scenario_name']:
+        tags.append('behavior:overtake')
+    if 'SP' in csv['scenario_name']:
+        tags.append('behavior:side-pass')
+
+    if csv['agent1_type'] == 'M1':
+        tags.append('vehicle:car')
+    if csv['agent1_type'] == 'Cyclist':
+        tags.append('vehicle:scooter')
+
+    return tags
+
+def write_param(csv):
+    parameters = []
+    columns = csv.keys()
+    for col in columns:
+        param_info = {}
+
+        if '_EndSpeed' in col:
+            param_info["unit"] = "m/s"
+        elif '_Speed' in col:
+            param_info["unit"] = "m/s"
+        elif '_S' in col:
+            param_info["unit"] = "m"
+        elif '_DynamicDuration' in col:
+            param_info["unit"] = "s"
+        elif '_DynamicDelay' in col:
+            param_info["unit"] = "s"
+        else:
+            continue
+
+        param_info["name"] = col
+        param_info["min"] = csv[col].split('-')[0]
+        param_info["max"] = csv[col].split('-')[1]
+        parameters.append(param_info)
+    return parameters
