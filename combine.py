@@ -132,7 +132,10 @@ if __name__ == '__main__':
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
     scenario_number = len(glob.glob(os.path.join(save_folder, '*.yaml'), recursive=True))+1
-            
+    
+    # Let the scenario name continue numbering
+    combined_yaml['Scenario_name'] = f'{folder_name}_{scenario_number}'
+
     # save the combined data
     save_path = f'{save_folder}{scenario_number}'
     print('saving to:',save_path)

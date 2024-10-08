@@ -42,7 +42,10 @@ for i, j in cata_combinations:
         if not os.path.exists(f'{save_folder}/{sc_folder_name}'):
             os.makedirs(f'{save_folder}/{sc_folder_name}')
         scenario_number = len(glob.glob(os.path.join(f'{save_folder}/{sc_folder_name}', '*.yaml'), recursive=True))+1
-                
+        
+        # Let the scenario name continue numbering
+        combined_yaml['Scenario_name'] = f'{sc_folder_name}_{scenario_number}'
+
         # save the combined data
         save_path = f'{save_folder}/{sc_folder_name}/{scenario_number}'
         print('saving to:',save_path)
