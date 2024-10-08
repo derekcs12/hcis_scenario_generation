@@ -11,27 +11,27 @@ Actors:
         - 0
         Type: cut
         Use_route: null
-      - Dynamic_delay: 1
-        Dynamic_duration: 3
+      - Dynamic_delay: 0
+        Dynamic_duration: 2
         Dynamic_shape: linear
-        End: 10
+        End: 40
         Type: speed
-        Use_route: Braking.
+        Use_route: Speed up.
       Type: Cut-in
     Start_pos:
     - 0
-    - -2
-    - 50
-    - 0
+    - -1
+    - 65
+    - 1.5
     - 1
-    Start_speed: 40
+    Start_speed: 0
     Start_trigger:
       lane: -1
       offset: 0
       road: 0
       s: 50
       type: absolute
-    Type: car_red
+    Type: bicycle
 Ego:
   End_pos:
   - 1
@@ -49,4 +49,4 @@ Ego:
 Map:
 - 139
 - 166
-Scenario_name: 01SR-CI_2
+Scenario_name: 01FR-CI_5

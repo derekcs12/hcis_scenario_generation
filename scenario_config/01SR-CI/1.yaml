@@ -17,7 +17,7 @@ Actors:
         End: 40
         Type: speed
         Use_route: Cruise.
-      Type: cut
+      Type: Cut-in
     Start_pos:
     - 0
     - -2

@@ -17,7 +17,7 @@ Actors:
         End: 0
         Type: speed
         Use_route: Sudden braking & Halted halfway.
-      Type: cut
+      Type: Cut-in
     Start_pos:
     - 0
     - -2

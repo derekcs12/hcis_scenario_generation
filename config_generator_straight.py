@@ -79,7 +79,7 @@ if 1:
     agent1['Acts'] = []
 
     agent1_act = {}
-    agent1_act['Type'] = 'cut'
+    agent1_act['Type'] = 'Cut-in'
     agent1_act['Delay'] = 0
     agent1_act['Events'] = []
 
@@ -112,9 +112,6 @@ if 1:
         csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
-
-
-
 
 # cut-out : Agent at 2 cut out
 if 1: 
@@ -172,8 +169,6 @@ if 1:
         csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
-
-
 
 # keeping at 2
 if 1:
@@ -290,7 +285,7 @@ if 1:
         # print(csv_row);exit()
         write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
-# Motot keeping at all
+# Motor keeping at all
 if 1:
     agent1['Type'] = 'bicycle'
     lateral_behavior = 'KEEP'
@@ -349,15 +344,15 @@ if 1:
             # print(csv_row);exit()
             write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
 
-# Motot cut in to middle
-if 0:
-    config['Ego'] = egoStraightAsideLeft
+# Motor cut in to middle/nearside
+if 1:
+    config['Ego'] = egoStraightAsideLeft # [0, -1, 40, 0, 1]
     agent1 = {}
     agent1['Type'] = 'bicycle'
     lateral_behavior = 'CI'
-    for relative_pos in ["FL-M1","FR-M1","SR-M1"]:
-        descript = f"Bike cutting in to middle {relative_pos[:2]}"
-        # relative_pos = 'FS-2'
+    for relative_pos, end_lane in [("FR-M1",[-1, 0]),("FR-M2",[-1, 0]),("FR-M3",[-1, 0]),("SR-M1",[-1, 0]),("SR-M2",[-1, 0]),("SR-M3",[-1, 0]),
+                         ("FR-M2",[-1, 1.5]),("FR-M3",[-1, 1.5]),("SR-M2",[-1, 1.5]),("SR-M3",[-1, 1.5])]:
+        descript = f"Bike cutting in to middle {relative_pos} - "
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
         
@@ -384,9 +379,9 @@ if 0:
         agent1_lat_event = {}
         agent1_lat_event['Type'] = 'cut'
         agent1_lat_event['Dynamic_delay'] = 0
-        agent1_lat_event['Dynamic_duration'] = 1
+        agent1_lat_event['Dynamic_duration'] = 2.5
         agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
-        agent1_lat_event['End'] = [-1, 0]
+        agent1_lat_event['End'] = end_lane
         agent1_lat_event['Use_route'] = None
 
         
@@ -410,3 +405,6 @@ if 0:
             csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
             # print(csv_row);exit()
             write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
+            
+            
+            
