@@ -5,10 +5,8 @@ import csv
 import argparse
 
 def combine_scenario_name(name1, name2):
-    print('scenario name 1:',name1)
-    print('scenario name 2:',name2)
-    name1 = name1.split('_')[0]
-    name2 = name2.split('_')[0]
+    # name1 = name1.split('_')[0]
+    # name2 = name2.split('_')[0]
     actors_info = []
     # combine actors info
     for info in name1.split('_'):
@@ -17,18 +15,14 @@ def combine_scenario_name(name1, name2):
         actors_info.append(info[2:])
     actors_info = [f'{index:02}{info}' for index,info in enumerate(actors_info, start=1)]
     combined_scenario_name = '_'.join(actors_info)
-    print('combined scenario name:',combined_scenario_name)
-    print('total actors:',len(actors_info))
+    
     return combined_scenario_name
 
 
-def combine_yaml(yaml1, yaml2, mode='agent'):
+def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
     # load yaml files
     yaml1 = yaml.load(open(yaml1), Loader=yaml.FullLoader)
     yaml2 = yaml.load(open(yaml2), Loader=yaml.FullLoader)
-
-    # combine scenario name
-    combined_scenario_name = combine_scenario_name(yaml1['Scenario_name'], yaml2['Scenario_name'])
 
     # check if ego vehicle is the same
     if(yaml1['Ego'] != yaml2['Ego']):
@@ -69,9 +63,9 @@ def combine_yaml(yaml1, yaml2, mode='agent'):
             'Pedestrians': combined_pedestrians
         }
     }
-    return combined_yaml, combined_scenario_name
+    return combined_yaml
 
-def combine_csv(csv1, csv2,mode='agent'):
+def combine_csv(csv1, csv2, combined_scenario_name, mode='agent'):
     with open(csv1, 'r') as file:
         reader = csv.reader(file)
         data1 = list(reader)
@@ -84,19 +78,21 @@ def combine_csv(csv1, csv2,mode='agent'):
         if 'agent' in col:
             current_agent_count = int(col.split('_')[0][5:])
             data2[0][index] = f'agent{current_agent_count+agent_count}_' + '_'.join(col.split('_')[1:])
-            # print(data2[0][index])
 
     # combine first row
     combined_csv = data1
+    
+    # combine scenario name
+    combined_csv[1][data1[0].index('scenario_name')] = combined_scenario_name
+
     # combine description
     combined_csv[1][data1[0].index('description')] = data1[1][data1[0].index('description')] + '; ' + data2[1][data2[0].index('description')]
+
     # combine cetran_number
     # combined_csv[1][data1[0].index('cetran_number')] = data1[1][data1[0].index('cetran_number')] + '; ' + data2[1][data2[0].index('cetran_number')]
 
     combined_csv[0] += data2[0][10:] # skip the first 10 common columns
     combined_csv[1] += data2[1][10:]
-    # print('combined csv:',combined_csv[0])
-    # exit()
     
     return combined_csv
 
@@ -119,34 +115,29 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str,default='agent')
     args = parser.parse_args()
 
-    yaml1 = args.s1 + '.yaml'
-    yaml2 = args.s2 + '.yaml'
-    combined_yaml, folder_name = combine_yaml(yaml1, yaml2, mode=args.mode)
-
-    csv1 = args.s1 + '.csv'
-    csv2 = args.s2 + '.csv'
-    combined_csv = combine_csv(csv1, csv2, mode=args.mode)
+    sc1_name = args.s1.split('/')[-2]
+    sc2_name = args.s2.split('/')[-2]
+    combined_scenario_name = combine_scenario_name(sc1_name, sc2_name)
 
     # get the current scenario number in the folder
-    save_folder = f'scenario_config/{folder_name}/'
+    save_folder = f'scenario_config/{combined_scenario_name}'
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
     scenario_number = len(glob.glob(os.path.join(save_folder, '*.yaml'), recursive=True))+1
+    combined_scenario_name = f'{combined_scenario_name}_{scenario_number}'
     
-    # Let the scenario name continue numbering
-    combined_yaml['Scenario_name'] = f'{folder_name}_{scenario_number}'
+    yaml1 = args.s1 + '.yaml'
+    yaml2 = args.s2 + '.yaml'
+    combined_yaml = combine_yaml(yaml1, yaml2, combined_scenario_name, mode=args.mode)
+
+    csv1 = args.s1 + '.csv'
+    csv2 = args.s2 + '.csv'
+    combined_csv = combine_csv(csv1, csv2, combined_scenario_name, mode=args.mode)
 
     # save the combined data
-    save_path = f'{save_folder}{scenario_number}'
+    save_path = f'{save_folder}/{scenario_number}'
     print('saving to:',save_path)
 
     save_yaml(combined_yaml, f'{save_path}.yaml')
 
     save_csv(combined_csv, f'{save_path}.csv')
-
-    # with open(f'{save_path}.yaml', 'w') as file:
-    #     documents = yaml.dump(combined_yaml, file)
-
-    # with open(f'{save_path}.csv', 'w') as file:
-    #     writer = csv.writer(file)
-    #     writer.writerows(combined_csv)
