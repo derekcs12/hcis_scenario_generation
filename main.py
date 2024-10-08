@@ -39,7 +39,7 @@ def main():
     
     
     configFile = []
-    if(args.config == 'all'):
+    if args.config == 'all':
         for root, dirs, files in os.walk('./scenario_config'):
             for file in files:
                 if file.endswith('.yaml'):
@@ -47,10 +47,21 @@ def main():
                     with open(file_path, 'r') as f:
                         config = yaml.safe_load(f)
                     configFile.append(config)
-    else:
+    elif args.config.endswith('.yaml'):
         with open(args.config,'r') as f:
             config = yaml.safe_load(f)
         configFile.append(config)
+    elif os.path.isdir(args.config): 
+        for root, dirs, files in os.walk(args.config):
+            for file in files:
+                if file.endswith('.yaml'):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        config = yaml.safe_load(f)
+                    configFile.append(config)
+    else:
+        raise ValueError("Invalid config file path.")
+        
 
     print("total config: ", len(configFile))
     for config in configFile:
@@ -58,12 +69,14 @@ def main():
         Build xosc 
         """
         sce = generate(config)
-        # sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/keeping/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/keeping/{config['Scenario_name']}.xosc")
 
         sce = generate(config,company="ITRI")
-        # sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1004/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
+        print(f"Scenario {config['Scenario_name']} is built.")
  
 
 if __name__ == '__main__':

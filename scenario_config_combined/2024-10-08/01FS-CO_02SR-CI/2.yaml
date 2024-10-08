@@ -1,0 +1,85 @@
+Actors:
+  Agents:
+  - Acts:
+    - Delay: 0
+      Events:
+      - Dynamic_delay: 0
+        Dynamic_duration: 2.5
+        Dynamic_shape: sinusoidal
+        End:
+        - -2
+        - 0
+        Type: cut
+        Use_route: null
+      - Dynamic_delay: 1
+        Dynamic_duration: 3
+        Dynamic_shape: linear
+        End: 40
+        Type: speed
+        Use_route: Cruise.
+      Type: cut
+    Start_pos:
+    - 0
+    - -1
+    - 70
+    - 0
+    - 1
+    Start_speed: 40
+    Start_trigger:
+      lane: -1
+      offset: 0
+      road: 0
+      s: 50
+      type: absolute
+    Type: car_red
+  - Acts:
+    - Delay: 0
+      Events:
+      - Dynamic_delay: 0
+        Dynamic_duration: 2.5
+        Dynamic_shape: sinusoidal
+        End:
+        - -1
+        - 0
+        Type: cut
+        Use_route: null
+      - Dynamic_delay: 1
+        Dynamic_duration: 3
+        Dynamic_shape: linear
+        End: 10
+        Type: speed
+        Use_route: Braking.
+      Type: cut
+    Start_pos:
+    - 0
+    - -2
+    - 50
+    - 0
+    - 1
+    Start_speed: 40
+    Start_trigger:
+      lane: -1
+      offset: 0
+      road: 0
+      s: 50
+      type: absolute
+    Type: car_red
+  Pedestrians: []
+Ego:
+  End_pos:
+  - 1
+  - 1
+  - 10
+  - 0
+  - 1
+  Start_pos:
+  - 0
+  - -1
+  - 40
+  - 0
+  - 1
+  Start_speed: 30
+Map:
+- 139
+- 166
+Scenario_name: 01FS-CO_02SR-CI

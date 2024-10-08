@@ -5,6 +5,10 @@ import csv
 import argparse
 
 def combine_scenario_name(name1, name2):
+    print('scenario name 1:',name1)
+    print('scenario name 2:',name2)
+    name1 = name1.split('_')[0]
+    name2 = name2.split('_')[0]
     actors_info = []
     # combine actors info
     for info in name1.split('_'):
@@ -67,8 +71,7 @@ def combine_yaml(yaml1, yaml2, mode='agent'):
     }
     return combined_yaml, combined_scenario_name
 
-
-def combine_csv(csv1, csv2):
+def combine_csv(csv1, csv2,mode='agent'):
     with open(csv1, 'r') as file:
         reader = csv.reader(file)
         data1 = list(reader)
@@ -85,6 +88,11 @@ def combine_csv(csv1, csv2):
 
     # combine first row
     combined_csv = data1
+    # combine description
+    combined_csv[1][data1[0].index('description')] = data1[1][data1[0].index('description')] + '; ' + data2[1][data2[0].index('description')]
+    # combine cetran_number
+    # combined_csv[1][data1[0].index('cetran_number')] = data1[1][data1[0].index('cetran_number')] + '; ' + data2[1][data2[0].index('cetran_number')]
+
     combined_csv[0] += data2[0][10:] # skip the first 10 common columns
     combined_csv[1] += data2[1][10:]
     # print('combined csv:',combined_csv[0])
@@ -92,17 +100,25 @@ def combine_csv(csv1, csv2):
     
     return combined_csv
 
+def save_csv(content, save_path):
+    with open(save_path, 'w') as file:
+        writer = csv.writer(file)
+        writer.writerows(content)
+
+def save_yaml(content, save_path):
+    with open(save_path, 'w') as file:
+        documents = yaml.dump(content, file)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # directory 1
-    parser.add_argument('s1', type=str,default='scenario_config/01FL-CI/1',required=False)
+    parser.add_argument('--s1', type=str,default='scenario_config/01FL-CI/1')
     # directory 2
-    parser.add_argument('s2', type=str,default='scenario_config/01FL-CI/2',required=False)
-    parser.add_argument('mode', type=str,default='agent',required=False)
+    parser.add_argument('--s2', type=str,default='scenario_config/01FL-CI/2')
+    parser.add_argument('--mode', type=str,default='agent')
     args = parser.parse_args()
 
-    # yaml1 = 'scenario_config/01FL-CI/1.yaml'
-    # yaml2 = 'scenario_config/01SL-CI/2.yaml'
     yaml1 = args.s1 + '.yaml'
     yaml2 = args.s2 + '.yaml'
     combined_yaml, folder_name = combine_yaml(yaml1, yaml2, mode=args.mode)
@@ -120,9 +136,14 @@ if __name__ == '__main__':
     # save the combined data
     save_path = f'{save_folder}{scenario_number}'
     print('saving to:',save_path)
-    with open(f'{save_path}.yaml', 'w') as file:
-        documents = yaml.dump(combined_yaml, file)
 
-    with open(f'{save_path}.csv', 'w') as file:
-        writer = csv.writer(file)
-        writer.writerows(combined_csv)
+    save_yaml(combined_yaml, f'{save_path}.yaml')
+
+    save_csv(combined_csv, f'{save_path}.csv')
+
+    # with open(f'{save_path}.yaml', 'w') as file:
+    #     documents = yaml.dump(combined_yaml, file)
+
+    # with open(f'{save_path}.csv', 'w') as file:
+    #     writer = csv.writer(file)
+    #     writer.writerows(combined_csv)
