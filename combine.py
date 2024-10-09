@@ -72,6 +72,11 @@ def combine_csv(csv1, csv2, combined_scenario_name, mode='agent'):
     with open(csv2, 'r') as file:
         reader = csv.reader(file)
         data2 = list(reader)
+        
+    # strip all elements in the first row
+    data1[0] = [col.strip() for col in data1[0]]
+    data2[0] = [col.strip() for col in data2[0]]
+    
     # get agent count
     agent_count = int(data1[0][-1].split('_')[0][5:])
     for index, col in enumerate(data2[0]):
