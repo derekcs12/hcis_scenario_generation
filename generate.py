@@ -49,7 +49,8 @@ def generate(config, company='HCISLab'):
     init = xosc.Init()
     egostart = xosc.TeleportAction(create_LanePosition_from_config(config['Map'],config['Ego']['Start_pos']))
     egospeed = xosc.AbsoluteSpeedAction("${$Ego_Speed / 3.6}", step_time)
-    egocontl = xosc.ActivateControllerAction(lateral = "true", longitudinal = "true")
+    activate_controller = 'false' if config['DeactivateControl'] else 'true'
+    egocontl = xosc.ActivateControllerAction(lateral = activate_controller, longitudinal = activate_controller)
     egofinal = xosc.AcquirePositionAction(create_LanePosition_from_config(config['Map'],config['Ego']['End_pos'])) #Ego終點
     init.add_init_action('Ego', egostart)
     init.add_init_action('Ego', egospeed)

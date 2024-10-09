@@ -33,6 +33,10 @@ def main():
         type=valid_path,
         default='config_example.yaml',
         help='Config file path')
+    argparser.add_argument(
+        '-d', '--deactivate',
+        action='store_true',
+        help='Whether to deactivate the controller')
     
     argcomplete.autocomplete(argparser)
     args = argparser.parse_args()
@@ -68,11 +72,13 @@ def main():
         """ 
         Build xosc 
         """
+        config['DeactivateControl'] = args.deactivate
         sce = generate(config)
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc")
         # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/keeping/{config['Scenario_name']}.xosc")
-
+        
+        config['Control'] = True
         sce = generate(config,company="ITRI")
         sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
         # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
