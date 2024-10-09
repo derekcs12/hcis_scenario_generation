@@ -82,6 +82,9 @@ def combine_csv(csv1, csv2, combined_scenario_name, mode='agent'):
     # combine first row
     combined_csv = data1
     
+    # new scenario id
+    combined_csv[1][data1[0].index('scenario_id')] = combined_scenario_name.split('_')[-1]
+
     # combine scenario name
     combined_csv[1][data1[0].index('scenario_name')] = combined_scenario_name
 
