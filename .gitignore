@@ -1,3 +1,4 @@
 /xosc_itri/
 /__pycache__/
 *.xosc
+/scenario_config_combined/
