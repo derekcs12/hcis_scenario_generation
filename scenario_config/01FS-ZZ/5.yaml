@@ -19,7 +19,7 @@ Actors:
     Start_pos:
     - 0
     - -1
-    - 70
+    - 65
     - 0
     - 1
     Start_speed: 0

@@ -3,14 +3,14 @@
 RELATIVE_TRIGGER_POSITIONS = { 
     # Given ego (trigger) position, return agent start positions relative to the trigger position.
     # Lat: L/S/R, Long: F/S/B | (Type, lane, road, s(road_offs), lane_offset)
-    "FL-1": ("relative", -1,  0,  20,  0),
-    "FS-2": ("relative",  0,  0,  20,  0),
-    "FR-3": ("relative",  1,  0,  20,  0),
+    "FL-1": ("relative", -1,  0,  15,  0),
+    "FS-2": ("relative",  0,  0,  15,  0),
+    "FR-3": ("relative",  1,  0,  15,  0),
     "SL-4": ("relative", -1,  0,   0,  0),
     "SR-5": ("relative",  1,  0,   0,  0),
-    "BL-6": ("relative", -1,  0, -20,  0),
-    "BS-7": ("relative",  0,  0, -20,  0),
-    "BR-8": ("relative",  1,  0, -20,  0),
+    "BL-6": ("relative", -1,  0, -15,  0),
+    "BS-7": ("relative",  0,  0, -15,  0),
+    "BR-8": ("relative",  1,  0, -15,  0),
     
     # Motor/Bike
     "FL-M1": ("relative",  0,  0, 15, -1.5),
