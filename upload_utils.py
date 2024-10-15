@@ -311,7 +311,7 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
         content.agents[0].update({
             '1_TA_Offset': '0-1',
             '1_TA_Period': '0.2-1',
-            '1_TA_Times': '1-5',
+            '1_TA_Times': '3-3',
         })
     description = descript + behavior_type + lateral_behavior
     csv_row = {'description': description, 'scenario_name': scenario_name}
