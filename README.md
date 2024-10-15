@@ -3,10 +3,12 @@
 - Parameter Naming Rule: [link](https://lopsided-soursop-bec.notion.site/Scenario-Parameter-Naming-642563ce89f74de195116291d153c4ef?pvs=4)
 
 ## Usage
-### OpenScenario Generator
-`python main.py -c [CONFIG_PATH]`
-
-Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_config'
+### OpenScenario Config File(.yaml) Generator
+```
+python config_generator_4way.py
+python config_generator_straight.py
+python config_generator_straight_on4way.py   #For straight&4way scenario combination at 4way crossroad
+```
 
 ### Combine scenarios
 You can combine two scenario's agents as a new scenario.
@@ -23,6 +25,11 @@ e.g. python combine.py --s1 scenario_config/01BL-KEEP/1 --s2 scenario_config/01F
 - This command will combine all scenarios cross different catagories in `scenario_config` folder.
 - In default, they will be saved in `scenario_config_conbined/[date]` folder.
 
+### OpenScenario Generator
+`python main.py -c [CONFIG_PATH]`
+
+Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_config'
+
 ### Code
 - main.py : main program, read config file and write OpenScenario file.
 - dicent_utils.py : some useful function for sceanrio generation.
@@ -30,4 +37,7 @@ e.g. python combine.py --s1 scenario_config/01BL-KEEP/1 --s2 scenario_config/01F
 - scenario_upload.py : upload scenario to MongoDB
 - upload_utils.py : build tag tree, tags and corresponding params for scenarios
 - combine.py : combine two scenario.
-- combine_all.py : combine all scenarios in `./scenario_config` 
+- combine_all.py : combine all scenarios in `./scenario_config`
+- config_generator_4way.py : generate 4way scenarios, e.g. left turn, U turn, ...
+- config_generator_straight.py : generate straight scenarios, e.g. cut-in/out, zigzag
+- config_generator_straight_on4way.py : generate straight scenarios over 4way topology, e.g. cut-in/out, zigzag at crossroad
