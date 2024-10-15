@@ -24,15 +24,18 @@ def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
     yaml1 = yaml.load(open(yaml1), Loader=yaml.FullLoader)
     yaml2 = yaml.load(open(yaml2), Loader=yaml.FullLoader)
 
+    msg = ''
     # check if ego vehicle is the same
     if(yaml1['Ego'] != yaml2['Ego']):
         # print('ego vehicles are different')
-        return None
+        msg = 'Ego vehicles are different'
+        return None, msg
     
     # check if map is the same
     if(yaml1['Map'] != yaml2['Map']):
         # print('maps are different')
-        return None
+        msg = 'Eaps are different'
+        return None, msg
     
     # combine actors
     actors1 = yaml1['Actors']
@@ -63,7 +66,7 @@ def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
             'Pedestrians': combined_pedestrians
         }
     }
-    return combined_yaml
+    return combined_yaml, msg
 
 def combine_csv(csv1, csv2, combined_scenario_name, mode='agent'):
     with open(csv1, 'r') as file:
@@ -135,10 +138,10 @@ if __name__ == '__main__':
     
     yaml1 = args.s1 + '.yaml'
     yaml2 = args.s2 + '.yaml'
-    combined_yaml = combine_yaml(yaml1, yaml2, combined_scenario_name, mode=args.mode)
+    combined_yaml, msg= combine_yaml(yaml1, yaml2, combined_scenario_name, mode=args.mode)
 
     if combined_yaml is None:
-        print('yaml files are not compatible')
+        print(msg)
         exit()
 
     csv1 = args.s1 + '.csv'

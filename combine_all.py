@@ -37,30 +37,31 @@ def combine_all_scenarios(basic_scenarios_folder):
         
         sc_folder_name = combine.combine_scenario_name(cata1, cata2) 
         print(f"Combined folder name: {sc_folder_name}")
-        print('-----------------------------------')
         for sce1, sce2 in sce_combinations:
             # get the current scenario number in the folder
-            if not os.path.exists(f'{save_root}/{sc_folder_name}'):
-                os.makedirs(f'{save_root}/{sc_folder_name}')
             scenario_number = len(glob.glob(os.path.join(f'{save_root}/{sc_folder_name}', '*.yaml'), recursive=False))+1
             combined_scenario_name = f'{sc_folder_name}_{scenario_number}'
             
             yaml1 = f'{basic_scenarios_folder}/{cata1}/{sce1}.yaml'
             yaml2 = f'{basic_scenarios_folder}/{cata2}/{sce2}.yaml'
-            combined_yaml= combine.combine_yaml(yaml1, yaml2, combined_scenario_name, mode='agent')
+            combined_yaml, msg= combine.combine_yaml(yaml1, yaml2, combined_scenario_name, mode='agent')
 
             if combined_yaml is None:
-                # print('yaml files are not compatible')
-                continue
+                print(f'Fail: {msg}')
+                counter -= len(sce_combinations)
+                break
 
             csv1 = f'{basic_scenarios_folder}/{cata1}/{sce1}.csv'
             csv2 = f'{basic_scenarios_folder}/{cata2}/{sce2}.csv'
             combined_csv = combine.combine_csv(csv1, csv2, combined_scenario_name, mode='agent')
 
             # save the combined data
+            if not os.path.exists(f'{save_root}/{sc_folder_name}'):
+                os.makedirs(f'{save_root}/{sc_folder_name}')
             save_path = f'{save_root}/{sc_folder_name}/{scenario_number}'
             combine.save_yaml(combined_yaml, f'{save_path}.yaml')
             combine.save_csv(combined_csv, f'{save_path}.csv')
+        print('-----------------------------------')
 
     print(f"{counter} scenarios combined.")
 
