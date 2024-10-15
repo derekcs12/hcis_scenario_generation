@@ -126,7 +126,7 @@ def parameter_Declaration(Actors, Ego):
                             delay = xosc.Parameter(name=f"{actorName}_{actIndex}_Delay",parameter_type="double",value=str(event['Dynamic_delay']))
                             offset = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Offset",parameter_type="double",value=str(event['Dynamic_shape']))
                             period = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Period",parameter_type="double",value=str(event['Dynamic_duration']))
-                            times = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Times",parameter_type="double",value=str(event['End']))
+                            times = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Times",parameter_type="double",value=str(event['Use_route']))
                             paraList.extend([delay, offset, period, times])
                         if event['Type'] == 'speed':
                             dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_SA_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))

@@ -461,15 +461,17 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
     return advgoalEvent, currentPosition
 
 def generate_Zigzag_Event(actorName, actIndex, event, Map, previousEventName, currentPosition):
-    delay = event['Dynamic_delay']
-    period = event['Dynamic_duration']
-    amplidute = event['Dynamic_shape']
-    times = event['Use_route']
-    targetPoint = create_LanePosition_from_config(Map, event['End'])
     dir_id = 1
     allEvent = []
     init_offset = currentPosition[3]
 
+    # delay = event['Dynamic_delay']
+    period = f'${actorName}_{actIndex}_TA_Period'
+    amplidute = f'${actorName}_{actIndex}_TA_Offset'
+    # times = f'${actorName}_{actIndex}_TA_Times'
+    times = event['Use_route']
+
+    targetPoint = create_LanePosition_from_config(Map, event['End'])
     advgoal = xosc.AcquirePositionAction(targetPoint)
     trigger = create_Trigger_following_previous(previousEventName, delay = 0, state='complete')
     advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent_0", xosc.Priority.parallel)
@@ -479,7 +481,9 @@ def generate_Zigzag_Event(actorName, actIndex, event, Map, previousEventName, cu
     previousEventName = [advgoalEvent.name]
 
     for i in range(int(times*2)):
-        advgoal = xosc.AbsoluteLaneOffsetAction(init_offset + amplidute * dir_id, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
+        # advgoal = xosc.AbsoluteLaneOffsetAction(init_offset + amplidute * dir_id, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
+        # advgoal = xosc.AbsoluteLaneOffsetAction(f'${{$Agent1_1_TA_Offset}} * {dir_id} + {init_offset}', shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
+        advgoal = xosc.AbsoluteLaneOffsetAction(f'${{{amplidute} * {dir_id} + {init_offset}}}', shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=f'${{abs({amplidute}/{period})}}')
         trigger = create_Trigger_following_previous(previousEventName, delay = 0, state='complete')
         advgoalEvent = xosc.Event(f"{actorName}_Event{actIndex}_TrajectoryEvent_{i+1}", xosc.Priority.parallel)
         advgoalEvent.add_action(f"{actorName}_Event{actIndex}_TrajectoryAction_{i+1}", advgoal)
@@ -490,7 +494,7 @@ def generate_Zigzag_Event(actorName, actIndex, event, Map, previousEventName, cu
 
         dir_id *= -1
 
-    advgoal = xosc.AbsoluteLaneOffsetAction(init_offset, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=abs(amplidute/period))
+    advgoal = xosc.AbsoluteLaneOffsetAction(init_offset, shape=xosc.DynamicsShapes.sinusoidal,maxlatacc=f'${{abs({amplidute}/{period})}}')
     trigger = create_Trigger_following_previous(previousEventName, delay = 0, state='complete')
     advgoalEvent = xosc.Event(f"Adv{actorName}_Event{actIndex}_TrajectoryEvent_{times*2+1}", xosc.Priority.parallel)
     advgoalEvent.add_action(f"Adv{actorName}_Event{actIndex}_TrajectoryAction_{times*2+1}", advgoal)
