@@ -5,6 +5,7 @@ import pandas as pd
 from typing import List
 import re
 import yaml
+from dicent_utils import *
 
 class ScenarioContent:
     def __init__(self, road_layout, road_layout_mode='noTrafficLight', cetran_number=None, agent_number=1):
@@ -359,3 +360,23 @@ def write_param(csv):
         param_info["max"] = csv[col].split('-')[1]
         parameters.append(param_info)
     return parameters
+
+
+def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, cetranNo=None):
+    agent1['Start_speed'] = behavior[1]
+    agent1_long_event = set_behavior_dict('speed',behavior)
+    agent1_act['Events'] = []
+    agent1_act['Events'].append(agent1_lat_event)
+    agent1_act['Events'].append(agent1_long_event)
+    agent1['Acts'] = [agent1_act]
+    config['Actors'] = {'Agents': [agent1]}
+    
+    name_attribute = f'01{initRelPostAbbvLon}{initRelPostAbbvLat}-{lateral_behavior}'
+    next_id = get_next_id_in_folder(name_attribute)
+    scenario_name = f'{name_attribute}_{next_id}'
+    config['Scenario_name'] = scenario_name
+    save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
+
+    csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+    # print(csv_row);exit()
+    write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
