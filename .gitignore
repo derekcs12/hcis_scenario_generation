@@ -2,3 +2,4 @@
 /__pycache__/
 *.xosc
 /scenario_config_combined/
+log.txt
