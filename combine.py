@@ -26,13 +26,13 @@ def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
 
     # check if ego vehicle is the same
     if(yaml1['Ego'] != yaml2['Ego']):
-        print('ego vehicles are different')
-        return None, None
+        # print('ego vehicles are different')
+        return None
     
     # check if map is the same
     if(yaml1['Map'] != yaml2['Map']):
-        print('maps are different')
-        return None, None
+        # print('maps are different')
+        return None
     
     # combine actors
     actors1 = yaml1['Actors']
@@ -129,8 +129,7 @@ if __name__ == '__main__':
 
     # get the current scenario number in the folder
     save_folder = f'scenario_config/{combined_scenario_name}'
-    if not os.path.exists(save_folder):
-        os.makedirs(save_folder)
+    
     scenario_number = len(glob.glob(os.path.join(save_folder, '*.yaml'), recursive=True))+1
     combined_scenario_name = f'{combined_scenario_name}_{scenario_number}'
     
@@ -138,11 +137,17 @@ if __name__ == '__main__':
     yaml2 = args.s2 + '.yaml'
     combined_yaml = combine_yaml(yaml1, yaml2, combined_scenario_name, mode=args.mode)
 
+    if combined_yaml is None:
+        print('yaml files are not compatible')
+        exit()
+
     csv1 = args.s1 + '.csv'
     csv2 = args.s2 + '.csv'
     combined_csv = combine_csv(csv1, csv2, combined_scenario_name, mode=args.mode)
 
     # save the combined data
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
     save_path = f'{save_folder}/{scenario_number}'
     print('saving to:',save_path)
 

@@ -1,5 +1,7 @@
 import argparse
 import glob
+
+from tqdm import tqdm
 import combine
 import os
 import datetime
@@ -23,7 +25,7 @@ def combine_all_scenarios(basic_scenarios_folder):
     print("Total combinations: ", len(cata_combinations))
 
     counter = 0
-    for cata1, cata2 in cata_combinations:
+    for cata1, cata2 in tqdm(cata_combinations):
         # get the number of scenarios in each folder
         cata_1s = len(glob.glob(os.path.join(f'./scenario_config/{cata1}', '*.yaml'), recursive=False))
         cata_2s = len(glob.glob(os.path.join(f'./scenario_config/{cata2}', '*.yaml'), recursive=False))
@@ -46,6 +48,10 @@ def combine_all_scenarios(basic_scenarios_folder):
             yaml1 = f'{basic_scenarios_folder}/{cata1}/{sce1}.yaml'
             yaml2 = f'{basic_scenarios_folder}/{cata2}/{sce2}.yaml'
             combined_yaml= combine.combine_yaml(yaml1, yaml2, combined_scenario_name, mode='agent')
+
+            if combined_yaml is None:
+                # print('yaml files are not compatible')
+                continue
 
             csv1 = f'{basic_scenarios_folder}/{cata1}/{sce1}.csv'
             csv2 = f'{basic_scenarios_folder}/{cata2}/{sce2}.csv'

@@ -72,7 +72,7 @@ def main():
         """ 
         Build xosc 
         """
-        config['DeactivateControl'] = args.deactivate
+        # config['DeactivateControl'] = args.deactivate
         sce = generate(config)
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc")
