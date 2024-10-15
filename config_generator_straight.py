@@ -298,7 +298,7 @@ if 1:
         for behavior_type, behavior in BehaviorMode.items():
             clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
             
- # Motor cut in to middle/nearside
+# Motor cut in to middle/nearside
 
 
 # zigzag
@@ -340,9 +340,12 @@ if 1:
         agent1_lat_event['Dynamic_delay'] = 0
         agent1_lat_event['Dynamic_duration'] = 0.3
         agent1_lat_event['Dynamic_shape'] = 1.5
-        agent1_lat_event['End'] = 3
-        agent1_lat_event['Use_route'] = None
+        agent1_lat_event['End'] = [1, 1, 30, 0, 1]
+        agent1_lat_event['Use_route'] = 3
 
         
         for behavior_type, behavior in BehaviorMode.items():
             clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            
+            
+ # Motor zigzag

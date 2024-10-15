@@ -29,9 +29,9 @@ class ScenarioContent:
             'init_long_pos': None,
             'S': '0-20',
             'Speed': '0-20',
-            '1_1_EndSpeed': None,
-            '1_1_DynamicDuration': None,
-            '1_1_DynamicDelay': None,
+            '1_SA_EndSpeed': None,
+            '1_SA_DynamicDuration': None,
+            '1_SA_DynamicDelay': None,
             # 'agent1_1_1_DynamicShape': None,
         }
         
@@ -190,13 +190,18 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
     ]
     """
     print(f"write {scenario_id}, description: {content[0]['description']}.")
-    
 
     columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
                'agent1_type', 'agent1_long_mode', 'agent1_long_mode_type', 'agent1_lat_mode', 'agent1_lat_direction',
                'agent1_init_direction', 'agent1_init_dynm', 'agent1_init_lat_pos', 'agent1_init_long_pos',
-               'agent1_S','agent1_Speed','agent1_1_1_EndSpeed','agent1_1_1_DynamicDuration','agent1_1_1_DynamicDelay', # BehaviorMode Parameters
-              ]    # Check if the file exists
+               'agent1_S','agent1_Speed','agent1_1_SA_EndSpeed','agent1_1_SA_DynamicDuration','agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
+              ]   
+    
+    for col in content[0].keys():
+        if col not in columns:
+            columns.append(col)
+            
+    # Check if the file exists
     if not os.path.exists(file_path):
         ensure_folder_exists(file_path)
             
@@ -264,38 +269,50 @@ def create_request_body(
     
 def get_param_by_behaviormode(behavior_type):
     if behavior_type == 'keeping':
-        # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay
-        return ['0-20','40-60','40-60','5-5','0-3']
+        # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay, ｜ agent1EventStartDelay, TA_DynamicDuration, TA_DynamicDelay
+        return ['0-20','40-60','40-60','5-5','0-3', '0-2', '5-5', '0-1']
     elif behavior_type == 'braking':
-        return ['0-20','40-60','10-20','3-5','0-3']
+        return ['0-20','40-60','10-20','3-5','0-3', '0-2', '5-5', '0-1']
     elif behavior_type == 'braking_halt':
-        return ['0-20','40-60','0-0','2-4','0-3']
+        return ['0-20','40-60','0-0','2-4','0-3', '0-2', '5-5', '0-1']
     elif behavior_type == 'sudden_braking_halt':    
-        return ['0-20','40-60','0-0','0.5-2','0-3'] 
+        return ['0-20','40-60','0-0','0.5-2','0-3', '0-2', '5-5', '0-1'] 
     elif behavior_type == 'speed_up':    
-        return ['0-20','0-10','40-60','2-4','0-2']
+        return ['0-20','0-10','40-60','2-4','0-2', '0-2', '5-5', '0-1']
     
-def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction):
+def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag=False):
     # Write scenario description
     content = ScenarioContent('junction', cetran_number=cetranNo)
     content.ego_long_mode = 'drivingForward'
     content.ego_long_mode_type = 'cruising'
     content.ego_lat_mode = 'goingStraight'
     content.agents[0].update({
-                        'long_mode': behavior[6],
-                        'long_mode_type': behavior[7],
-                        'lat_mode':  agent1_lat_mode,
-                        'lat_direction': agent1_lat_direction,
-                        'init_direction': agent1_init_direction,
-                        'init_dynm': get_tag(behavior[1], 'init_dynm'),
-                        'init_lat_pos': get_tag(initRelPostAbbvLat, 'init_lat_pos'),
-                        'init_long_pos': get_tag(initRelPostAbbvLon, 'init_long_pos'),
-                        'S': get_param_by_behaviormode(behavior_type)[0],
-                        'Speed': get_param_by_behaviormode(behavior_type)[1],
-                        '1_1_EndSpeed': get_param_by_behaviormode(behavior_type)[2],
-                        '1_1_DynamicDuration': get_param_by_behaviormode(behavior_type)[3],
-                        '1_1_DynamicDelay': get_param_by_behaviormode(behavior_type)[4],
-                    })
+        'long_mode': behavior[6],
+        'long_mode_type': behavior[7],
+        'lat_mode':  agent1_lat_mode,
+        'lat_direction': agent1_lat_direction,
+        'init_direction': agent1_init_direction,
+        'init_dynm': get_tag(behavior[1], 'init_dynm'),
+        'init_lat_pos': get_tag(initRelPostAbbvLat, 'init_lat_pos'),
+        'init_long_pos': get_tag(initRelPostAbbvLon, 'init_long_pos'),
+        'S': get_param_by_behaviormode(behavior_type)[0],
+        'Speed': get_param_by_behaviormode(behavior_type)[1],
+        '1_DynamicDelay': get_param_by_behaviormode(behavior_type)[5],
+        '1_SA_EndSpeed': get_param_by_behaviormode(behavior_type)[2],
+        '1_SA_DynamicDuration': get_param_by_behaviormode(behavior_type)[3],
+        '1_SA_DynamicDelay': get_param_by_behaviormode(behavior_type)[4],
+    })
+    if not isZigzag:
+        content.agents[0].update({
+            '1_TA_DynamicDuration': get_param_by_behaviormode(behavior_type)[6],
+            '1_TA_DynamicDelay': get_param_by_behaviormode(behavior_type)[7],
+        })
+    elif isZigzag:
+        content.agents[0].update({
+            '1_TA_Offset': '0-1',
+            '1_TA_Period': '0.2-1',
+            '1_TA_Times': '1-5',
+        })
     description = descript + behavior_type + lateral_behavior
     csv_row = {'description': description, 'scenario_name': scenario_name}
     csv_row.update(content.to_dict())
@@ -352,6 +369,12 @@ def write_param(csv):
             param_info["unit"] = "s"
         elif '_DynamicDelay' in col:
             param_info["unit"] = "s"
+        elif '_Offset' in col:
+            param_info["unit"] = "m"
+        elif '_Period' in col:
+            param_info["unit"] = "1/s"
+        elif '_Times' in col:
+            param_info["unit"] = "times"
         else:
             continue
 
@@ -377,6 +400,7 @@ def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agen
     config['Scenario_name'] = scenario_name
     save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
-    csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+    isZigzag = True if agent1_act['Type'] == 'zigzag' else False
+    csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag)
     # print(csv_row);exit()
     write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')

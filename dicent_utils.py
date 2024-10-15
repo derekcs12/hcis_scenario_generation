@@ -613,37 +613,37 @@ def get_behavior_mode(AgentSpeed=40, AgentEndSpeed=10, DynamicDuration=3, Dynami
     
     return BehaviorMode
 
-def create_scenario_configs_by_behavior_mode(scenario_name, description, config, BehaviorMode):
-    # Multiple 待完成
-    car['Start_speed'] = behavior[1]
-    gostraightAct[1]['End'] = behavior[2]
-    gostraightAct[1]['Dynamic_duration'] = behavior[3]
-    gostraightAct[1]['Dynamic_shape'] = behavior[4]
-    gostraightAct[1]['Dynamic_delay'] = behavior[5]
-    car['Acts'] = [{'Type': 'gostraight','Delay':0, 'Events':gostraightAct}]
+# def create_scenario_configs_by_behavior_mode(scenario_name, description, config, BehaviorMode):
+#     # Multiple 待完成
+#     car['Start_speed'] = behavior[1]
+#     gostraightAct[1]['End'] = behavior[2]
+#     gostraightAct[1]['Dynamic_duration'] = behavior[3]
+#     gostraightAct[1]['Dynamic_shape'] = behavior[4]
+#     gostraightAct[1]['Dynamic_delay'] = behavior[5]
+#     car['Acts'] = [{'Type': 'gostraight','Delay':0, 'Events':gostraightAct}]
     
-    config['Actors'] = {'Agents':[car]}
+#     config['Actors'] = {'Agents':[car]}
     
-    scenario_config = {
-        'scenario_id': scenario_id,
-        'scenario_name': scenario_name,
-        'description': description,
-        'config': config
-    }
+#     scenario_config = {
+#         'scenario_id': scenario_id,
+#         'scenario_name': scenario_name,
+#         'description': description,
+#         'config': config
+#     }
     
-    return scenario_config
-    # List all files in the directory
-    for filename in os.listdir(directory):
-        match = pattern.match(filename)
-        if match:
-            scenario_id = int(match.group(1))
-            if scenario_id > max_scenario_id:
-                max_scenario_id = scenario_id
+#     return scenario_config
+#     # List all files in the directory
+#     for filename in os.listdir(directory):
+#         match = pattern.match(filename)
+#         if match:
+#             scenario_id = int(match.group(1))
+#             if scenario_id > max_scenario_id:
+#                 max_scenario_id = scenario_id
     
-    # Calculate the next scenario ID
-    next_scenario_id = max_scenario_id + 1
+#     # Calculate the next scenario ID
+#     next_scenario_id = max_scenario_id + 1
     
-    return next_scenario_id
+#     return next_scenario_id
 
 import csv
 def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.csv'):
@@ -715,25 +715,3 @@ def get_behavior_mode(AgentSpeed=40, AgentEndSpeed=10, DynamicDuration=3, Dynami
     BehaviorMode['speed_up'] = ( 'Speed up.',0, AgentSpeed, DynamicDuration-1, 'linear', DynamicDelay-1) #加速
     
     return BehaviorMode
-
-def create_scenario_configs_by_behavior_mode(scenario_name, description, config, BehaviorMode):
-    # Multiple 待完成
-    car['Start_speed'] = behavior[1]
-    gostraightAct[1]['End'] = behavior[2]
-    gostraightAct[1]['Dynamic_duration'] = behavior[3]
-    gostraightAct[1]['Dynamic_shape'] = behavior[4]
-    gostraightAct[1]['Dynamic_delay'] = behavior[5]
-    car['Acts'] = [{'Type': 'gostraight','Delay':0, 'Events':gostraightAct}]
-    
-    config['Actors'] = {'Agents':[car]}
-    
-    scenario_config = {
-        'scenario_id': scenario_id,
-        'scenario_name': scenario_name,
-        'description': description,
-        'config': config
-    }
-    
-    return scenario_config
-
-
