@@ -315,8 +315,8 @@ if 1:
         
         # 固定ego trigger 點，來設置agent 起始位置
         egoTriggerAt = [0, -1, 50, 0, 1]
-        agent1_lat_mode = 'changingLane'
-        agent1_lat_direction = 'right' if relative_pos[1] == 'L' else 'left'
+        agent1_lat_mode = 'goingStraight'
+        agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
 
         # print(egoTriggerAt, relative_pos);
@@ -348,4 +348,49 @@ if 1:
             clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
             
             
- # Motor zigzag
+# Motor zigzag
+if 1:
+    config['Ego'] = egoStraightAsideLeft # [0, -1, 40, 0, 1]
+    agent1 = {}
+    agent1['Type'] = 'bicycle'
+    lateral_behavior = 'ZZ'
+
+    for relative_pos in ["FL-M1","FL-M2","FR-M1","FR-M2","SL-M2","SR-M2"]:
+        descript = f"Bike zigzag at {relative_pos} - "
+        initRelPostAbbvLon = relative_pos[0]
+        initRelPostAbbvLat = relative_pos[1]
+    
+        # 固定ego trigger 點，來設置agent 起始位置
+        egoTriggerAt = [0, -1, 50, 0, 1]
+        agent1_lat_mode = 'goingStraight'
+        agent1_lat_direction = ''
+        agent1_init_direction = 'sameAsEgo'
+
+        # print(egoTriggerAt, relative_pos);
+        # print(set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos));exit()
+        agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
+        agent1['Start_speed'] = None
+        agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                    lane=egoTriggerAt[1], 
+                                                                    s=egoTriggerAt[2], 
+                                                                    offset=egoTriggerAt[3])
+        agent1['Acts'] = []
+    
+
+        agent1_act = {}
+        agent1_act['Type'] = 'zigzag'
+        agent1_act['Delay'] = 0
+        agent1_act['Events'] = []
+
+        agent1_lat_event = {}
+        agent1_lat_event['Type'] = 'offset'
+        agent1_lat_event['Dynamic_delay'] = 0
+        agent1_lat_event['Dynamic_duration'] = 0.3
+        agent1_lat_event['Dynamic_shape'] = 1.5
+        agent1_lat_event['End'] = [1, 1, 30, 0, 1]
+        agent1_lat_event['Use_route'] = 3
+
+    
+        for behavior_type, behavior in BehaviorMode.items():
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+    

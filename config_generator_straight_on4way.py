@@ -313,8 +313,8 @@ if 1:
         
         # 固定ego trigger 點，來設置agent 起始位置
         egoTriggerAt = [0, 1, 30, 0, 1]
-        agent1_lat_mode = 'changingLane'
-        agent1_lat_direction = 'right' if relative_pos[1] == 'L' else 'left'
+        agent1_lat_mode = 'goingStraight'
+        agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
 
         # print(egoTriggerAt, relative_pos);
@@ -360,8 +360,8 @@ if 1:
         
         # 固定ego trigger 點，來設置agent 起始位置
         egoTriggerAt = [0, 1, 30, 0, 1]
-        agent1_lat_mode = 'changingLane'
-        agent1_lat_direction = 'right' if relative_pos[1] == 'L' else 'left'
+        agent1_lat_mode = 'goingStraight'
+        agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
 
         # print(egoTriggerAt, relative_pos);
@@ -391,3 +391,5 @@ if 1:
         
         for behavior_type, behavior in BehaviorMode.items():
             clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            
+            
