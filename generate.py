@@ -123,25 +123,27 @@ def parameter_Declaration(Actors, Ego):
                 if act['Type'] == 'zigzag':
                     for eventIndex, event in enumerate(act['Events'], start=1):
                         if event['Type'] == 'offset':
-                            delay = xosc.Parameter(name=f"{actorName}_{actIndex}_Deley",parameter_type="double",value=str(event['Dynamic_delay']))
-                            offset = xosc.Parameter(name=f"{actorName}_{actIndex}_Offset",parameter_type="double",value=str(event['Dynamic_shape']))
-                            period = xosc.Parameter(name=f"{actorName}_{actIndex}_Period",parameter_type="double",value=str(event['Dynamic_duration']))
-                            times = xosc.Parameter(name=f"{actorName}_{actIndex}_Times",parameter_type="double",value=str(event['End']))
+                            delay = xosc.Parameter(name=f"{actorName}_{actIndex}_Delay",parameter_type="double",value=str(event['Dynamic_delay']))
+                            offset = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Offset",parameter_type="double",value=str(event['Dynamic_shape']))
+                            period = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Period",parameter_type="double",value=str(event['Dynamic_duration']))
+                            times = xosc.Parameter(name=f"{actorName}_{actIndex}_TA_Times",parameter_type="double",value=str(event['Use_route']))
                             paraList.extend([delay, offset, period, times])
                         if event['Type'] == 'speed':
-                            dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
-                            dynamicDuration = xosc.Parameter(name=f"{actorName}_{actIndex}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
-                            dynamicShape = xosc.Parameter(name=f"{actorName}_{actIndex}_DynamicShape",parameter_type="double",value=str(event['Dynamic_shape']))
-                            endSpeed = xosc.Parameter(name=f"{actorName}_{actIndex}_EndSpeed",parameter_type="double",value=str(event['End']))
+                            dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_SA_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
+                            dynamicDuration = xosc.Parameter(name=f"{actorName}_{actIndex}_SA_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
+                            dynamicShape = xosc.Parameter(name=f"{actorName}_{actIndex}_SA_DynamicShape",parameter_type="double",value=str(event['Dynamic_shape']))
+                            endSpeed = xosc.Parameter(name=f"{actorName}_{actIndex}_SA_EndSpeed",parameter_type="double",value=str(event['End']))
                             paraList.extend([dynamicDelay, dynamicShape, dynamicDuration, endSpeed])
                 else:
                     for eventIndex, event in enumerate(act['Events'], start=1):
+                        actionName = 'TA'
                         if event['Type'] == 'speed':
-                            endSpeed = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_EndSpeed",parameter_type="double",value=str(event['End']))
+                            actionName = 'SA'
+                            endSpeed = xosc.Parameter(name=f"{actorName}_{actIndex}_{actionName}_EndSpeed",parameter_type="double",value=str(event['End']))
                             paraList.append(endSpeed)
-                        dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
-                        dynamicDuration = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
-                        dynamicShape = xosc.Parameter(name=f"{actorName}_{actIndex}_{eventIndex}_DynamicShape",parameter_type="string",value=event['Dynamic_shape'])
+                        dynamicDelay = xosc.Parameter(name=f"{actorName}_{actIndex}_{actionName}_DynamicDelay",parameter_type="double",value=str(event['Dynamic_delay']))
+                        dynamicDuration = xosc.Parameter(name=f"{actorName}_{actIndex}_{actionName}_DynamicDuration",parameter_type="double",value=str(event['Dynamic_duration']))
+                        dynamicShape = xosc.Parameter(name=f"{actorName}_{actIndex}_{actionName}_DynamicShape",parameter_type="string",value=event['Dynamic_shape'])
                         paraList.extend([dynamicDelay, dynamicDuration, dynamicShape])
 
     for i in paraList:
@@ -211,12 +213,12 @@ def generate_Adv_Maneuver(actorName, agent, Map):
         if act['Type'] == 'zigzag':
             for eventIndex, event in enumerate(act['Events'], start=1):
                 if event['Type'] == 'speed':
-                    currentEvent = generate_Speed_Event(actorName, actIndex, eventIndex, event, previousEventName,type='zigzag')
+                    currentEvent = generate_Speed_Event(actorName, actIndex, 'SA', event, previousEventName,type='zigzag')
                     currentEventName.append(currentEvent.name)
                     advManeuver.add_event(currentEvent)
 
                 elif event['Type'] == 'offset':
-                    zigzagEvent, currentPosition = generate_Zigzag_Event(actorName, actIndex, event, previousEventName, currentPosition) 
+                    zigzagEvent, currentPosition = generate_Zigzag_Event(actorName, actIndex, event, Map,previousEventName, currentPosition) 
                     for currentEvent in zigzagEvent:
                         currentEventName.append(currentEvent.name)
                         advManeuver.add_event(currentEvent)
@@ -228,11 +230,11 @@ def generate_Adv_Maneuver(actorName, agent, Map):
         else:
             for eventIndex, event in enumerate(act['Events'], start=1):
                 if event['Type'] == 'speed':
-                    currentEvent = generate_Speed_Event(actorName, actIndex, eventIndex, event, previousEventName)
+                    currentEvent = generate_Speed_Event(actorName, actIndex, 'SA', event, previousEventName)
                 elif event['Type'] == 'offset':
-                    currentEvent, currentPosition = generate_Offset_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition)
+                    currentEvent, currentPosition = generate_Offset_Event(actorName, actIndex, 'TA', event, previousEventName, currentPosition)
                 elif event['Type'] == 'cut':
-                    currentEvent, currentPosition = generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition)
+                    currentEvent, currentPosition = generate_Cut_Event(actorName, actIndex, 'TA', event, previousEventName, currentPosition)
                 elif event['Type'] == 'position':
                     currentEvent , _ = generate_Position_Event(actorName, actIndex, event, Map, previousEventName ,currentPosition)
                 else:
