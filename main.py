@@ -51,6 +51,7 @@ def main():
                     with open(file_path, 'r') as f:
                         config = yaml.safe_load(f)
                     configFile.append(config)
+                    print('find config file: ', len(configFile),end='\r')
     elif args.config.endswith('.yaml'):
         with open(args.config,'r') as f:
             config = yaml.safe_load(f)
