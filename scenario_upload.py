@@ -145,13 +145,20 @@ def use_scenario_string(content):
 
 
 def upload(scenario_id):
-    scenario_folder = scenario_id.split("_")[0]
-    scenario_index = scenario_id.split("_")[1].split(".")[0]
-    df = pd.read_csv(f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/scenario_config/{scenario_folder}/{scenario_index}.csv')
+    scenario_folder = scenario_id[:scenario_id.rfind("_")]
+    scenario_index = scenario_id[scenario_id.rfind("_")+1:].replace(".xosc", "")
+    
+    if "_" in scenario_folder:
+        parenet_folder = "scenario_config_combined"
+    else:
+        parenet_folder = "scenario_config"
+    # print(f'./scenario_config/{scenario_folder}/{scenario_index}.csv')
+    # exit()
+    df = pd.read_csv(f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{parenet_folder}/{scenario_folder}/{scenario_index}.csv')
     # print(df)
     result = df.replace({np.nan:None})
     if result.empty:
-        print(f"Scenario ID {scenario_id}'s CSV file not found.  " + f'./scenario_config/{scenario_folder}/{scenario_index}.csv')
+        print(f"Scenario ID {scenario_id}'s CSV file not found.  " + f'./{parenet_folder}/{scenario_folder}/{scenario_index}.csv')
         return False
     else:
         result = result.to_dict('records')[0]
@@ -222,7 +229,7 @@ def upload(scenario_id):
 
 
     filename = f"{result['scenario_name']}"
-    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1004/{filename}.xosc"
+    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1016/{filename}.xosc"
 
 
     openScenarioField = upload_openscenario_file(file_path)
@@ -286,7 +293,7 @@ if __name__ == '__main__':
         scenario_ids = args.sc
         if args.sc[0] == 'all':
             scenario_ids = []
-            for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1004/"):
+            for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1016/"):
                 if file.endswith('.xosc'):
                     scenario_ids.append(file)
 

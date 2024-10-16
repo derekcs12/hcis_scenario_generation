@@ -27,8 +27,8 @@ class ScenarioContent:
             'init_dynm': None,
             'init_lat_pos': None,
             'init_long_pos': None,
-            'S': '0-20',
-            'Speed': '0-20',
+            'S': '0~20',
+            'Speed': '0~20',
             '1_SA_EndSpeed': None,
             '1_SA_DynamicDuration': None,
             '1_SA_DynamicDelay': None,
@@ -270,15 +270,15 @@ def create_request_body(
 def get_param_by_behaviormode(behavior_type):
     if behavior_type == 'keeping':
         # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay, ｜ agent1EventStartDelay, TA_DynamicDuration, TA_DynamicDelay
-        return ['0-20','40-60','40-60','5-5','0-3', '0-2', '5-5', '0-1']
+        return ['0~20','40~60','40~60','5~5','0~3', '0~2', '5~5', '0~1']
     elif behavior_type == 'braking':
-        return ['0-20','40-60','10-20','3-5','0-3', '0-2', '5-5', '0-1']
+        return ['0~20','40~60','10~20','3~5','0~3', '0~2', '5~5', '0~1']
     elif behavior_type == 'braking_halt':
-        return ['0-20','40-60','0-0','2-4','0-3', '0-2', '5-5', '0-1']
+        return ['0~20','40~60','0~0','2~4','0~3', '0~2', '5~5', '0~1']
     elif behavior_type == 'sudden_braking_halt':    
-        return ['0-20','40-60','0-0','0.5-2','0-3', '0-2', '5-5', '0-1'] 
+        return ['0~20','40~60','0~0','0.5~2','0~3', '0~2', '5~5', '0~1'] 
     elif behavior_type == 'speed_up':    
-        return ['0-20','0-10','40-60','2-4','0-2', '0-2', '5-5', '0-1']
+        return ['0~20','0~10','40~60','2~4','0~2', '0~2', '5~5', '0~1']
     
 def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag=False):
     # Write scenario description
@@ -309,9 +309,9 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
         })
     elif isZigzag:
         content.agents[0].update({
-            '1_TA_Offset': '0-1',
-            '1_TA_Period': '0.2-1',
-            '1_TA_Times': '1-5',
+            '1_TA_Offset': '-1~1',
+            '1_TA_Period': '0.2~1',
+            '1_TA_Times': '1~5',
         })
     description = descript + behavior_type + lateral_behavior
     csv_row = {'description': description, 'scenario_name': scenario_name}
@@ -379,8 +379,8 @@ def write_param(csv):
             continue
 
         param_info["name"] = col
-        param_info["min"] = csv[col].split('-')[0]
-        param_info["max"] = csv[col].split('-')[1]
+        param_info["min"] = csv[col].split('~')[0]
+        param_info["max"] = csv[col].split('~')[1]
         parameters.append(param_info)
     return parameters
 
