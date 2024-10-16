@@ -25,6 +25,7 @@ def combine_all_scenarios(basic_scenarios_folder):
     print("Total combinations: ", len(cata_combinations))
 
     counter = 0
+    success = True
     for cata1, cata2 in tqdm(cata_combinations):
         # get the number of scenarios in each folder
         cata_1s = len(glob.glob(os.path.join(f'./scenario_config/{cata1}', '*.yaml'), recursive=False))
@@ -33,7 +34,6 @@ def combine_all_scenarios(basic_scenarios_folder):
         # get all combinations of scenarios (scenario's index starts from 1)
         sce_combinations = list(itertools.product(range(1,cata_1s+1), range(1,cata_2s+1)))
         print(f"Combining {cata1} and {cata2} with {len(sce_combinations)} scenarios.")
-        counter += len(sce_combinations)
         
         sc_folder_name = combine.combine_scenario_name(cata1, cata2) 
         print(f"Combined folder name: {sc_folder_name}")
@@ -48,7 +48,8 @@ def combine_all_scenarios(basic_scenarios_folder):
 
             if combined_yaml is None:
                 print(f'Fail: {msg}')
-                counter -= len(sce_combinations)
+                # counter -= len(sce_combinations)
+                success = False
                 break
 
             csv1 = f'{basic_scenarios_folder}/{cata1}/{sce1}.csv'
@@ -61,6 +62,8 @@ def combine_all_scenarios(basic_scenarios_folder):
             save_path = f'{save_root}/{sc_folder_name}/{scenario_number}'
             combine.save_yaml(combined_yaml, f'{save_path}.yaml')
             combine.save_csv(combined_csv, f'{save_path}.csv')
+        if success:
+            counter += len(sce_combinations)
         print('-----------------------------------')
 
     print(f"{counter} scenarios combined.")
