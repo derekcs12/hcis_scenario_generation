@@ -16,30 +16,6 @@ egoStraightAsideLeft = {'Start_pos': [0, 1, 40, 0, 1], 'End_pos': [2, -1, 10, 0,
 egoStraightAsideRight = {'Start_pos': [0, 2, 40, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 30}
 
 
-# agentFromSameDirectionAsideLeft = [0, -1, 60, 0, 1]
-# agentFromSameDirectionAsideRight = [0, -2, 60, 0, 1]
-# agentFromOppositeDirectionAsideLeft = '2 -1 20'
-# # agentFromOppositeDirectionAsideRight = '2 -2 20'
-# agentToSameDirectionAsideLeft = [1, 1, 60, 0, 1]
-# agentToSameDirectionAsideRight = [1, 2, 60, 0, 1]
-# agentToSameRoadOppositeDirectionAsideLeft = '0 -1 20'
-# # agentToOppositeDirectionAsideRight = '2 -2 20'
-# agentFromLeft = '1 1 20'
-# agentFromRight = '3 1 20'
-# agentToLeft = '1 -1 20'
-# agentToRight = '3 -1 20'
-
-"""
-"FL-1": ("relative", -1,  0,  20,  0),
-"FS-2": ("relative",  0,  0,  20,  0),
-"FR-3": ("relative",  1,  0,  20,  0),
-"SL-4": ("relative", -1,  0,   0,  0),
-"SR-5": ("relative",  1,  0,   0,  0),
-"BL-6": ("relative", -1,  0, -20,  0),
-"BS-7": ("relative",  0,  0, -20,  0),
-"BR-8": ("relative",  1,  0, -20,  0),
-"""
-
 
 # BehaviorMode
 AgentSpeed = 40
@@ -64,36 +40,6 @@ config['Actors'] = None
 
 agent1 = {}
 agent1['Type'] = 'car_red'
-
-
-# Motor Turn left
-# (U turn)
-# Motor Turn Right
-#  Turn Left 
-# (U turn)
-# Keep 
-## Not same direction
-# keep / turn left / turn right/ u turn to same line
-# Motor Turn Right(U turn)
-def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, cetranNo=None):
-    agent1['Start_speed'] = behavior[1]
-    agent1_long_event = set_behavior_dict('speed',behavior)
-    agent1_act['Events'] = []
-    agent1_act['Events'].append(agent1_lat_event)
-    agent1_act['Events'].append(agent1_long_event)
-    agent1['Acts'] = [agent1_act]
-    config['Actors'] = {'Agents': [agent1]}
-    
-    name_attribute = f'01{initRelPostAbbvLon}{initRelPostAbbvLat}-{lateral_behavior}'
-    next_id = get_next_id_in_folder(name_attribute)
-    scenario_name = f'{name_attribute}_{next_id}'
-    config['Scenario_name'] = scenario_name
-    save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
-
-    csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
-    # print(csv_row);exit()
-    write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
-
 
 
 # Turn right
@@ -225,26 +171,7 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-
-            agent1['Start_speed'] = behavior[1]
-            agent1_long_event = set_behavior_dict('speed',behavior)
-            agent1_act['Events'] = []
-            agent1_act['Events'].append(agent1_lat_event)
-            agent1_act['Events'].append(agent1_long_event)
-            agent1['Acts'] = [agent1_act]
-            config['Actors'] = {'Agents': [agent1]}
-            
-            name_attribute = f'01{initRelPostAbbvLon}{initRelPostAbbvLat}-{lateral_behavior}'
-            next_id = get_next_id_in_folder(name_attribute)
-            scenario_name = f'{name_attribute}_{next_id}'
-            config['Scenario_name'] = scenario_name
-            save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
-
-            cetranNo = None
-            csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
-            # print(csv_row);exit()
-            write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
-
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
 
 #  Left turn From opposite direction
 if 1: 
@@ -381,7 +308,7 @@ if 1:
             clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
             
         
-############# Motor ###############
+############## Motor ##############
 agent1['Type'] = 'bicycle'
 # Turn right
 if 1: 
@@ -466,4 +393,3 @@ if 1:
             
             for behavior_type, behavior in BehaviorMode.items():
                 clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
-
