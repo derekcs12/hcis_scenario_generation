@@ -343,7 +343,7 @@ if 1:
     agent1['Type'] = 'bicycle'
     lateral_behavior = 'ZZ'
 
-    for relative_pos in ["FL-M1","FL-M2","FR-M1","FR-M2","SL-M2","SR-M2"]:
+    for relative_pos in ["FL-M1","FR-M1","FR-M2","SR-M2"]:
         descript = f"Bike zigzag at {relative_pos} - "
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
