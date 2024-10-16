@@ -7,7 +7,7 @@
 ```
 python config_generator_4way.py
 python config_generator_straight.py
-python config_generator_straight_on4way.py   #For straight&4way scenario combination at 4way crossroad
+python config_generator_straight_at4way.py   #For straight&4way scenario combination at 4way crossroad
 ```
 
 ### Combine scenarios
@@ -40,4 +40,4 @@ Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_c
 - combine_all.py : combine all scenarios in `./scenario_config`
 - config_generator_4way.py : generate 4way scenarios, e.g. left turn, U turn, ...
 - config_generator_straight.py : generate straight scenarios, e.g. cut-in/out, zigzag
-- config_generator_straight_on4way.py : generate straight scenarios over 4way topology, e.g. cut-in/out, zigzag at crossroad
+- config_generator_straight_at4way.py : generate straight scenarios over 4way topology, e.g. cut-in/out, zigzag at crossroad
