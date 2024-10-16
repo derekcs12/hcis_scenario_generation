@@ -349,13 +349,14 @@ if 1:
         for behavior_type, behavior in BehaviorMode.items():
             clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
 
+
 #  Motor Left U turn
 if 1:
     config['Ego'] = egoStraightAsideLeft
 
     # Agent
     lateral_behavior = 'TL'
-    for relative_pos in ["FL-M1","FR-M1","SL-M1","SR-M1"]:
+    for relative_pos in ["FL-M1","FR-M1","SL-M1","SR-M1","FR-M2","SR-M2"]:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
@@ -377,7 +378,7 @@ if 1:
         agent1_act['Delay'] = 0
         agent1_act['Events'] = []
 
-        for end, action in [ #([1, -1, 10, 0, 1],'turning left'), 
+        for end, action in [([1, -1, 10, 0, 1],'turning left'), 
                             ([0, -1, 15, 0, 1],'left U turn')]: 
             descript = f"Agent at {relative_pos} {action} - "
 
@@ -386,9 +387,9 @@ if 1:
             agent1_lat_event['Type'] = 'position'
             agent1_lat_event['Dynamic_delay'] = 0
             agent1_lat_event['Dynamic_duration'] = 1
-            agent1_lat_event['Dynamic_shape'] = 'Curve'
+            agent1_lat_event['Dynamic_shape'] = 'Curve' #if action is 'left U turn' else 'Route'
             agent1_lat_event['End'] = end
-            agent1_lat_event['Use_route'] = list(config['Center'])
+            agent1_lat_event['Use_route'] = list(config['Center']) # if action is 'left U turn' else None
 
             
             for behavior_type, behavior in BehaviorMode.items():

@@ -84,6 +84,47 @@ if 1:
     for behavior_type, behavior in BehaviorMode.items():
         clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
 
+
+
+# cut-in(Serving) : Agent at 5 cut in
+if 1: 
+    lateral_behavior = 'CI'
+    descript = "Agent at 5 cut in(Serving)"
+    itri_tags = ['']
+    relative_pos = 'SR-5'
+    initRelPostAbbvLon = relative_pos[0]
+    initRelPostAbbvLat = relative_pos[1]
+
+    egoTriggerAt = [0, 1, 30, 0, 1]
+    agent1_lat_mode = 'changingLane'
+    agent1_lat_direction = 'left'
+    agent1_init_direction = 'sameAsEgo'
+
+    agent1['Start_pos'] = set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos)
+    agent1['Start_speed'] = None
+    agent1['Start_trigger'] = set_trigger_dict_from_absolute_pos(road=egoTriggerAt[0], 
+                                                                    lane=egoTriggerAt[1], 
+                                                                    s=egoTriggerAt[2], 
+                                                                    offset=egoTriggerAt[3])
+    agent1['Acts'] = []
+
+    agent1_act = {}
+    agent1_act['Type'] = 'Cut-in'
+    agent1_act['Delay'] = 0
+    agent1_act['Events'] = []
+
+    agent1_lat_event = {}
+    agent1_lat_event['Type'] = 'cut'
+    agent1_lat_event['Dynamic_delay'] = 0
+    agent1_lat_event['Dynamic_duration'] = 2.5
+    agent1_lat_event['Dynamic_shape'] = 'linear'
+    agent1_lat_event['End'] = [1, 0]
+    agent1_lat_event['Use_route'] = None
+
+    
+    for behavior_type, behavior in BehaviorMode.items():
+        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+
 # cut-out : Agent at 2 cut out
 if 1: 
     descript = "Agent at 2 cut out"

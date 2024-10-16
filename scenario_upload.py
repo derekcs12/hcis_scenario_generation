@@ -3,6 +3,7 @@ import json
 from typing import List
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from pprint import pprint
 
 from upload_utils import *
@@ -298,7 +299,7 @@ if __name__ == '__main__':
                     scenario_ids.append(file)
 
         success_upload = 0
-        for scenario_id in scenario_ids:
+        for scenario_id in tqdm(scenario_ids):
             print(f"Uploading scenario {scenario_id}...")
             if upload(scenario_id):
                 success_upload += 1
@@ -321,3 +322,4 @@ if __name__ == '__main__':
     # data = 
     # print(data)
     # exit()
+    
