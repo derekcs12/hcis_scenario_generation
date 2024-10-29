@@ -52,7 +52,8 @@ def generate(config, company='HCISLab'):
     # activate_controller = 'false' if config['DeactivateControl'] else 'true'
     activate_controller = 'true'
     egocontl = xosc.ActivateControllerAction(lateral = activate_controller, longitudinal = activate_controller)
-    egofinal = xosc.AcquirePositionAction(create_LanePosition_from_config(config['Map'],config['Ego']['End_pos'])) #Ego終點
+    egoEndPosition = create_LanePosition_from_config(config['Map'],config['Ego']['End_pos'])
+    egofinal = xosc.AcquirePositionAction(egoEndPosition) #Ego終點
     init.add_init_action('Ego', egostart)
     init.add_init_action('Ego', egospeed)
     init.add_init_action('Ego', egocontl)
@@ -76,7 +77,7 @@ def generate(config, company='HCISLab'):
                 allManeuver[actorName] = agentManeuver
     
 
-    sb = xosc.StoryBoard(init, create_StopTrigger('Ego',distance=500, allEventName=allEvent))
+    sb = xosc.StoryBoard(init, create_StopTrigger('Ego', egoEndPosition ,distance=500, allEventName=allEvent))
     for man in allManeuver:
         sb.add_maneuver(allManeuver[man], man)
 
@@ -219,7 +220,9 @@ def generate_Adv_Maneuver(actorName, agent, Map):
                     currentEvent = generate_Speed_Event(actorName, actIndex, 'SA', event, previousEventName,type='zigzag')
                     currentEventName.append(currentEvent.name)
                     advManeuver.add_event(currentEvent)
-
+                    if event['End'] == 0:
+                        terminateEvent = create_Terminate_Event(actorName, actIndex, currentEvent)
+                        advManeuver.add_event(terminateEvent)
                 elif event['Type'] == 'offset':
                     zigzagEvent, currentPosition = generate_Zigzag_Event(actorName, actIndex, event, Map,previousEventName, currentPosition) 
                     for currentEvent in zigzagEvent:
@@ -234,6 +237,9 @@ def generate_Adv_Maneuver(actorName, agent, Map):
             for eventIndex, event in enumerate(act['Events'], start=1):
                 if event['Type'] == 'speed':
                     currentEvent = generate_Speed_Event(actorName, actIndex, 'SA', event, previousEventName)
+                    if event['End'] == 0:
+                        terminateEvent = create_Terminate_Event(actorName, actIndex, currentEvent)
+                        advManeuver.add_event(terminateEvent)
                 elif event['Type'] == 'offset':
                     currentEvent, currentPosition = generate_Offset_Event(actorName, actIndex, 'TA', event, previousEventName, currentPosition)
                 elif event['Type'] == 'cut':
