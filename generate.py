@@ -68,16 +68,18 @@ def generate(config, company='HCISLab'):
     ### Storyboard - Event
     allEvent = []
     allManeuver = {}
+    allStartEvent = []
     for actors in Actors:
         for actorIndex, actor in enumerate(Actors[actors],start=1):
             actorName = f"{actors[:-1]}{actorIndex}"
             agentManeuver, previousEventNames = generate_Adv_Maneuver(actorName, actor, config['Map'])
             if agentManeuver is not None:
+                allStartEvent.append(previousEventNames[0])
                 allEvent.extend(previousEventNames)
                 allManeuver[actorName] = agentManeuver
     
 
-    sb = xosc.StoryBoard(init, create_StopTrigger('Ego', egoEndPosition ,distance=500, allEventName=allEvent))
+    sb = xosc.StoryBoard(init, create_StopTrigger('Ego', egoEndPosition ,distance=500, allEventName=allEvent, agentCount=agentCount, pedestrianCount=pedCount))
     for man in allManeuver:
         sb.add_maneuver(allManeuver[man], man)
 
@@ -208,7 +210,6 @@ def generate_Adv_Maneuver(actorName, agent, Map):
     currentPosition[3] = currentPosition[3] * np.sign(currentPosition[1])
     for actIndex, act in enumerate(agent['Acts'], start=1):
         # Add dummy event first to avoid the action disappear and support overall delay
-        # dummyEvent = create_Dummy_Event(actorName ,actIndex,act['Delay'],previousEventName)
         dummyEvent = create_Dummy_Event(actorName ,actIndex, f"{actorName}_{actIndex}_Delay",previousEventName)
         advManeuver.add_event(dummyEvent)
         previousEventName = [dummyEvent.name]

@@ -300,16 +300,13 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
 
 
 
-def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5 ,allEventName=[]):
+def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5 ,allEventName=[], agentCount=0, pedestrianCount=0):
     reachTarget_group = xosc.ConditionGroup()
-    element_group = xosc.ConditionGroup()
+    event_group = xosc.ConditionGroup()
     standStill_group = xosc.ConditionGroup()
+    start_group = xosc.ConditionGroup()
     
-    # stopdist_trigger = xosc.EntityTrigger(
-    #         "stoptrigger", 0, xosc.ConditionEdge.none, xosc.TraveledDistanceCondition(value = distance), egoName
-    # )
-    
-    ### Ego reach the target point
+    """ End Condition 1. - Ego reach the target point"""
     reachPosCondition = xosc.ReachPositionCondition(egoTragetPoint, tolerance = 2)
     stopdist_trigger = xosc.EntityTrigger(name = "EgoApproachEndWp", 
                               delay = 0,
@@ -318,31 +315,45 @@ def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5 ,allEventNa
                               triggerentity = egoName, triggeringrule = "any")
     reachTarget_group.add_condition(stopdist_trigger)
 
-    ### All event complete
+    """ End Condition 2. - All event complete"""
     for event_name in allEventName:
         element_trigger = xosc.ValueTrigger(
             "stoptrigger", time, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
         )
-        element_group.add_condition(element_trigger)
+        event_group.add_condition(element_trigger)
 
         # event_name = f"Adv{i}StartSpeedEvent"
         # element_trigger = xosc.ValueTrigger(
         #     "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
         # )
-        # element_group.add_condition(element_trigger)
+        # event_group.add_condition(element_trigger)
 
-    ### Ego stand still
+    """End Condition 3. - Ego stand still"""
     # standStill_condition = xosc.StandStillCondition(10)
     standStill_trigger = xosc.EntityTrigger(
         "stoptrigger", 0, xosc.ConditionEdge.rising, xosc.StandStillCondition(10), egoName
     )
     standStill_group.add_condition(standStill_trigger)
     
+    """End Condition 4. - All start event Triggered"""
+    for agentId in range(agentCount):
+        trigger = xosc.ValueTrigger(
+            "stoptrigger", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=f"Agent{agentId+1}_StartSpeedEvent", state=xosc.StoryboardElementState.completeState)
+        )
+        start_group.add_condition(trigger)    
+    for pedestrianId in range(pedestrianCount):
+        trigger = xosc.ValueTrigger(
+            "stoptrigger", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=f"Pedestrian{pedestrianId+1}_StartSpeedEvent", state=xosc.StoryboardElementState.completeState)
+        )
+        start_group.add_condition(trigger)
+    
+    
     # create trigger and add the two conditiongroups (or logic)
     stopTrigger = xosc.Trigger('stop')
     stopTrigger.add_conditiongroup(reachTarget_group)
-    stopTrigger.add_conditiongroup(element_group)
+    stopTrigger.add_conditiongroup(event_group)
     stopTrigger.add_conditiongroup(standStill_group)
+    stopTrigger.add_conditiongroup(start_group)
     
     return stopTrigger
 
