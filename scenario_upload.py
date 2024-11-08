@@ -3,6 +3,8 @@ import json
 from typing import List
 import pandas as pd
 import numpy as np
+import time
+
 from tqdm import tqdm
 from pprint import pprint
 
@@ -21,7 +23,7 @@ if 'init':
     
         
     tags_to_be_used_in_created_scenario = [
-        "behavior:intersection",
+        # "behavior:intersection",
         "party:hcis",
         "deliver:2024Sep",
         "field:hct",
@@ -108,6 +110,8 @@ def upload_openscenario_file(file_path, filename=None):
         }
   
         if filename in all_tags.keys():
+            print("  Xosc file already exists.")
+            return
             scenario_uuid = all_tags[filename]
             # update xosc
             r = requests.patch(
@@ -116,6 +120,7 @@ def upload_openscenario_file(file_path, filename=None):
                 files=files,
             )
         else:
+            time.sleep(0.5)
             r = requests.post(
                 f"{base_url}/openScenarios",
                 headers=headers,
@@ -143,6 +148,30 @@ def use_scenario_string(content):
         "type": "String",
         "content": content,
     }
+
+
+import requests
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fetch_scenarios(url, headers):
+    
+    response = requests.get(
+        url,
+        headers=headers
+    )
+    return response.json()["docs"]
+
+def check_scenario_exists(base_url, headers, filename):
+    scenarios_doc = fetch_scenarios(base_url, headers)
+    all_scenarios = dict((scenario["scenarioId"], scenario["id"]) for scenario in scenarios_doc)
+    
+    if filename in all_scenarios.keys():  # Update
+        print("  Scenario already exists.")
+        return True
+
+    return False
+
 
 
 def upload(scenario_id):
@@ -226,7 +255,8 @@ def upload(scenario_id):
     }
 
 
-    observation_recording_agents = ["Agent1"]
+    # observation_recording_agents = ["Agent1"]
+    observation_recording_agents = []
 
 
     filename = f"{result['scenario_name']}"
@@ -255,15 +285,36 @@ def upload(scenario_id):
         egoTargetSpeed = 50
     )
 
-
+    r = ''
+    """
     scenarios_doc = requests.get(
         f"{base_url}/scenarios?limit=10000&where[createdBy][equals]=HCIS%20Lab",
         headers=headers).json()["docs"]
     all_scenarios = dict( [ (scenario["scenarioId"], scenario["id"]) for scenario in scenarios_doc ] )
+    """
+    
+    url = f"{base_url}/scenarios?limit=10000&where[createdBy][equals]=HCIS%20Lab"
+    exists = check_scenario_exists(url, headers, filename)
+    if exists:
+        print(f"Scenario {filename} exists.")
+        return
+        r = requests.patch(f"{base_url}/scenarios/{all_scenarios[filename]}", headers=headers, json=data)
+    else:
+        time.sleep(0.1)
+        r = requests.post(f"{base_url}/scenarios", headers=headers, json=data)
+        # print(f"Scenario {filename} does not exist.")
+    """
+
+
     if filename in all_scenarios.keys(): # Update
+        print("  Scenario already exists.")
+        return
         r = requests.patch(f"{base_url}/scenarios/{all_scenarios[filename]}", headers=headers, json=data)
     else: # Create
+        time.sleep(0.1)
         r = requests.post(f"{base_url}/scenarios", headers=headers, json=data)
+    """
+        
     try:
         print("  ",r.json().get("message"))
         if (r.status_code == 201 and r.json().get("message") == "Scenario successfully created.") or \
@@ -301,6 +352,7 @@ if __name__ == '__main__':
         success_upload = 0
         for scenario_id in tqdm(scenario_ids):
             print(f"Uploading scenario {scenario_id}...")
+            
             if upload(scenario_id):
                 success_upload += 1
             else:
@@ -309,6 +361,8 @@ if __name__ == '__main__':
             
 
     finally:
+        # 清除緩存
+        fetch_scenarios.cache_clear()
         print(f'{success_upload} Done.')
 
 

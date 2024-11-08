@@ -344,7 +344,7 @@ def add_itri_tags(csv):
     if 'OT' in csv['scenario_name']:
         tags.append('behavior:overtake')
     if 'SP' in csv['scenario_name']:
-        tags.append('behavior:side-pass')
+        tags.append('behavior:sidepass')
 
     if csv['agent1_type'] == 'M1':
         tags.append('vehicle:car')
