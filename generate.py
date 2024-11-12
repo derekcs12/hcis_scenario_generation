@@ -68,13 +68,11 @@ def generate(config, company='HCISLab'):
     ### Storyboard - Event
     allEvent = []
     allManeuver = {}
-    allStartEvent = []
     for actors in Actors:
         for actorIndex, actor in enumerate(Actors[actors],start=1):
             actorName = f"{actors[:-1]}{actorIndex}"
             agentManeuver, previousEventNames = generate_Adv_Maneuver(actorName, actor, config['Map'])
             if agentManeuver is not None:
-                allStartEvent.append(previousEventNames[0])
                 allEvent.extend(previousEventNames)
                 allManeuver[actorName] = agentManeuver
     
