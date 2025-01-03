@@ -34,7 +34,7 @@ def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
     # check if map is the same
     if(yaml1['Map'] != yaml2['Map']):
         # print('maps are different')
-        msg = 'Eaps are different'
+        msg = 'Maps are different'
         return None, msg
     
     # combine actors
@@ -83,9 +83,9 @@ def combine_csv(csv1, csv2, combined_scenario_name, mode='agent'):
     # get agent count
     agent_count = int(data1[0][-1].split('_')[0][5:])
     for index, col in enumerate(data2[0]):
-        if 'agent' in col:
+        if 'Agent' in col:
             current_agent_count = int(col.split('_')[0][5:])
-            data2[0][index] = f'agent{current_agent_count+agent_count}_' + '_'.join(col.split('_')[1:])
+            data2[0][index] = f'Agent{current_agent_count+agent_count}_' + '_'.join(col.split('_')[1:])
 
     # combine first row
     combined_csv = data1

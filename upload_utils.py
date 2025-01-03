@@ -52,7 +52,7 @@ class ScenarioContent:
         
         for i, agent in enumerate(self.agents):
             for key, value in agent.items():
-                re[f'agent{i+1}_{key}'] = value
+                re[f'Agent{i+1}_{key}'] = value
                 
         return re
     
@@ -101,18 +101,18 @@ class ScenarioTagTree:
         for i in range(1, actor_num+1):
             actor = {
                 "initialState": {
-                    "direction": row[f'agent{i}_init_direction'],
-                    "dynamics": row[f'agent{i}_init_dynm'],
-                    "lateralPosition": row[f'agent{i}_init_lat_pos'],
-                    "longitudinalPosition": row[f'agent{i}_init_long_pos']
+                    "direction": row[f'Agent{i}_init_direction'],
+                    "dynamics": row[f'Agent{i}_init_dynm'],
+                    "lateralPosition": row[f'Agent{i}_init_lat_pos'],
+                    "longitudinalPosition": row[f'Agent{i}_init_long_pos']
                 },
                 "leadVehicle": {
                     "mode": 'appearing',
                     "appearingMode": 'gapClosing'
                 },
             }
-            actor['vehicleLongitudinalActivity'] = self._set_longitudinal_activity(row[f'agent{i}_long_mode'], row[f'agent{i}_long_mode_type'])
-            actor['vehicleLateralActivity'] = self._set_lateral_activity(row[f'agent{i}_lat_mode'], row[f'agent{i}_lat_direction'])
+            actor['vehicleLongitudinalActivity'] = self._set_longitudinal_activity(row[f'Agent{i}_long_mode'], row[f'Agent{i}_long_mode_type'])
+            actor['vehicleLateralActivity'] = self._set_lateral_activity(row[f'Agent{i}_lat_mode'], row[f'Agent{i}_lat_direction'])
             self.tagTree["actors"].append(actor)
 
     def set_road_layout(self, row):
@@ -192,9 +192,9 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
     print(f"write {scenario_id}, description: {content[0]['description']}.")
 
     columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
-               'agent1_type', 'agent1_long_mode', 'agent1_long_mode_type', 'agent1_lat_mode', 'agent1_lat_direction',
-               'agent1_init_direction', 'agent1_init_dynm', 'agent1_init_lat_pos', 'agent1_init_long_pos',
-               'agent1_S','agent1_Speed','agent1_1_SA_EndSpeed','agent1_1_SA_DynamicDuration','agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
+               'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
+               'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
+               'Agent1_S','Agent1_Speed','Agent1_1_SA_EndSpeed','Agent1_1_SA_DynamicDuration','Agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
               ]   
     
     for col in content[0].keys():
@@ -268,6 +268,7 @@ def create_request_body(
     }
     
 def get_param_by_behaviormode(behavior_type):
+    """ 
     if behavior_type == 'keeping':
         # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay, ｜ agent1EventStartDelay, TA_DynamicDuration, TA_DynamicDelay
         return ['0~20','40~60','40~60','5~5','0~3', '0~2', '5~5', '0~1']
@@ -279,6 +280,26 @@ def get_param_by_behaviormode(behavior_type):
         return ['0~20','40~60','0~0','0.5~2','0~3', '0~2', '5~5', '0~1'] 
     elif behavior_type == 'speed_up':    
         return ['0~20','0~10','40~60','2~4','0~2', '0~2', '5~5', '0~1']
+    """
+    
+    if behavior_type == 'keeping':
+        # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay, ｜ agent1EventStartDelay, TA_DynamicDuration, TA_DynamicDelay
+        return ['0~20','40~60','40~60','5~5','0~3', '0~2', '5~5', '0~1']
+        # # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, TA_DynamicDuration
+        # return ['0~20','40~60','40~60','5~5', '5~5']
+    elif behavior_type == 'braking':
+        return ['0~20','40~60','10~20','3~5','0~3', '0~2', '5~5', '0~1']
+        # return ['0~20','40~60','10~20','3~5', '5~5']
+    elif behavior_type == 'braking_halt':
+        return ['0~20','40~60','0~0','2~4','0~3', '0~2', '5~5', '0~1']
+        # return ['0~20','40~60','0~0','2~4', '5~5']
+    elif behavior_type == 'sudden_braking_halt':    
+        return ['0~20','40~60','0~0','0.5~2','0~3', '0~2', '5~5', '0~1'] 
+        # return ['0~20','40~60','0~0','0.5~2', '5~5'] 
+    elif behavior_type == 'speed_up':    
+        return ['0~20','0~10','40~60','2~4','0~2', '0~2', '5~5', '0~1']
+        # return ['0~20','0~10','40~60','2~4', '5~5']
+    
     
 def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag=False):
     # Write scenario description
@@ -297,21 +318,21 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
         'init_long_pos': get_tag(initRelPostAbbvLon, 'init_long_pos'),
         'S': get_param_by_behaviormode(behavior_type)[0],
         'Speed': get_param_by_behaviormode(behavior_type)[1],
-        '1_DynamicDelay': get_param_by_behaviormode(behavior_type)[5],
+        '1_DynamicDelay': '0~0', # get_param_by_behaviormode(behavior_type)[5]
         '1_SA_EndSpeed': get_param_by_behaviormode(behavior_type)[2],
         '1_SA_DynamicDuration': get_param_by_behaviormode(behavior_type)[3],
-        '1_SA_DynamicDelay': get_param_by_behaviormode(behavior_type)[4],
+        '1_SA_DynamicDelay': '0~0', # get_param_by_behaviormode(behavior_type)[4]
     })
     if not isZigzag:
         content.agents[0].update({
             '1_TA_DynamicDuration': get_param_by_behaviormode(behavior_type)[6],
-            '1_TA_DynamicDelay': get_param_by_behaviormode(behavior_type)[7],
+            '1_TA_DynamicDelay': '0~0', # get_param_by_behaviormode(behavior_type)[7]
         })
     elif isZigzag:
         content.agents[0].update({
-            '1_TA_Offset': '-1~1',
+            '1_TA_Offset': '-1', #'-1~1'
             '1_TA_Period': '0.2~1',
-            '1_TA_Times': '1~5',
+            '1_TA_Times': '3', #'1~5'
         })
     description = descript + behavior_type + lateral_behavior
     csv_row = {'description': description, 'scenario_name': scenario_name}
@@ -346,9 +367,9 @@ def add_itri_tags(csv):
     if 'SP' in csv['scenario_name']:
         tags.append('behavior:sidepass')
 
-    if csv['agent1_type'] == 'M1':
+    if csv['Agent1_type'] == 'M1':
         tags.append('vehicle:car')
-    if csv['agent1_type'] == 'Cyclist':
+    if csv['Agent1_type'] == 'Cyclist':
         tags.append('vehicle:scooter')
 
     return tags
@@ -367,14 +388,16 @@ def write_param(csv):
             param_info["unit"] = "m"
         elif '_DynamicDuration' in col:
             param_info["unit"] = "s"
-        elif '_DynamicDelay' in col:
-            param_info["unit"] = "s"
-        elif '_Offset' in col:
-            param_info["unit"] = "m"
+        # elif '_DynamicDelay' in col:
+        #     param_info["unit"] = "s"
+        # elif '_Delay' in col:
+        #     param_info["unit"] = "s"
+        # elif '_Offset' in col:
+        #     param_info["unit"] = "m"
         elif '_Period' in col:
             param_info["unit"] = "1/s"
-        elif '_Times' in col:
-            param_info["unit"] = "times"
+        # elif '_Times' in col:
+        #     param_info["unit"] = "times"
         else:
             continue
 

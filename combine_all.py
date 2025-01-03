@@ -26,18 +26,17 @@ def combine_all_scenarios(basic_scenarios_folder):
     print("Total combinations: ", len(cata_combinations))
 
     counter = 0
-    success = True
     for cata1, cata2 in tqdm(cata_combinations):
+        success = True
         # get the number of scenarios in each folder
         cata_1s = len(glob.glob(os.path.join(f'./scenario_config/{cata1}', '*.yaml'), recursive=False))
         cata_2s = len(glob.glob(os.path.join(f'./scenario_config/{cata2}', '*.yaml'), recursive=False))
 
         # get all combinations of scenarios (scenario's index starts from 1)
         sce_combinations = list(itertools.product(range(1,cata_1s+1), range(1,cata_2s+1)))
-        print(f"Combining {cata1} and {cata2} with {len(sce_combinations)} scenarios.")
-        
+
         sc_folder_name = combine.combine_scenario_name(cata1, cata2) 
-        print(f"Combined folder name: {sc_folder_name}")
+        print(f"Combining {cata1.ljust(9)} and {cata2.ljust(9)} with {str(len(sce_combinations)).ljust(5)}scenarios. Output folder: {sc_folder_name.ljust(25)}")
         for sce1, sce2 in sce_combinations:
             # get the current scenario number in the folder
             scenario_number = len(glob.glob(os.path.join(f'{save_root}/{sc_folder_name}', '*.yaml'), recursive=False))+1

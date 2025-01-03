@@ -11,8 +11,8 @@ config['Map'] = [139, 166]
 
 
 
-egoStraightAsideLeft = {'Start_pos': [0, -1, 40, 0, 1], 'End_pos': [1, 1, 10, 0, 1],'Start_speed': 30}
-egoStraightAsideRight = {'Start_pos': [0, -2, 40, 0, 1], 'End_pos': [1, 2, 10, 0, 1],'Start_speed': 30}
+egoStraightAsideLeft = {'Start_pos': [0, -1, 40, 0, 1], 'End_pos': [1, 1, 10, 0, 1],'Start_speed': 40}
+egoStraightAsideRight = {'Start_pos': [0, -2, 40, 0, 1], 'End_pos': [1, 2, 10, 0, 1],'Start_speed': 40}
 
 
 agentFromSameDirectionAsideLeft = [0, -1, 60, 0, 1]
