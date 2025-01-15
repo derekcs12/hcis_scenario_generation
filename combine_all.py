@@ -45,7 +45,6 @@ def combine_all_scenarios(basic_scenarios_folder):
             yaml1 = f'{basic_scenarios_folder}/{cata1}/{sce1}.yaml'
             yaml2 = f'{basic_scenarios_folder}/{cata2}/{sce2}.yaml'
             combined_yaml, msg= combine.combine_yaml(yaml1, yaml2, combined_scenario_name, mode='agent')
-
             if combined_yaml is None:
                 print(f'Fail: {msg}')
                 # counter -= len(sce_combinations)
@@ -62,11 +61,13 @@ def combine_all_scenarios(basic_scenarios_folder):
             save_path = f'{save_root}/{sc_folder_name}/{scenario_number}'
             combine.save_yaml(combined_yaml, f'{save_path}.yaml')
             combine.save_csv(combined_csv, f'{save_path}.csv')
-        if success:
-            counter += len(sce_combinations)
+            counter +=1
+        # if success:
+        #     counter += len(sce_combinations)
         print('-----------------------------------')
 
     print(f"{counter} scenarios combined.")
+
 
 def show_statistics(basic_scenarios_folder):
     # Get all folder in ./scenario_config

@@ -352,7 +352,7 @@ def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5 ,allEventNa
     stopTrigger = xosc.Trigger('stop')
     stopTrigger.add_conditiongroup(reachTarget_group)
     stopTrigger.add_conditiongroup(event_group)
-    stopTrigger.add_conditiongroup(standStill_group)
+    # stopTrigger.add_conditiongroup(standStill_group) #工研院:會因為自駕系統來不及接上導致情境被直接關掉
     stopTrigger.add_conditiongroup(start_group)
     
     return stopTrigger
