@@ -7,11 +7,15 @@ import re
 import yaml
 from dicent_utils import *
 
+import xml.etree.ElementTree as ET
+from scenariogeneration import xosc, prettyprint
+
 class ScenarioContent:
     def __init__(self, road_layout, road_layout_mode='noTrafficLight', cetran_number=None, agent_number=1):
         self.road_layout = road_layout
         self.road_layout_mode = road_layout_mode
         self.cetran_number = cetran_number
+        self.route = None
         self.ego_long_mode = None,
         self.ego_long_mode_type = None,
         self.ego_lat_mode = None
@@ -189,9 +193,10 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
         {'Name': 'Charlie', 'Age': 35, 'City': 'Chicago'}
     ]
     """
+    # return
     print(f"write {scenario_id}, description: {content[0]['description']}.")
 
-    columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
+    columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'route_name' ,'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
                'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
                'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
                'Agent1_S','Agent1_Speed','Agent1_1_SA_EndSpeed','Agent1_1_SA_DynamicDuration','Agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
@@ -301,7 +306,7 @@ def get_param_by_behaviormode(behavior_type):
         # return ['0~20','0~10','40~60','2~4', '5~5']
     
     
-def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag=False):
+def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, route_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag=False):
     # Write scenario description
     content = ScenarioContent('junction', cetran_number=cetranNo)
     content.ego_long_mode = 'drivingForward'
@@ -335,7 +340,7 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
             '1_TA_Times': '3', #'1~5'
         })
     description = descript + behavior_type + lateral_behavior
-    csv_row = {'description': description, 'scenario_name': scenario_name}
+    csv_row = {'description': description, 'scenario_name': scenario_name, 'route_name': route_name}
     csv_row.update(content.to_dict())
     return csv_row
 
@@ -408,7 +413,7 @@ def write_param(csv):
     return parameters
 
 
-def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, cetranNo=None):
+def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, cetranNo=None, route='hct_default'):
     agent1['Start_speed'] = behavior[1]
     agent1_long_event = set_behavior_dict('speed',behavior)
     agent1_act['Events'] = []
@@ -424,6 +429,15 @@ def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agen
     save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
 
     isZigzag = True if agent1_act['Type'] == 'zigzag' else False
-    csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag)
+    csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, route, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo,  agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag)
     # print(csv_row);exit()
     write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
+
+# Get Ego Start Road ID and Lane ID from XOSC file by using scenariogenerator package.
+# Input: file_path, ego_name='Ego', Return: road_id, lane_id
+def get_ego_start_road_and_lane(file_path, ego_name='Ego'):
+    scenario = xosc.ParseOpenScenario(file_path)
+    return scenario
+    
+
+

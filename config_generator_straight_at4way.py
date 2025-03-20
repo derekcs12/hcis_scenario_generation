@@ -12,6 +12,8 @@ config['Map'] = [121, 144]
 
 egoStraightAsideLeft = {'Start_pos': [0, 1, 40, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 40}
 egoStraightAsideRight = {'Start_pos': [0, 2, 40, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 40}
+aside_left_route = 'hsinchu_gfr_pr_br_elr' # 靠左
+aside_right_route = 'hcis_route2' # 靠右
 
 
 agentFromSameDirectionAsideLeft = [0, -1, 60, 0, 1]
@@ -40,6 +42,7 @@ BehaviorMode['speed_up'] = ( 'Speed up.',0, AgentSpeed, DynamicDuration-1, 'line
 ##### Ego Go Straight Aside Right #####
 config['Ego'] = egoStraightAsideLeft
 config['Actors'] = None
+route = aside_left_route
 
 agent1 = {}
 agent1['Type'] = 'car_red'
@@ -82,7 +85,7 @@ if 1:
 
     
     for behavior_type, behavior in BehaviorMode.items():
-        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 
 
@@ -123,7 +126,7 @@ if 1:
 
     
     for behavior_type, behavior in BehaviorMode.items():
-        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 # cut-out : Agent at 2 cut out
 if 1: 
@@ -162,7 +165,7 @@ if 1:
 
     
     for behavior_type, behavior in BehaviorMode.items():
-        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 # keeping at 2
 if 1:
@@ -201,7 +204,7 @@ if 1:
 
         
     for behavior_type, behavior in BehaviorMode.items():
-        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 # keeping at 2 far
 if 1:
@@ -241,11 +244,12 @@ if 1:
 
         
     for behavior_type, behavior in BehaviorMode.items():
-        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+        clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
         
 # zigzag
 if 1:
     config['Ego'] = egoStraightAsideLeft # [0, -1, 40, 0, 1]
+    route = aside_left_route
     agent1 = {}
     agent1['Type'] = 'car_red'
     lateral_behavior = 'ZZ'
@@ -287,7 +291,7 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
             
 ############## Motor ##############    
 # Motor keeping at all
@@ -329,11 +333,12 @@ if 1:
 
             
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 # Motor cut in to middle/nearside
 if 1:
     config['Ego'] = egoStraightAsideLeft # [0, -1, 40, 0, 1]
+    route = aside_left_route
     agent1 = {}
     agent1['Type'] = 'bicycle'
     lateral_behavior = 'CI'
@@ -373,11 +378,12 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 # Motor zigzag
 if 1:
     config['Ego'] = egoStraightAsideLeft # [0, -1, 40, 0, 1]
+    route = aside_left_route
     agent1 = {}
     agent1['Type'] = 'bicycle'
     lateral_behavior = 'ZZ'
@@ -417,6 +423,6 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
             
 # Motor cut in to middle/nearside

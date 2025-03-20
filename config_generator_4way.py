@@ -14,7 +14,8 @@ config['Center'] = [685.61, -134.05]
 
 egoStraightAsideLeft = {'Start_pos': [0, 1, 40, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 40}
 egoStraightAsideRight = {'Start_pos': [0, 2, 40, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 40}
-
+aside_left_route = 'hsinchu_gfr_pr_br_elr' # 靠左
+aside_right_route = 'hcis_route2' # 靠右
 
 
 # BehaviorMode
@@ -51,6 +52,7 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
 
         config['Ego'] = egoStraightAsideRight
+        route = aside_right_route
         egoTriggerAt = [0, 2, 30, 0, 1]
         agent1_lat_mode = 'turning'
         agent1_lat_direction = 'right'
@@ -79,11 +81,12 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 #  Turn Left/Left U turn
 if 1: 
     config['Ego'] = egoStraightAsideLeft
+    route = aside_left_route
 
     # Agent
     lateral_behavior = 'TL'
@@ -124,12 +127,13 @@ if 1:
 
             
             for behavior_type, behavior in BehaviorMode.items():
-                clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+                clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
               
 #  Keeping From opposite direction
 if 1: 
     config['Ego'] = egoStraightAsideLeft
+    route = aside_left_route
 
     # Agent
     lateral_behavior = 'KEEP'
@@ -171,11 +175,12 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 #  Left turn From opposite direction
 if 1: 
     config['Ego'] = egoStraightAsideLeft
+    route = aside_left_route
 
     # Agent
     lateral_behavior = 'TL'
@@ -216,12 +221,13 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 
 #  Right turn From opposite direction
 if 1: 
     config['Ego'] = egoStraightAsideLeft
+    route = aside_left_route
 
     # Agent
     lateral_behavior = 'TL'
@@ -260,11 +266,12 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
             
 #  Left u turn From opposite direction
 if 1: 
     config['Ego'] = egoStraightAsideLeft
+    route = aside_left_route
 
     # Agent
     lateral_behavior = 'TL'
@@ -305,7 +312,7 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
             
         
 ############## Motor ##############
@@ -319,6 +326,7 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
 
         config['Ego'] = egoStraightAsideRight
+        route = aside_right_route
         egoTriggerAt = [0, 2, 30, 0, 1]
         agent1_lat_mode = 'turning'
         agent1_lat_direction = 'right'
@@ -347,12 +355,13 @@ if 1:
 
         
         for behavior_type, behavior in BehaviorMode.items():
-            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+            clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
 
 
 #  Motor Left U turn
 if 1:
     config['Ego'] = egoStraightAsideLeft
+    route = aside_left_route
 
     # Agent
     lateral_behavior = 'TL'
@@ -393,4 +402,4 @@ if 1:
 
             
             for behavior_type, behavior in BehaviorMode.items():
-                clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
+                clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction, route=route)
