@@ -8,7 +8,7 @@ Actors:
         Dynamic_shape: sinusoidal
         End:
         - -1
-        - 1.5
+        - 0
         Type: cut
         Use_route: null
       - Dynamic_delay: 1
@@ -22,7 +22,7 @@ Actors:
     - 0
     - -2
     - 50
-    - -1.5
+    - 1.5
     - 1
     Start_speed: 40
     Start_trigger:
@@ -45,7 +45,7 @@ Ego:
   - 40
   - 0
   - 1
-  Start_speed: 30
+  Start_speed: 40
 Map:
 - 139
 - 166

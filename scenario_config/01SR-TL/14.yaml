@@ -7,9 +7,9 @@ Actors:
         Dynamic_duration: 1
         Dynamic_shape: Curve
         End:
-        - 0
+        - 1
         - -1
-        - 15
+        - 10
         - 0
         - 1
         Type: position
@@ -53,7 +53,7 @@ Ego:
   - 40
   - 0
   - 1
-  Start_speed: 30
+  Start_speed: 40
 Map:
 - 121
 - 17

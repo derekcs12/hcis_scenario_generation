@@ -5,7 +5,7 @@ Actors:
       Events:
       - Dynamic_delay: 0
         Dynamic_duration: 2.5
-        Dynamic_shape: sinusoidal
+        Dynamic_shape: linear
         End:
         - 1
         - 0
@@ -22,7 +22,7 @@ Actors:
     - 0
     - 2
     - 30
-    - -1.5
+    - 0
     - 1
     Start_speed: 40
     Start_trigger:
@@ -31,7 +31,7 @@ Actors:
       road: 0
       s: 30
       type: absolute
-    Type: bicycle
+    Type: car_red
 Ego:
   End_pos:
   - 1
@@ -45,7 +45,7 @@ Ego:
   - 40
   - 0
   - 1
-  Start_speed: 30
+  Start_speed: 40
 Map:
 - 121
 - 144

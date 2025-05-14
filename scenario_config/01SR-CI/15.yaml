@@ -20,9 +20,9 @@ Actors:
       Type: Cut-in
     Start_pos:
     - 0
-    - -2
+    - -1
     - 50
-    - -1.5
+    - 1.5
     - 1
     Start_speed: 0
     Start_trigger:
@@ -45,7 +45,7 @@ Ego:
   - 40
   - 0
   - 1
-  Start_speed: 30
+  Start_speed: 40
 Map:
 - 139
 - 166
