@@ -12,8 +12,8 @@ config['Center'] = [685.61, -134.05]
 
 
 
-egoStraightAsideLeft = {'Start_pos': [0, 1, 40, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 40}
-egoStraightAsideRight = {'Start_pos': [0, 2, 40, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 40}
+egoStraightAsideLeft = {'Start_pos': [0, 1, 60, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 40}
+egoStraightAsideRight = {'Start_pos': [0, 2, 60, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 40}
 aside_left_route = 'hsinchu_gfr_pr_br_elr' # 靠左
 aside_right_route = 'hcis_route2' # 靠右
 

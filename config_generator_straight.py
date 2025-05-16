@@ -14,8 +14,8 @@ config['Map'] = [144, 36]
 
 # egoStraightAsideLeft = {'Start_pos' : [0, -1, 40, 0, 1], 'End_pos': [1, 1, 10, 0, 1],'Start_speed': 40} # for [139, 166]
 # egoStraightAsideRight = {'Start_pos': [0, -2, 40, 0, 1], 'End_pos': [1, 2, 10, 0, 1],'Start_speed': 40} # for [139, 166]
-egoStraightAsideLeft = {'Start_pos' : [0, -1, 40, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 40} # for [144, 36]
-egoStraightAsideRight = {'Start_pos': [0, -2, 40, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 40} # for [144, 36]
+egoStraightAsideLeft = {'Start_pos' : [0, -1, 10, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 40} # for [144, 36]
+egoStraightAsideRight = {'Start_pos': [0, -2, 10, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 40} # for [144, 36]
 
 agentFromSameDirectionAsideLeft = [0, -1, 60, 0, 1]
 agentFromSameDirectionAsideRight = [0, -2, 60, 0, 1]

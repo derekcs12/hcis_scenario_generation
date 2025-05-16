@@ -173,7 +173,7 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
 
     orientation = True if orientation == -1 else False
     # print("index, lane_id , s", index, lane_id , s)
-    road = int(Map[index])
+    road = int(Map[index]) if index < 4 else index #derek: 地圖太亂，traj直接給road比較快
     return xosc.LanePosition(
         s=s,
         offset=offset*np.sign(lane_id),
@@ -281,6 +281,18 @@ def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName):
                                                                           tolerance=2),
                               triggerentity=EntityName, triggeringrule="any")
 
+    # road_index , lane_id , s , offset= Trigger['road'], Trigger['lane'], Trigger['s'], Trigger['offset']
+    # # road = int(Map[road_index])
+    # road = road_index #derek: 地圖太亂，traj直接給road比較快
+    # return xosc.EntityTrigger(name = "EgoApproachInitWp", 
+    #                           delay = 0,
+    #                           conditionedge = xosc.ConditionEdge.rising,
+    #                           entitycondition = xosc.ReachPositionCondition(xosc.LanePosition(s = s,
+    #                                                                                       offset = offset,  
+    #                                                                                       lane_id = lane_id, 
+    #                                                                                       road_id = road),
+    #                                                                     tolerance = 2), 
+    #                           triggerentity = EntityName, triggeringrule = "any")
 
 def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
     Trigger = Agent['Start_trigger']
@@ -335,7 +347,7 @@ def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5, allEventNa
     """ End Condition 2. - All event complete"""
     for event_name in allEventName:
         element_trigger = xosc.ValueTrigger(
-            "stoptrigger", time, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(
+            "AllEventComplete", time, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(
                 element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
         )
         event_group.add_condition(element_trigger)
@@ -349,7 +361,7 @@ def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5, allEventNa
     """End Condition 3. - Ego stand still"""
     # standStill_condition = xosc.StandStillCondition(10)
     standStill_trigger = xosc.EntityTrigger(
-        "stoptrigger", 0, xosc.ConditionEdge.none, xosc.StandStillCondition(
+        "EgoStandStill", 0, xosc.ConditionEdge.none, xosc.StandStillCondition(
             10), egoName
     )
     hadspeed_trigger = xosc.ValueTrigger("egoHasMoved", 0, xosc.ConditionEdge.none, xosc.ParameterCondition(
@@ -360,13 +372,13 @@ def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5, allEventNa
     """End Condition 4. - All start event Triggered"""
     for agentId in range(agentCount):
         trigger = xosc.ValueTrigger(
-            "stoptrigger", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(
+            "AllStartEventTriggered", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(
                 element=xosc.StoryboardElementType.event, reference=f"Agent{agentId+1}_StartSpeedEvent", state=xosc.StoryboardElementState.completeState)
         )
         start_group.add_condition(trigger)
     for pedestrianId in range(pedestrianCount):
         trigger = xosc.ValueTrigger(
-            "stoptrigger", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(
+            "AllStartEventTriggered", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(
                 element=xosc.StoryboardElementType.event, reference=f"Pedestrian{pedestrianId+1}_StartSpeedEvent", state=xosc.StoryboardElementState.completeState)
         )
         start_group.add_condition(trigger)
@@ -528,10 +540,13 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
         trajectory = xosc.Trajectory('selfDefineTrajectory', False)
         road_center = event['Use_route']
         nurbs = xosc.Nurbs(4)
-        nurbs.add_control_point(xosc.ControlPoint(
-            create_LanePosition_from_config(Map, currentPosition)))  # 出發點
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(
-            Map, currentPosition, s=0)))  # 與出發點同道之進入路口點，家這個點軌跡比較自然
+
+        from rich import console
+        console = console.Console()
+        # console.log(currentPosition);exit()
+        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
+        # nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s = 0))) #與出發點同道之進入路口點，加這個點軌跡比較自然
+        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #與出發點同道之進入路口點，加這個點軌跡比較自然
         if event['Use_route'] != None:
             nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
                 road_center[0], road_center[1]), weight=0.5))  # 路口中心
