@@ -4,10 +4,11 @@
 
 ## Usage
 ### OpenScenario Config File(.yaml) Generator
+Runs all necessary functions to generate config files and .xosc. 
+Uncomment the upload section to upload scenarios & parameters to the payload (VPN connection required).
 ```
-python config_generator_4way.py
-python config_generator_straight.py
-python config_generator_straight_at4way.py   #For straight&4way scenario combination at 4way crossroad
+
+./run.sh
 ```
 
 ### Combine scenarios
