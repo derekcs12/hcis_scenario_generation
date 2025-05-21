@@ -13,9 +13,12 @@ def generate(config, company='HCISLab'):
     if company == 'HCISLab':
         catalog.add_catalog("VehicleCatalog", "./Catalogs/Vehicles")
         catalog.add_catalog("ControllerCatalog", "./Catalogs/Controllers")
+        # catalog.add_catalog("VehicleCatalog", "/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/Catalogs/Vehicles")
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
-        road = xosc.RoadNetwork(roadfile="hct_6.xodr")
+        # road = xosc.RoadNetwork(roadfile="hct_6.xodr")
+        # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/tianjin.xodr")
+        road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/cr_file.xodr")
 
         # ACC controller
         controllerName = "ACCController"

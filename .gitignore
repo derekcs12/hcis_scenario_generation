@@ -1,9 +1,7 @@
 /xosc_itri/
 /__pycache__/
 *.xosc
-/scenario_config_combined/
 log.txt
 scenario_config_*/
-
 
 !scenario_config_combine/

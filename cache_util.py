@@ -52,6 +52,7 @@ def get_cache_data(url, headers=None):
             response = requests.get(url, headers=headers)
             # response.raise_for_status()
             data_list = response.json()  # Assuming the response is JSON
+            # print(data_list);exit("DSFDFSDf")
             print("No Cache data, GET")
         except Exception as e:
             print(f"Error fetching data: {e}")

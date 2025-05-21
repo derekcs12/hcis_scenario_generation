@@ -11,3 +11,5 @@ scripts = [
 for script in scripts:
     command = ["python", script]
     subprocess.run(command)
+    
+# 01FL-TR_02BL-TR_10_metrics

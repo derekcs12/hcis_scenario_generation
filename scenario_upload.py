@@ -31,14 +31,17 @@ if 'init':
     tags_to_be_used_in_created_scenario = [
         # "behavior:intersection",
         "party:hcis",
-        "deliver:2024Jan",
+        "deliver:2025May",
         "field:hct",
         "vehicle:car",
         "ego-behavior:go-straight",
         "roadtype:main-roadway",
-        "combination:none",
+        # "combination:none",
         # "edit:5-parameter",
         "edit:narrow-down-param-range",
+        "edit:zz_range",
+        "edit:new_stop_condition",
+        "edit:new_valid_condition",
     ]
         
     
@@ -93,6 +96,7 @@ def handle_tags_creation_and_get_ids(tags: List[str]):
                 print(f"Tag '{tag}' created successfully. ID: {created_id}")
                 all_tags[tag] = created_id
                 tags_doc = get_cache_data(base_url, headers)
+                # print(tags_doc);exit()
                 if "docs" not in tags_doc:
                     raise KeyError(f"'docs' key not found in the response: {tags_doc}")
                 tags_doc = tags_doc["docs"]
@@ -193,7 +197,18 @@ def check_scenario_exists(url, headers, filename):
     return filename in data_list 
 
 
+def remove_scenario_from_queue(scenario_id):
+    # Read the scenario queue from the file
+    with open('scenario_queue.txt', 'r') as queue_file:
+        scenario_ids = queue_file.readlines()
 
+    # Remove the specified scenario ID from the list
+    scenario_ids = [s.strip() for s in scenario_ids if s.strip() != scenario_id]
+
+    # Write the updated list back to the file
+    with open('scenario_queue.txt', 'w') as queue_file:
+        for s in scenario_ids:
+            queue_file.write(f"{s}\n")
 
 
 def upload(scenario_id):
@@ -255,14 +270,15 @@ def upload(scenario_id):
     valid_conditions = { # Only if these conditions are triggered will the trial be considered valid.
         "conditionLogic": "And",  # Available options: "And", "Or"
         "conditions": [
-            "EgoApproachInitWp"
+            "EgoApproachInitWp",
+            "act_start"
         ]
     }
     fail_conditions = { # If these conditions are triggered, the trial will stop right away.
-        # "conditionLogic": "Or",  # Available options: "And", "Or"
-        # "conditions": [
-        #     "Condition B", "Condition C"
-        # ]
+        "conditionLogic": "Or",  # Available options: "And", "Or"
+        "conditions": [
+            "EgoStandStill"
+        ]
     }
     end_conditions = { # If these conditions are triggered, the trial will stop right away.
         # "conditionLogic": "Or",  # Available options: "And", "Or"
@@ -289,7 +305,7 @@ def upload(scenario_id):
 
 
     filename = f"{result['scenario_name']}"
-    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0117/{filename}.xosc"
+    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0516/{filename}.xosc"
 
     # exit()
     openScenarioField = upload_openscenario_file(file_path)
@@ -332,8 +348,8 @@ def upload(scenario_id):
     # print(f"Scenario is {exists}!")
     # return
     if exists:
-        print(f"Scenario {filename} exists.")
-        return
+        print(f"Scenario {filename} exists. Updating...")
+        # return
         r = requests.patch(f"{base_url}/scenarios/{all_scenarios[filename]}", headers=headers, json=data)
     else:
         # print(data)
@@ -379,6 +395,8 @@ if __name__ == '__main__':
             help='Scenario category (default: all)')
         args = argparser.parse_args()
 
+
+        ## 跳過不傳的檔案
         # Read the skip list from the none_critical_scenario_combined_0115.txt file
         skip = ['01FL-KEEP_6.xosc', '01FL-KEEP_7.xosc', '01FL-KEEP_8.xosc', '01FL-KEEP_9.xosc', '01FL-KEEP_10.xosc']
         with open('/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/none_critical_scenario_combined_0115.txt', 'r') as file:
@@ -387,65 +405,99 @@ if __name__ == '__main__':
                     scenario_name = line.strip().replace('_metrics.csv', '.xosc')
                     skip.append(scenario_name)
                     
-        skip2 = []
+        skip2 = [] #上傳成功過的xosc
         with open('/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/success_upload_scenario.txt', 'r') as file:
             for line in file:
                 if line.strip():
                     scenario_name = line.strip()
                     skip2.append(scenario_name)
-        
+
+
+
+
         scenario_ids = args.sc
-        if args.sc[0] == 'all':
+        if args.sc[0] == 'all' and 0:
             scenario_ids = []
             prefix_dict = {}
-            for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0117/"):
+            for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0516/"):
                 if file.endswith('.xosc'):
                     if file in skip:
                         continue
+
                     prefix = "_".join(file.split("_")[:-1])
                     if prefix not in prefix_dict:
                         prefix_dict[prefix] = []
                     prefix_dict[prefix].append(file)
             
+            # Combine上傳部分，避免crash
             for prefix, files in prefix_dict.items():
-                if '02' in prefix and len(files) > 15:
+                if '02' in prefix and len(files) > 1500:
                     # continue
                     sampled_files = np.random.choice(files, 15, replace=False)
                     scenario_ids.extend(sampled_files)
                 else:
                     scenario_ids.extend(files)
+
+
                     
-        print("Scenarios in queue： ", len(scenario_ids))
-        print("Scenarios to upload： ", len(set(scenario_ids)-set(skip2)))
+            print("Scenarios in queue： ", len(scenario_ids))
+            print("Scenarios to upload： ", len(set(scenario_ids)-set(skip2)))
 
-        # Save the scenario_ids to a queue file
-        with open('scenario_queue.txt', 'w') as queue_file:
-            for scenario_id in scenario_ids:
-                queue_file.write(f"{scenario_id}\n")
+            # Save the scenario_ids to a queue file
+            with open('scenario_queue.txt', 'w') as queue_file:
+                for scenario_id in scenario_ids:
+                    queue_file.write(f"{scenario_id}\n")
 
-        success_upload = 0
-        with open('success_upload_scenario.txt', 'w') as success_file:
+            success_upload = 0
+            with open('success_upload_scenario.txt', 'w') as success_file:
+                for scenario_id in tqdm(scenario_ids):
+                    print(f"Uploading scenario {scenario_id}...", end=" ")
+                    if scenario_id in skip2:
+                        print('Skipped. Since already uploaded, check success_upload_scenario.txt')
+                        success_upload += 1
+                        continue
+                    
+                    print()
+                    if upload(scenario_id):
+                        success_upload += 1
+                        success_file.write(f"{scenario_id}\n")
+                    else:
+                        print(f"  Failed to upload: {scenario_id}")
+
+            # Check if all scenarios were successfully uploaded
+            if success_upload == len(scenario_ids):
+                # Clear the queue file
+                open('scenario_queue.txt', 'w').close()
+        
+        
+        elif args.sc[0] == 'queue':
+            print("Upload scenarios from qeueue list... ")
+            success_upload = 0
+            with open('scenario_queue.txt', 'r') as queue_file:
+                scenario_ids = [line.strip() for line in queue_file.readlines()]
+            # scenario_ids.reverse()
+
             for scenario_id in tqdm(scenario_ids):
-                print(f"Uploading scenario {scenario_id}...", end=" ")
-                if scenario_id in skip2:
-                    print(' Skipped')
-                    success_upload += 1
-                    continue
-                
-                print()
-                if upload(scenario_id):
-                    success_upload += 1
-                    success_file.write(f"{scenario_id}\n")
-                else:
-                    print(f"  Failed to upload: {scenario_id}")
-
-        # Check if all scenarios were successfully uploaded
-        if success_upload == len(scenario_ids):
-            # Clear the queue file
-            open('scenario_queue.txt', 'w').close()
+                    print(f"Uploading scenario {scenario_id}...", end=" ")
+                    # if scenario_id in skip2:
+                    #     print('Skipped. Since already uploaded, check success_upload_scenario.txt')
+                    #     success_upload += 1
+                    #     continue
+                    
+                    # #只更新zigzag range
+                    # if 'ZZ' not in scenario_id:
+                    #     continue
+                    
+                    print()
+                    if upload(scenario_id):
+                        success_upload += 1
+                        # break
+                        # success_file.write(f"{scenario_id}\n")
+                    else:
+                        print(f"  Failed to upload: {scenario_id}")
 
     finally:
-        clear_cache_file()
+        # clear_cache_file()
         print(f'{success_upload} Done.')
 
 

@@ -38,18 +38,18 @@ Actors:
 Ego:
   End_pos:
   - 1
-  - 1
+  - -1
   - 10
   - 0
   - 1
   Start_pos:
   - 0
   - -1
-  - 40
+  - 10
   - 0
   - 1
   Start_speed: 40
 Map:
-- 139
-- 166
+- 144
+- 36
 Scenario_name: 01BL-KEEP_2

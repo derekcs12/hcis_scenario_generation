@@ -339,6 +339,23 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
             '1_TA_Period': '0.2~1',
             '1_TA_Times': '3', #'1~5'
         })
+        ## 加上 zigzag 最低限速
+        speed_range = content.agents[0]['1_SA_EndSpeed']
+        try:
+            min_speed, max_speed = map(float, speed_range.split('~'))
+            if min_speed < 20.0:
+                print(f"[修正] {scenario_name} 1_SA_EndSpeed的值為 {speed_range}，將其設置為 20.0~20.0")
+                content.agents[0]['1_SA_EndSpeed'] = '20.0~20.0'
+
+            # else:
+            #     print(f"[跳過] {scenario_name} 1_SA_EndSpeed的值為 {speed_range}，不符合條件")
+                        
+                pass
+        except ValueError:
+            # 若格式錯誤，跳過
+            pass
+
+        
     description = descript + behavior_type + lateral_behavior
     csv_row = {'description': description, 'scenario_name': scenario_name, 'route_name': route_name}
     csv_row.update(content.to_dict())
