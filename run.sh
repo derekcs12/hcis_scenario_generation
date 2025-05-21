@@ -9,4 +9,4 @@ python combine_all.py
 python main.py -c all
 
 # Upload .xosc with csv's paramerter ranges to itri payload
-python scenario_upload.py -s all
+# python scenario_upload.py -s all
