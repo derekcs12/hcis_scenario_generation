@@ -1,0 +1,95 @@
+Actors:
+  Agents:
+  - Acts:
+    - Delay: 0
+      Events:
+      - Dynamic_delay: 0
+        Dynamic_duration: 1
+        Dynamic_shape: Curve
+        End:
+        - 0
+        - -1
+        - 15
+        - 0
+        - 1
+        Type: position
+        Use_route:
+        - 685.61
+        - -134.05
+      - Dynamic_delay: 0
+        Dynamic_duration: 2
+        Dynamic_shape: linear
+        End: 40
+        Type: speed
+        Use_route: Speed up.
+      Type: Turning
+    Start_pos:
+    - 0
+    - 2
+    - 30
+    - -1.5
+    - 1
+    Start_speed: 0
+    Start_trigger:
+      lane: 1
+      offset: 0
+      road: 0
+      s: 30
+      type: absolute
+    Type: bicycle
+  - Acts:
+    - Delay: 0
+      Events:
+      - Dynamic_delay: 0
+        Dynamic_duration: 1
+        Dynamic_shape: Route
+        End:
+        - 0
+        - -1
+        - 15
+        - 0
+        - 1
+        Type: position
+        Use_route: null
+      - Dynamic_delay: 0
+        Dynamic_duration: 2
+        Dynamic_shape: linear
+        End: 40
+        Type: speed
+        Use_route: Speed up.
+      Type: Turning
+    Start_pos:
+    - 3
+    - 1
+    - 10
+    - 0
+    - 1
+    Start_speed: 0
+    Start_trigger:
+      lane: 1
+      offset: 0
+      road: 0
+      s: 30
+      type: absolute
+    Type: car_red
+  Pedestrians: []
+Ego:
+  End_pos:
+  - 2
+  - -1
+  - 10
+  - 0
+  - 1
+  Start_pos:
+  - 0
+  - 1
+  - 60
+  - 0
+  - 1
+  Start_speed: 40
+Map:
+- 121
+- 17
+- 144
+- 16
+Scenario_name: 01SR-TL_02FR-TL_1175

@@ -2,6 +2,6 @@
 /__pycache__/
 *.xosc
 log.txt
-scenario_config_*/
-
-!scenario_config_combine/
+# 忽略所有 scenario_config_ 開頭的資料夾
+scenario_config-*/
+scenario_config_combined_*/

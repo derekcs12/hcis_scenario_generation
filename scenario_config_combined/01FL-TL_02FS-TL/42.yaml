@@ -1,0 +1,93 @@
+Actors:
+  Agents:
+  - Acts:
+    - Delay: 0
+      Events:
+      - Dynamic_delay: 0
+        Dynamic_duration: 1
+        Dynamic_shape: Route
+        End:
+        - 2
+        - -1
+        - 15
+        - 0
+        - 1
+        Type: position
+        Use_route: null
+      - Dynamic_delay: 0
+        Dynamic_duration: 2
+        Dynamic_shape: linear
+        End: 40
+        Type: speed
+        Use_route: Speed up.
+      Type: Turning
+    Start_pos:
+    - 1
+    - 1
+    - 10
+    - 0
+    - 1
+    Start_speed: 0
+    Start_trigger:
+      lane: 1
+      offset: 0
+      road: 0
+      s: 30
+      type: absolute
+    Type: car_red
+  - Acts:
+    - Delay: 0
+      Events:
+      - Dynamic_delay: 0
+        Dynamic_duration: 1
+        Dynamic_shape: Route
+        End:
+        - 1
+        - -1
+        - 10
+        - 0
+        - 1
+        Type: position
+        Use_route: null
+      - Dynamic_delay: 1
+        Dynamic_duration: 3
+        Dynamic_shape: linear
+        End: 10
+        Type: speed
+        Use_route: Braking.
+      Type: Turning
+    Start_pos:
+    - 0
+    - 1
+    - 15
+    - 0
+    - 1
+    Start_speed: 40
+    Start_trigger:
+      lane: 1
+      offset: 0
+      road: 0
+      s: 30
+      type: absolute
+    Type: car_red
+  Pedestrians: []
+Ego:
+  End_pos:
+  - 2
+  - -1
+  - 10
+  - 0
+  - 1
+  Start_pos:
+  - 0
+  - 1
+  - 60
+  - 0
+  - 1
+  Start_speed: 40
+Map:
+- 121
+- 17
+- 144
+- 16
+Scenario_name: 01FL-TL_02FS-TL_42
