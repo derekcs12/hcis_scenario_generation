@@ -7,7 +7,6 @@
 Runs all necessary functions to generate config files and .xosc. 
 Uncomment the upload section to upload scenarios & parameters to the payload (VPN connection required).
 ```
-
 sh run.sh
 ```
 
