@@ -5,6 +5,7 @@ from dicent_utils import *
 from upload_utils import *
 from config import RELATIVE_TRIGGER_POSITIONS
 from operator import *
+""" For straight&4way scenario combination at 4way crossroad """
 
 config = {}
 config['Map'] = [121, 144]
