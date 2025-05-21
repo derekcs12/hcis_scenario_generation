@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List
 import re
 import yaml
-from dicent_utils import *
+from utils.dicent_utils import *
 
 import xml.etree.ElementTree as ET
 from scenariogeneration import xosc, prettyprint

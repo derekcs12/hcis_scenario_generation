@@ -9,10 +9,13 @@ import copy
 from tqdm import tqdm
 from pprint import pprint
 
-from upload_utils import *
-from cache_util import *
+from utils.upload_utils import *
+from utils.cache_utils import *
 import argparse
 from assign_route import process_yaml_file  # Import the function
+
+RUNTIME_DATA_DIR = 'runtime_data'
+
 
 if 'init':
     base_url = "http://172.30.1.139:3000/api"
@@ -199,14 +202,14 @@ def check_scenario_exists(url, headers, filename):
 
 def remove_scenario_from_queue(scenario_id):
     # Read the scenario queue from the file
-    with open('scenario_queue.txt', 'r') as queue_file:
+    with open(f'{RUNTIME_DATA_DIR}/scenario_queue.txt', 'r') as queue_file:
         scenario_ids = queue_file.readlines()
 
     # Remove the specified scenario ID from the list
     scenario_ids = [s.strip() for s in scenario_ids if s.strip() != scenario_id]
 
     # Write the updated list back to the file
-    with open('scenario_queue.txt', 'w') as queue_file:
+    with open(f'{RUNTIME_DATA_DIR}/scenario_queue.txt', 'w') as queue_file:
         for s in scenario_ids:
             queue_file.write(f"{s}\n")
 
@@ -399,14 +402,14 @@ if __name__ == '__main__':
         ## 跳過不傳的檔案
         # Read the skip list from the none_critical_scenario_combined_0115.txt file
         skip = ['01FL-KEEP_6.xosc', '01FL-KEEP_7.xosc', '01FL-KEEP_8.xosc', '01FL-KEEP_9.xosc', '01FL-KEEP_10.xosc']
-        with open('/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/none_critical_scenario_combined_0115.txt', 'r') as file:
+        with open(f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0115.txt', 'r') as file:
             for line in file:
                 if line.strip():
                     scenario_name = line.strip().replace('_metrics.csv', '.xosc')
                     skip.append(scenario_name)
                     
         skip2 = [] #上傳成功過的xosc
-        with open('/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/success_upload_scenario.txt', 'r') as file:
+        with open(f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/success_upload_scenario.txt', 'r') as file:
             for line in file:
                 if line.strip():
                     scenario_name = line.strip()
@@ -444,12 +447,12 @@ if __name__ == '__main__':
             print("Scenarios to upload： ", len(set(scenario_ids)-set(skip2)))
 
             # Save the scenario_ids to a queue file
-            with open('scenario_queue.txt', 'w') as queue_file:
+            with open(f'{RUNTIME_DATA_DIR}/scenario_queue.txt', 'w') as queue_file:
                 for scenario_id in scenario_ids:
                     queue_file.write(f"{scenario_id}\n")
 
             success_upload = 0
-            with open('success_upload_scenario.txt', 'w') as success_file:
+            with open(f'{RUNTIME_DATA_DIR}/success_upload_scenario.txt', 'w') as success_file:
                 for scenario_id in tqdm(scenario_ids):
                     print(f"Uploading scenario {scenario_id}...", end=" ")
                     if scenario_id in skip2:
@@ -467,13 +470,13 @@ if __name__ == '__main__':
             # Check if all scenarios were successfully uploaded
             if success_upload == len(scenario_ids):
                 # Clear the queue file
-                open('scenario_queue.txt', 'w').close()
+                open(f'{RUNTIME_DATA_DIR}/scenario_queue.txt', 'w').close()
         
         
         elif args.sc[0] == 'queue':
             print("Upload scenarios from qeueue list... ")
             success_upload = 0
-            with open('scenario_queue.txt', 'r') as queue_file:
+            with open(f'{RUNTIME_DATA_DIR}/scenario_queue.txt', 'r') as queue_file:
                 scenario_ids = [line.strip() for line in queue_file.readlines()]
             # scenario_ids.reverse()
 
@@ -499,48 +502,3 @@ if __name__ == '__main__':
     finally:
         # clear_cache_file()
         print(f'{success_upload} Done.')
-
-
-
-    
-
-    # data = {'id': 'hcis_4_01FR-TL','parameters': [{'name': 'Agent0_S', 'unit': 'm', 'min': '0', 'max': '20'}], 'openDrive': '666c15f9173ee59246206343', 'openScenarioField': {'type': 'String', 'content': '<OpenSCENARIO> <!-- some scenario --> </OpenSCENARIO>'}, 'usedRoute': 'route-666c15f9173ee59246206343 hct-default', 'tagTree': {}, 'testObjectives': {'criticalityMetrics': [{'keyPerformanceIndicator': '666c0d22173ee5924620629a', 'threshold': 1, 'description': 'No collision allowed'}, {'keyPerformanceIndicator': '666c0d33173ee592462062a2', 'threshold': 10, 'id': '666c16533638a200018f9d21'}]}, 'validConditions': [], 'startObservationSamplingConditions': [{'condition': 'EgoApproachInitWp'}], 'observationRecordingAgents': [{'name': 'Agent0'}], 'egoTargetSpeed': 60}
-
-    # {'id': 'test_scenario_from_api', 'tags': ['behavior:cut-in', 'party:hcis', 'deliver:2024Jul', 'src:cetran', 'field:hct'], 'description': 'A vehicle crossing when the ego vehicle is about to enter the intersection.', 'parameters': [{'name': 'TargetSpeed', 'unit': 'm/s', 'min': 20, 'max': 40}, {'name': 'TargetLateralOffset', 'unit': 'm', 'min': 1, 'max': -1}, {'name': 'TargetS', 'unit': 'm', 'min': -5, 'max': 5}], 'openDrive': '666c15f9173ee59246206343', 'openScenarioField': {'type': 'String', 'content': '<OpenSCENARIO> <!-- some scenario --> </OpenSCENARIO>'}, 'usedRoute': 'route-666c15f9173ee59246206343 hct-default', 'tagTree': {'ego': {'vehicleLongitudinalActivity': {'mode': 'drivingForward', 'drivingForwardMode': 'cruising'}, 'vehicleLateralActivity': {'mode': 'goingStraight'}}, 'actors': [{'vehicleLongitudinalActivity': {'mode': 'drivingForward', 'drivingForwardMode': 'cruising'}, 'vehicleLateralActivity': {'mode': 'goingStraight'}, 'initialState': {'direction': 'oncoming', 'dynamics': 'standingStill', 'lateralPosition': 'leftOfEgo', 'longitudinalPosition': 'inFrontOfEgo'}, 'leadVehicle': {'mode': 'appearing', 'appearingMode': 'gapClosing'}}], 'roadLayout': {'mode': 'junction', 'junctionMode': 'noTrafficLight'}}, 'testObjectives': {'criticalityMetrics': [{'keyPerformanceIndicator': '666c0d22173ee5924620629a', 'threshold': 1, 'description': 'No collision allowed'}, {'keyPerformanceIndicator': '666c0d33173ee592462062a2', 'threshold': 10, 'id': '666c16533638a200018f9d21'}]}, 'validConditions': [{'condition': 'TargetStartWhenEgoCloseToTheJunction'}], 'startObservationSamplingConditions': [{'condition': 'TargetStartWhenEgoCloseToTheJunction'}, {'condition': 'SomeOtherCondition'}], 'observationRecordingAgents': [{'name': 'Target1'}, {'name': 'Target2'}], 'egoTargetSpeed': 40}
-
-    # data = 
-    # print(data)
-    # exit()
-    
-    
-    # def get_cache_data(url, headers, clear_cache=False):
-
-        #     global cache
-        #     current_time = time.time()
-    
-        #     # Cache key based on URL and headers
-        #     cache_key = (url, tuple(sorted(headers.items())))
-        #     print("cache_key:", cache_key)
-        #     print(cache);exit
-    
-        #     # Check if the result is in the cache and still valid
-        #     if cache_key in cache and cache[cache_key]['expires_at'] > current_time and not clear_cache:
-        #         data_list = cache[cache_key]['data']
-        #     else:
-        #         # Fetch the data from the URL
-        #         try:
-        #             response = requests.get(url, headers=headers)
-        #             # response.raise_for_status()
-        #             data_list = response.json()  # Assuming the response is JSON
-        #             print("No Cache data, GET")
-        #         except Exception as e:
-        #             print(f"Error fetching data: {e}")
-        #             return False
-        
-        #         # Update the cache
-        #         cache[cache_key] = {
-        #             'data': data_list,
-        #             'expires_at': current_time + 300  # Cache for 60 seconds
-        #         }
-    
-        #     return data_list

@@ -1,6 +1,6 @@
 import os
 from scenariogeneration import xosc, prettyprint
-from dicent_utils import *
+from utils.dicent_utils import *
 
 
 def generate(config, company='HCISLab'):
