@@ -11,8 +11,8 @@ from pprint import pprint
 
 from utils.upload_utils import *
 from utils.cache_utils import *
+from utils.assign_route import process_yaml_file  # Import the function
 import argparse
-from assign_route import process_yaml_file  # Import the function
 
 RUNTIME_DATA_DIR = 'runtime_data'
 
