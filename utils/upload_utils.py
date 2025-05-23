@@ -337,7 +337,7 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
         content.agents[0].update({
             '1_TA_Offset': '-1', #'-1~1'
             '1_TA_Period': '0.2~1',
-            '1_TA_Times': '3', #'1~5'
+            '1_TA_Times': '2', #'1~5'
         })
         ## 加上 zigzag 最低限速
         speed_range = content.agents[0]['1_SA_EndSpeed']
