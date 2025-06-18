@@ -1,5 +1,6 @@
 /xosc_itri/
 /__pycache__/
+**/__pycache__/
 *.xosc
 log.txt
 
