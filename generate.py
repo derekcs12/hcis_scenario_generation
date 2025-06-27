@@ -16,13 +16,13 @@ def generate(config, company='HCISLab'):
         # catalog.add_catalog("VehicleCatalog", "/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/Catalogs/Vehicles")
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
-        # road = xosc.RoadNetwork(roadfile="hct_6.xodr")
+        road = xosc.RoadNetwork(roadfile="hct_6.xodr")
         # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/tianjin.xodr")
-        road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/cr_file.xodr")
+        # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/cr_file.xodr")
 
         # ACC controller
-        controllerName = "ACCController"
-        # controllerName = "interactiveDriver"
+        # controllerName = "ACCController"
+        controllerName = "interactiveDriver"
 
     else:  # ITRI
         # CatalogLocations
@@ -59,6 +59,7 @@ def generate(config, company='HCISLab'):
     egostart = xosc.TeleportAction(create_LanePosition_from_config(
         config['Map'], config['Ego']['Start_pos']))
     egospeed = xosc.AbsoluteSpeedAction("${$Ego_Speed / 3.6}", step_time)
+    # egospeed = xosc.AbsoluteSpeedAction(30/3.6, step_time)
     # activate_controller = 'false' if config['DeactivateControl'] else 'true'
     activate_controller = 'true'
     egocontl = xosc.ActivateControllerAction(
@@ -67,7 +68,7 @@ def generate(config, company='HCISLab'):
         config['Map'], config['Ego']['End_pos'])
     egofinal = xosc.AcquirePositionAction(egoEndPosition)  # Ego終點
     init.add_init_action('Ego', egostart)
-    init.add_init_action('Ego', egospeed)
+    # init.add_init_action('Ego', egospeed)
     init.add_init_action('Ego', egocontl)
     init.add_init_action('Ego', egofinal)
 
@@ -82,10 +83,19 @@ def generate(config, company='HCISLab'):
     status_maneuver = xosc.Maneuver("DetectEgoHasMovedManeuver")
     status_event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
     status_event.add_action("Set EgoHasMoved Flag",
-                            xosc.ParameterSetAction("Ego_connected", "true"))
+                            xosc.ParameterSetAction("AV_CONNECTED", "true"))
     status_event.add_trigger(xosc.EntityTrigger(
         "EgoHasMovedTrigger", 0, xosc.ConditionEdge.rising, xosc.SpeedCondition(0, xosc.Rule.greaterThan), "Ego"))
     status_maneuver.add_event(status_event)
+
+    approach_init_wp_maneuver = xosc.Maneuver("ApproachInitWaypointManeuver")
+    approach_init_wp_event = xosc.Event("ApproachInitWaypointEvent", xosc.Priority.parallel)
+    approach_init_wp_event.add_action(
+        "Set Event Started Flag",
+        xosc.ParameterSetAction("EVENT_START", "true"))
+    approach_init_wp_event.add_trigger(
+        create_EntityTrigger_at_absolutePos(config['Map'], Actors['Agents'][0]['Start_trigger'], 'Ego'))
+    approach_init_wp_maneuver.add_event(approach_init_wp_event) 
 
     # Storyboard - Event
     allEvent = []
@@ -101,12 +111,19 @@ def generate(config, company='HCISLab'):
                 allEvent.extend(previousEventNames)
                 allManeuver[actorName] = agentManeuver
 
-    sb = xosc.StoryBoard(init, create_StopTrigger('Ego', egoEndPosition, distance=500,
-                         allEventName=allEvent, agentCount=agentCount, pedestrianCount=pedCount))
+    sb_stoptrigger = create_StopTrigger(
+        Map=config['Map'], 
+        egoName='Ego', 
+        eventStartPoint=Actors['Agents'][0]['Start_trigger'], 
+        eventStartSpeed=float(config['Ego']['Start_speed']),
+        egoTargetPoint=config['Ego']['End_pos'])
+    
+    sb = xosc.StoryBoard(init, sb_stoptrigger)
     for man in allManeuver:
         sb.add_maneuver(allManeuver[man], man)
 
     sb.add_maneuver(status_maneuver, "Ego")
+    sb.add_maneuver(approach_init_wp_maneuver, "Ego")
     # Create Scenario
     sce = xosc.Scenario(
         name="hct_"+config['Scenario_name'],
@@ -126,12 +143,14 @@ def parameter_Declaration(Actors, Ego):
     paramdec = xosc.ParameterDeclarations()
 
     egoConnectedFlag = xosc.Parameter(
-        name="Ego_connected", parameter_type="boolean", value="false")
+        name="AV_CONNECTED", parameter_type="boolean", value="false")
+    eventStartFlag = xosc.Parameter(
+        name="EVENT_START", parameter_type="boolean", value="false")
     # ParameterDeclarations (document:xosc.utiles)
     egoInit = xosc.Parameter(name="Ego_Vehicle", parameter_type="string", value="car_white")
     egoSpeed = xosc.Parameter(name="Ego_Speed", parameter_type="double", value=Ego['Start_speed'])
     egoS = xosc.Parameter(name="Ego_S", parameter_type="double", value=Ego['Start_pos'][2])
-    paraList = [egoConnectedFlag, egoInit, egoSpeed, egoS]
+    paraList = [egoConnectedFlag, eventStartFlag, egoInit, egoSpeed, egoS]
 
     # catas = ['Agents', 'Pedestrians']
     for cata in Actors:
