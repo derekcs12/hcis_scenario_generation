@@ -8,6 +8,9 @@ import sys
 import os
 import glob
 import pandas as pd
+from pyxodr.road_objects.network import RoadNetwork
+
+
 
 from config import RELATIVE_TRIGGER_POSITIONS
 
@@ -521,12 +524,30 @@ def create_stand_still_conditions(egoName,time=10):
     group.add_condition(event_started_trigger)
     return group
 
-def create_invalid_area_condition(egoName, egoTragetPoint, distance=500):
+def create_invalid_area_condition(Map, egoName, eventStartPoint, xodrPath, distance=2):
     """
     End Condition (1-c) - Invalid Area Condition
     Test Result: Invalid
     """
-    pass
+    group = xosc.ConditionGroup()
+    roadnetwork = RoadNetwork(xodrPath)
+    roadnetwork.get_roads()
+    # roadobj = roadnetwork.road_ids_to_object.get(str(Map[eventStartPoint['road']]))
+    # print("roadobj", roadobj)
+    exit()
+    position = xosc.WorldPosition(eventStartPoint[0], eventStartPoint[1])
+    condition = xosc.ReachPositionCondition(position, tolerance=distance)
+    trigger = xosc.EntityTrigger(
+        name="EgoInvalidArea",
+        delay=0,
+        conditionedge=xosc.ConditionEdge.falling,
+        entitycondition=condition,
+        triggerentity=egoName,
+        triggeringrule="any"
+    )
+    group.add_condition(trigger)
+    return group
+    
 
 def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5):
     """
@@ -615,8 +636,32 @@ def create_collision_condition(egoName, agentCount=1):
     group.add_condition(trigger)
     return group    
 
-
-def create_StopTrigger(Map, egoName, eventStartPoint, eventStartSpeed, egoTargetPoint):
+def create_ego_stroll_condition(time=30):
+    """
+    Replace (1-c) and (2-d): Ego enters invalid area => check if the ego is connected and does not arrive the trigger point in x seconds
+    Test Result: invalid
+    """
+    group = xosc.ConditionGroup()
+    connected_condition = xosc.ParameterCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
+    connected_trigger = xosc.ValueTrigger(
+        name="EgoStroll",
+        delay=time,
+        conditionedge=xosc.ConditionEdge.none,
+        valuecondition=connected_condition
+    )
+    event_started = xosc.ParameterCondition("EVENT_START", "false", xosc.Rule.equalTo)
+    event_started_trigger = xosc.ValueTrigger(
+        name="eventStarted",
+        delay=0,
+        conditionedge=xosc.ConditionEdge.none,
+        valuecondition=event_started
+    )
+    group.add_condition(connected_trigger)
+    group.add_condition(event_started_trigger)
+    return group
+    
+    
+def create_StopTrigger(Map, egoName, eventStartPoint, eventStartSpeed, egoTargetPoint, xodrPath):
     
     
     stopTrigger = xosc.Trigger('stop')
@@ -626,7 +671,7 @@ def create_StopTrigger(Map, egoName, eventStartPoint, eventStartSpeed, egoTarget
     ### End Condition (1-b) - Ego Get Stuck Condition
     stopTrigger.add_conditiongroup(create_stand_still_conditions(egoName,time=10))
     ### End Condition (1-c) - Invalid Area Condition
-    # stopTrigger.add_conditiongroup(create_invalid_area_condition(egoName, egoTragetPoint, distance))
+    # stopTrigger.add_conditiongroup(create_invalid_area_condition(Map, egoName, eventStartPoint, xodrPath, distance=2))
     ### End Condition (1-d) - Wrong Start Speed Condition
     highgroup, lowgroup = create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed)
     stopTrigger.add_conditiongroup(highgroup)
@@ -642,6 +687,10 @@ def create_StopTrigger(Map, egoName, eventStartPoint, eventStartSpeed, egoTarget
     # ### End Condition (2-d) - Wrong Target
     # stopTrigger.add_conditiongroup(create_wrong_target_condition(egoName, egoTragetPoint))
 
+    ### Replace (1-c) and (2-d): Ego enters invalid area => check if the ego is connected and does not arrive the trigger point in x seconds
+    stopTrigger.add_conditiongroup(create_ego_stroll_condition())
+                                   
+                                   
     # # stopTrigger.add_conditiongroup(create_event_complete_conditions(allEventName, time))
     # # stopTrigger.add_conditiongroup(create_start_event_conditions(agentCount, pedestrianCount))
 

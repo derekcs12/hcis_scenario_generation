@@ -7,7 +7,7 @@ def generate(config, company='HCISLab'):
 
     Actors = config['Actors']
     paramdec = parameter_Declaration(Actors, config['Ego'])
-
+    xodrPath = './hct_6.xodr'
     # CatalogLocations & RoadNetwork (document:xosc.utiles)
     catalog = xosc.Catalog()
     if company == 'HCISLab':
@@ -116,7 +116,8 @@ def generate(config, company='HCISLab'):
         egoName='Ego', 
         eventStartPoint=Actors['Agents'][0]['Start_trigger'], 
         eventStartSpeed=float(config['Ego']['Start_speed']),
-        egoTargetPoint=config['Ego']['End_pos'])
+        egoTargetPoint=config['Ego']['End_pos'],
+        xodrPath=xodrPath)
     
     sb = xosc.StoryBoard(init, sb_stoptrigger)
     for man in allManeuver:
