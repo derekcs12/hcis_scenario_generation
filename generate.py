@@ -80,22 +80,7 @@ def generate(config, company='HCISLab'):
             init.add_init_action(f"{cata[:-1]}{actorIndex}", actorStart)
 
     # Storyboard - boolean condition
-    status_maneuver = xosc.Maneuver("DetectEgoHasMovedManeuver")
-    status_event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
-    status_event.add_action("Set EgoHasMoved Flag",
-                            xosc.ParameterSetAction("AV_CONNECTED", "true"))
-    status_event.add_trigger(xosc.EntityTrigger(
-        "EgoHasMovedTrigger", 0, xosc.ConditionEdge.rising, xosc.SpeedCondition(0, xosc.Rule.greaterThan), "Ego"))
-    status_maneuver.add_event(status_event)
-
-    approach_init_wp_maneuver = xosc.Maneuver("ApproachInitWaypointManeuver")
-    approach_init_wp_event = xosc.Event("ApproachInitWaypointEvent", xosc.Priority.parallel)
-    approach_init_wp_event.add_action(
-        "Set Event Started Flag",
-        xosc.ParameterSetAction("EVENT_START", "true"))
-    approach_init_wp_event.add_trigger(
-        create_EntityTrigger_at_absolutePos(config['Map'], Actors['Agents'][0]['Start_trigger'], 'Ego'))
-    approach_init_wp_maneuver.add_event(approach_init_wp_event) 
+    paraManeuver = generate_Parameter_Maneuver(config, actors=Actors)
 
     # Storyboard - Event
     allEvent = []
@@ -123,8 +108,10 @@ def generate(config, company='HCISLab'):
     for man in allManeuver:
         sb.add_maneuver(allManeuver[man], man)
 
-    sb.add_maneuver(status_maneuver, "Ego")
-    sb.add_maneuver(approach_init_wp_maneuver, "Ego")
+    # sb.add_maneuver(status_maneuver, "Ego")
+    # sb.add_maneuver(approach_init_wp_maneuver, "Ego")
+    sb.add_maneuver(paraManeuver, "Ego")
+    
     # Create Scenario
     sce = xosc.Scenario(
         name="hct_"+config['Scenario_name'],
@@ -147,11 +134,14 @@ def parameter_Declaration(Actors, Ego):
         name="AV_CONNECTED", parameter_type="boolean", value="false")
     eventStartFlag = xosc.Parameter(
         name="EVENT_START", parameter_type="boolean", value="false")
+    invalidFlag = xosc.Parameter(
+        name="IS_VALID", parameter_type="boolean", value="false")
+    
     # ParameterDeclarations (document:xosc.utiles)
     egoInit = xosc.Parameter(name="Ego_Vehicle", parameter_type="string", value="car_white")
     egoSpeed = xosc.Parameter(name="Ego_Speed", parameter_type="double", value=Ego['Start_speed'])
     egoS = xosc.Parameter(name="Ego_S", parameter_type="double", value=Ego['Start_pos'][2])
-    paraList = [egoConnectedFlag, eventStartFlag, egoInit, egoSpeed, egoS]
+    paraList = [egoConnectedFlag, eventStartFlag, invalidFlag, egoInit, egoSpeed, egoS]
 
     # catas = ['Agents', 'Pedestrians']
     for cata in Actors:
@@ -335,3 +325,37 @@ def generate_Adv_Maneuver(actorName, agent, Map):
             previousEventName = currentEventName
 
     return advManeuver, previousEventName
+
+
+def generate_Parameter_Maneuver(config, actors):
+    param_maneuver = xosc.Maneuver("ParameterManeuver")
+    
+    # Detect Ego Has Moved Event
+    status_event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
+    status_event.add_action("Set EgoHasMoved Flag",
+                            xosc.ParameterSetAction("AV_CONNECTED", "true"))
+    status_event.add_trigger(xosc.EntityTrigger(
+        "EgoHasMoved", 0, xosc.ConditionEdge.rising, xosc.SpeedCondition(0, xosc.Rule.greaterThan), "Ego"))
+    param_maneuver.add_event(status_event)
+
+    # # Approach Init Waypoint Event
+    # approach_init_wp_event = xosc.Event("ApproachInitWaypointEvent", xosc.Priority.parallel)
+    # approach_init_wp_event.add_action(
+    #     "Set Event Started Flag",
+    #     xosc.ParameterSetAction("EVENT_START", "true"))
+    # approach_init_wp_event.add_trigger(
+    #     create_EntityTrigger_at_absolutePos(config['Map'], actors['Agents'][0]['Start_trigger'], 'Ego'))
+    
+    # param_maneuver.add_event(approach_init_wp_event)
+    
+    # Invalid Maneuver Event
+    valid_event = xosc.Event("InvalidManeuverEvent", xosc.Priority.parallel)
+    valid_event.add_action(
+        "Set Valid Flag",
+        xosc.ParameterSetAction("IS_VALID", "true"))
+    # invalid_event.add_trigger(create_timeout_condition('Ego', time=300))
+    valid_trigger = create_right_start_speed_condition(config['Map'], 'Ego', actors['Agents'][0]['Start_trigger'], float(config['Ego']['Start_speed']))
+    valid_event.add_trigger(valid_trigger)
+    param_maneuver.add_event(valid_event)
+        
+    return param_maneuver
