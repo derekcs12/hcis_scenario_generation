@@ -34,17 +34,17 @@ if 'init':
     tags_to_be_used_in_created_scenario = [
         # "behavior:intersection",
         "party:hcis",
-        "deliver:2025May",
+        "deliver:2025Jun",
         "field:hct",
         "vehicle:car",
         "ego-behavior:go-straight",
         "roadtype:main-roadway",
         # "combination:none",
         # "edit:5-parameter",
-        "edit:narrow-down-param-range",
-        "edit:zz_range",
-        "edit:new_stop_condition",
-        "edit:new_valid_condition",
+        # "edit:narrow-down-param-range",
+        # "edit:zz_range",
+        # "edit:new_stop_condition",
+        "edit:new_9invalid_condition",
     ]
         
     
@@ -122,6 +122,8 @@ def upload_openscenario_file(file_path, filename=None):
 
     if filename is None:
         filename = file_path.split("/")[-1]
+        
+    # print(filename)
 
     with open(file_path, "rb") as f:
         files = {
@@ -129,22 +131,26 @@ def upload_openscenario_file(file_path, filename=None):
         }
   
         if filename in all_tags.keys():
-            print("  Xosc file already exists.")
+            print("   Xosc file already exists.")
             # return
             scenario_uuid = all_tags[filename]
             # update xosc
+            # exit("upda")
             r = requests.patch(
                 f"{base_url}/openScenarios/{scenario_uuid}",
                 headers=headers,
                 files=files,
             )
-        else:
             time.sleep(1)
+            
+        else:
+            # exit('crete')
             r = requests.post(
                 f"{base_url}/openScenarios",
                 headers=headers,
                 files=files,
             )
+            time.sleep(1)
     scenario_id = r.json()["doc"]["id"]
     # print(json.dumps(r.json(), indent=4))
     print("  ",r.json().get("message"))
@@ -214,9 +220,12 @@ def remove_scenario_from_queue(scenario_id):
             queue_file.write(f"{s}\n")
 
 
+from datetime import datetime  # Add this import
+
 def upload(scenario_id):
     scenario_folder = scenario_id[:scenario_id.rfind("_")]
     scenario_index = scenario_id[scenario_id.rfind("_")+1:].replace(".xosc", "")
+    scenario_id = scenario_id.replace(".xosc", "")  # Remove the .xosc extension for consistency
     
     if "_" in scenario_folder:
         parenet_folder = "scenario_config_combined"
@@ -336,40 +345,20 @@ def upload(scenario_id):
     r = ''
     # """
     global base_url
-    url = f"{base_url}/scenarios?limit=10000&where[createdBy][equals]=HCIS%20Lab"
+    url = f"{base_url}/scenarios?limit=10000&sort=updatedAt&where[createdBy][equals]=HCIS%20Lab"
     scenarios_doc = get_cache_data(url, headers)['docs']
-    # scenarios_doc = requests.get(
-    #     f"{base_url}/scenarios?limit=10000&where[createdBy][equals]=HCIS%20Lab",
-    #     headers=headers).json()["docs"]
-    all_scenarios = dict( [ (scenario["scenarioId"], scenario["id"]) for scenario in scenarios_doc ] )
+    all_scenarios = dict((scenario["scenarioId"], scenario) for scenario in scenarios_doc)
 
-    # """
-    
-    url = f"{base_url}/scenarios?limit=10000&where[createdBy][equals]=HCIS%20Lab"
-    # print((url, headers, filename))
-    exists = check_scenario_exists(url, headers, filename)
-    # print(f"Scenario is {exists}!")
-    # return
-    if exists:
-        print(f"Scenario {filename} exists. Updating...")
-        # return
-        r = requests.patch(f"{base_url}/scenarios/{all_scenarios[filename]}", headers=headers, json=data)
-    else:
-        # print(data)
+    if scenario_id in all_scenarios.keys():
+        scenario_id_to_update = all_scenarios[scenario_id]["id"]
+        print(f"Scenario {scenario_id} exists. Updating by ID: {scenario_id_to_update}...")
+        r = requests.patch(f"{base_url}/scenarios/{scenario_id_to_update}", headers=headers, json=data)
         time.sleep(3)
+    else:
+        print(f"Scenario {scenario_id} does not exist. Creating new...")
         r = requests.post(f"{base_url}/scenarios", headers=headers, json=data)
-        # print(f"Scenario {filename} does not exist.")
+        time.sleep(3)
 
-    """
-    if filename in all_scenarios.keys(): # Update
-        print("  Scenario already exists.")
-        return
-        r = requests.patch(f"{base_url}/scenarios/{all_scenarios[filename]}", headers=headers, json=data)
-    else: # Create
-        time.sleep(0.1)
-        r = requests.post(f"{base_url}/scenarios", headers=headers, json=data)
-    """
-        
     try:
         print("  ",r.json().get("message"))
         if (r.status_code == 201 and r.json().get("message") == "Scenario successfully created.") or \
@@ -422,6 +411,7 @@ if __name__ == '__main__':
         if args.sc[0] == 'all' and 0:
             scenario_ids = []
             prefix_dict = {}
+            # 自行修改路徑
             for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0516/"):
                 if file.endswith('.xosc'):
                     if file in skip:
@@ -432,7 +422,7 @@ if __name__ == '__main__':
                         prefix_dict[prefix] = []
                     prefix_dict[prefix].append(file)
             
-            # Combine上傳部分，避免crash
+            # Combined scnearios參數排列組合較多, 抽樣上傳, 避免crash
             for prefix, files in prefix_dict.items():
                 if '02' in prefix and len(files) > 1500:
                     # continue
@@ -451,6 +441,7 @@ if __name__ == '__main__':
                 for scenario_id in scenario_ids:
                     queue_file.write(f"{scenario_id}\n")
 
+            # 紀錄已上傳成功scenario, server crash需要重傳時, 可直接跳過
             success_upload = 0
             with open(f'{RUNTIME_DATA_DIR}/success_upload_scenario.txt', 'w') as success_file:
                 for scenario_id in tqdm(scenario_ids):
@@ -481,15 +472,17 @@ if __name__ == '__main__':
             # scenario_ids.reverse()
 
             for scenario_id in tqdm(scenario_ids):
+            # for scenario_id in ['01FS-ZZ_02SR-ZZ_3']:
                     print(f"Uploading scenario {scenario_id}...", end=" ")
                     # if scenario_id in skip2:
                     #     print('Skipped. Since already uploaded, check success_upload_scenario.txt')
                     #     success_upload += 1
                     #     continue
                     
-                    # #只更新zigzag range
-                    # if 'ZZ' not in scenario_id:
-                    #     continue
+                    #只更新zigzag range
+                    if 'ZZ'  in scenario_id:
+                        print(' ZZ, skipped.')
+                        continue
                     
                     print()
                     if upload(scenario_id):

@@ -1,9 +1,11 @@
+from pyexpat import EXPAT_VERSION
 import time
 import json
 import requests
 import os
 
-CACHE_FILE = 'itri_cache.json'
+CACHE_FILE = 'runtime_data/itri_cache.json'
+CACHE_EXPIRY = 600  # Default cache expiry time in seconds
 
 global cache
 # Load cache from file if it exists
@@ -34,7 +36,7 @@ def get_from_cache(cache_key):
             save_cache_to_file(cache)
     return None
 
-def set_to_cache(cache_key, data, ttl=300):
+def set_to_cache(cache_key, data, ttl=CACHE_EXPIRY):
     """Store data in cache with a time-to-live (TTL)."""
     current_time = time.time()
     cache[cache_key] = {

@@ -115,6 +115,11 @@ if __name__ == '__main__':
     elif args.mode == 'statistic' or args.mode == 's':
         show_statistics(args.folder)
 
+    """
+    # Example usage:
+    python combine_all.py -m combine -f scenario_config
+    """
+
 
 
 

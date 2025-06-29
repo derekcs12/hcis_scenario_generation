@@ -176,7 +176,7 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
 
     orientation = True if orientation == -1 else False
     # print("index, lane_id , s", index, lane_id , s)
-    road = int(Map[index]) if index < 4 else index #derek: 地圖太亂，traj直接給road比較快
+    road = int(Map[index]) # if index < 4 else index #derek: SinD地圖太亂，traj直接給road比較快
     return xosc.LanePosition(
         s=s,
         offset=offset*np.sign(lane_id),
@@ -274,7 +274,7 @@ def create_EntityTrigger_at_egoInitWp(egoName, ego_wp, s="$Ego_S", tolerance=1):
 def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName, tolerance=2, delay = 0, triggerName="EgoApproachInitWp"):
     
     road_index, lane_id, s, offset = Trigger['road'], Trigger['lane'], Trigger['s'], Trigger['offset']
-    road = int(Map[road_index])
+    road = int(Map[road_index]) # if road_index < 4 else road_index #derek: SinD地圖太亂，traj直接給road比較快
     return xosc.EntityTrigger(name=triggerName,
                               delay=delay,
                               conditionedge=xosc.ConditionEdge.rising,
@@ -582,7 +582,7 @@ def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStart
     group.add_condition(highspeed_trigger)
     return group
 
-def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5):
+def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=2):
     """
     End Condition (1-d) - Wrong Start Speed Condition
     Test Result: Invalid

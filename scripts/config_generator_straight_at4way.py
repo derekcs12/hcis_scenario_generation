@@ -1,8 +1,12 @@
 
 import yaml
 
-from dicent_utils import *
-from upload_utils import *
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
+from utils.dicent_utils import *
+from utils.upload_utils import *
 from config import RELATIVE_TRIGGER_POSITIONS
 from operator import *
 """ For straight&4way scenario combination at 4way crossroad """
