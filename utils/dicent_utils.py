@@ -332,137 +332,6 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
                               triggerentity=EntityName, triggeringrule="any")
 
 
-# def create_StopTrigger(egoName, egoTragetPoint, distance=500, time=5, allEventName=[], agentCount=0, pedestrianCount=0):
-#     reachTarget_group = xosc.ConditionGroup()
-#     event_group = xosc.ConditionGroup()
-#     standStill_group = xosc.ConditionGroup()
-#     start_group = xosc.ConditionGroup()
-
-#     """ End Condition 1. - Ego reach the target point"""
-#     reachPosCondition = xosc.ReachPositionCondition(
-#         egoTragetPoint, tolerance=2)
-#     stopdist_trigger = xosc.EntityTrigger(name="EgoApproachEndWp",
-#                                           delay=0,
-#                                           conditionedge=xosc.ConditionEdge.rising,
-#                                           entitycondition=reachPosCondition,
-#                                           triggerentity=egoName, triggeringrule="any")
-#     reachTarget_group.add_condition(stopdist_trigger)
-
-#     """ End Condition 2. - All event complete"""
-#     for event_name in allEventName:
-#         element_trigger = xosc.ValueTrigger(
-#             "AllEventComplete", time, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(
-#                 element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
-#         )
-#         event_group.add_condition(element_trigger)
-
-#         # event_name = f"Adv{i}StartSpeedEvent"
-#         # element_trigger = xosc.ValueTrigger(
-#         #     "stoptrigger", 3, xosc.ConditionEdge.none, xosc.StoryboardElementStateCondition(element=xosc.StoryboardElementType.event, reference=event_name, state=xosc.StoryboardElementState.completeState)
-#         # )
-#         # event_group.add_condition(element_trigger)
-
-#     """End Condition 3. - Ego stand still"""
-#     # standStill_condition = xosc.StandStillCondition(10)
-#     standStill_trigger = xosc.EntityTrigger(
-#         "EgoStandStill", 0, xosc.ConditionEdge.none, xosc.StandStillCondition(
-#             10), egoName
-#     )
-#     hadspeed_trigger = xosc.ValueTrigger("egoHasMoved", 0, xosc.ConditionEdge.none, xosc.ParameterCondition(
-#         "AV_CONNECTED", "true", xosc.Rule.equalTo))
-#     standStill_group.add_condition(standStill_trigger)
-#     standStill_group.add_condition(hadspeed_trigger)
-
-#     """End Condition 4. - All start event Triggered"""
-#     for agentId in range(agentCount):
-#         trigger = xosc.ValueTrigger(
-#             "AllStartEventTriggered", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(
-#                 element=xosc.StoryboardElementType.event, reference=f"Agent{agentId+1}_StartSpeedEvent", state=xosc.StoryboardElementState.completeState)
-#         )
-#         start_group.add_condition(trigger)
-#     for pedestrianId in range(pedestrianCount):
-#         trigger = xosc.ValueTrigger(
-#             "AllStartEventTriggered", 20, xosc.ConditionEdge.rising, xosc.StoryboardElementStateCondition(
-#                 element=xosc.StoryboardElementType.event, reference=f"Pedestrian{pedestrianId+1}_StartSpeedEvent", state=xosc.StoryboardElementState.completeState)
-#         )
-#         start_group.add_condition(trigger)
-
-#     # create trigger and add the two conditiongroups (or logic)
-#     stopTrigger = xosc.Trigger('stop')
-#     stopTrigger.add_conditiongroup(reachTarget_group)
-#     stopTrigger.add_conditiongroup(event_group)
-#     stopTrigger.add_conditiongroup(
-#         standStill_group)  # 工研院:會因為自駕系統來不及接上導致情境被直接關掉
-#     stopTrigger.add_conditiongroup(start_group)
-
-#     return stopTrigger
-
-# dellStartEventTriggered",
-#             delay=20,
-#             conditif create_event_complete_conditions(event_names, time):
-#     """ 
-#     End Condition 2. - All event complete
-#     """
-#     group = xosc.ConditionGroup()
-#     for name in event_names:
-#         condition = xosc.StoryboardElementStateCondition(
-#             element=xosc.StoryboardElementType.event,
-#             reference=name,
-#             state=xosc.StoryboardElementState.completeState
-#         )
-#         trigger = xosc.ValueTrigger(
-#             name="AllEventComplete",
-#             delay=time,
-#             conditionedge=xosc.ConditionEdge.none,
-#             valuecondition=condition
-#         )
-#         group.add_condition(trigger)
-#     return group
-
-
-# def create_start_event_conditions(agentCount, pedestrianCount):
-#     """
-#     End Condition - All start event Triggered
-#     """
-#     group = xosc.ConditionGroup()
-#     for i in range(agentCount):
-#         condition = xosc.StoryboardElementStateCondition(
-#             element=xosc.StoryboardElementType.event,
-#             reference=f"Agent{i+1}_StartSpeedEvent",
-#             state=xosc.StoryboardElementState.completeState
-#         )
-#         trigger = xosc.ValueTrigger(
-#             name="Aonedge=xosc.ConditionEdge.rising,
-#             valuecondition=condition
-#         )
-#         group.add_condition(trigger)
-
-#     for i in range(pedestrianCount):
-#         condition = xosc.StoryboardElementStateCondition(
-#             elementosc.StoryboardElementState.completeState
-#         )
-#         trigger = xosc.ValueTrigger(
-#             name="AllStartEventTriggered",
-#             delay=20,
-#             conditionedge=xosc.ConditionEdge.rising,
-#             valuecondition=condition
-#         )
-#         group.add_condition(trigger)
-
-#     return group=xosc.StoryboardElementType.event,
-#             reference=f"Pedestrian{i+1}_StartSpeedEvent",
-#             state=xosc.StoryboardElementState.completeState
-#         )
-#         trigger = xosc.ValueTrigger(
-#             name="AllStartEventTriggered",
-#             delay=20,
-#             conditionedge=xosc.ConditionEdge.rising,
-#             valuecondition=condition
-#         )
-#         group.add_condition(trigger)
-
-#     return group
-
 def create_timeout_condition(egoName, time=300):
     """
     End Condition (1-a) - Timeout Condition
@@ -693,38 +562,36 @@ def create_ego_stroll_condition(time=30):
     group.add_condition(event_started_trigger)
     return group
     
+def create_flag_trigger(parameter_name, value='true', delay=0, conditionedge=xosc.ConditionEdge.rising):
+    group = xosc.ConditionGroup()
+    condition = xosc.ParameterCondition(parameter_name, value, xosc.Rule.equalTo)
+    trigger = xosc.ValueTrigger(
+        name=f"{parameter_name}_Trigger",
+        delay=delay,
+        conditionedge=conditionedge,
+        valuecondition=condition
+    )
+    group.add_condition(trigger)
+    return group
+    
     
 def create_StopTrigger(Map, egoName, eventStartPoint, eventStartSpeed, egoTargetPoint, xodrPath):
-    
-    
     stopTrigger = xosc.Trigger('stop')
     
-    ### End Condition (1-a) - Timeout Condition
-    stopTrigger.add_conditiongroup(create_timeout_condition(egoName, time=300))
-    ### End Condition (1-b) - Ego Get Stuck Condition
-    # stopTrigger.add_conditiongroup(create_stand_still_conditions(egoName,time=10))
-    ### End Condition (1-c) - Invalid Area Condition
-    # stopTrigger.add_conditiongroup(create_invalid_area_condition(Map, egoName, eventStartPoint, xodrPath, distance=2))
-    ### End Condition (1-d) - Wrong Start Speed Condition
-    highgroup, lowgroup = create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed)
-    stopTrigger.add_conditiongroup(highgroup)
-    stopTrigger.add_conditiongroup(lowgroup)
-
-    # ### End Condition (2-a) - Ego reaches the target point
-    stopTrigger.add_conditiongroup(create_reach_target_condition(Map, egoName, egoTargetPoint))
-    # ### End Condition (2-b) - Ego TLE
-    stopTrigger.add_conditiongroup(create_ego_tle_condition(Map, eventStartPoint, egoName, time=30))
-    # ### End Condition (2-c) - Collision
-    stopTrigger.add_conditiongroup(create_collision_condition(egoName))
-    # ### End Condition (2-d) - Wrong Target
-    # stopTrigger.add_conditiongroup(create_wrong_target_condition(egoName, egoTragetPoint))
-
-    ### Replace (1-c) and (2-d): Ego enters invalid area => check if the ego is connected and does not arrive the trigger point in x seconds
-    stopTrigger.add_conditiongroup(create_ego_stroll_condition())
-                                   
-                                   
-    # # stopTrigger.add_conditiongroup(create_event_complete_conditions(allEventName, time))
-    # # stopTrigger.add_conditiongroup(create_start_event_conditions(agentCount, pedestrianCount))
+    """NEW END CONDITIONS"""
+    # Condition 1 - AV Connection timeout => Invalid
+    stopTrigger.add_conditiongroup(create_flag_trigger('AV_CONNECTION_TIMEOUT', 'true'))
+    # Condition 2 - Wrong Start Speed => Invalid
+    stopTrigger.add_conditiongroup(create_flag_trigger('WRONG_START_SPEED', 'true'))
+    # Condition 3 - Ego reaches the target point => Valid/Success
+    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_REACHED_END', 'true'))
+    # Condition 4 - Ego TLE => Valid/Fail
+    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_TLE', 'true'))
+    # Condition 5 - Collision => Valid/Fail
+    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_COLLISION', 'true'))
+    # Condition 6 - Ego Stroll => Invalid
+    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_STROLL', 'true'))
+    
 
     return stopTrigger
 
