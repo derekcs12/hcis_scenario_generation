@@ -24,47 +24,6 @@ except IndexError:
     pass
 
 
-# import carla
-# # from agents.navigation.global_route_planner import GlobalRoutePlanner
-
-# global carla_map
-# with open('hct_6.xodr', 'r') as fp:
-#     carla_map = carla.Map('hct_6', fp.read())
-
-# class MapPlot():
-#     def __init__(self) -> None:
-#         self.plt = plt
-#         self.plt.subplot()
-#         # Invert the y axis since we follow UE4 coordinates
-#         self.plt.gca().invert_yaxis()
-#         self.plt.margins(x=0.0, y=0)
-
-#     def add_carla_points(self, points, color='blue', marker='o', markersize=5, linestyle=''):
-#         if not isinstance(points, list):
-#             points = [points]
-
-#         Xs = [waypoint.transform.location.x for waypoint in points]
-#         Ys = [waypoint.transform.location.y for waypoint in points]
-#         self.plt.plot(Xs,
-#                       Ys,
-#                       color=color, marker=marker, markersize=markersize , linestyle=linestyle)
-
-#     def add_points(self, points, color='blue', marker='o', markersize=5, linestyle=''):
-#         if not isinstance(points, list):
-#             points = [points]
-
-#         Xs = [waypoint[0] for waypoint in points]
-#         Ys = [waypoint[1] for waypoint in points]
-#         self.plt.plot(Xs,
-#                       Ys,
-#                       color=color, marker=marker, markersize=markersize , linestyle=linestyle)
-
-#     def show(self, center=(50,50), zoom=50):
-#         self.plt.xlim(center[0] - zoom, center[0] + zoom)
-#         self.plt.ylim(center[1] - zoom, center[1] + zoom)
-#         self.plt.show()
-
-
 def sort_event(event):
     d = OrderedDict([
         ('Type', event['Type']),
@@ -998,37 +957,6 @@ def get_behavior_mode(AgentSpeed=40, AgentEndSpeed=10, DynamicDuration=3, Dynami
 
     return BehaviorMode
 
-# def create_scenario_configs_by_behavior_mode(scenario_name, description, config, BehaviorMode):
-#     # Multiple 待完成
-#     car['Start_speed'] = behavior[1]
-#     gostraightAct[1]['End'] = behavior[2]
-#     gostraightAct[1]['Dynamic_duration'] = behavior[3]
-#     gostraightAct[1]['Dynamic_shape'] = behavior[4]
-#     gostraightAct[1]['Dynamic_delay'] = behavior[5]
-#     car['Acts'] = [{'Type': 'gostraight','Delay':0, 'Events':gostraightAct}]
-
-#     config['Actors'] = {'Agents':[car]}
-
-#     scenario_config = {
-#         'scenario_id': scenario_id,
-#         'scenario_name': scenario_name,
-#         'description': description,
-#         'config': config
-#     }
-
-#     return scenario_config
-#     # List all files in the directory
-#     for filename in os.listdir(directory):
-#         match = pattern.match(filename)
-#         if match:
-#             scenario_id = int(match.group(1))
-#             if scenario_id > max_scenario_id:
-#                 max_scenario_id = scenario_id
-
-#     # Calculate the next scenario ID
-#     next_scenario_id = max_scenario_id + 1
-
-#     return next_scenario_id
 
 
 def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.csv'):
@@ -1071,38 +999,3 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
                 # Write header if file does not exist
                 writer.writerow(columns)
             writer.writerows(content_with_id)
-
-
-def remove_yaml_files(directory='./scenario_config'):
-    # Construct the pattern for YAML files
-    pattern = os.path.join(directory, '*.yaml')
-
-    # Find all files matching the pattern
-    yaml_files = glob.glob(pattern)
-
-    # Remove each file
-    for file in yaml_files:
-        os.remove(file)
-        print(f"Removed: {file}")
-
-    try:
-        os.remove('./HCIS_scenarios.csv')
-        print(f"Removed: ./HCIS_scenarios.csv")
-    except:
-        pass
-
-
-def get_behavior_mode(AgentSpeed=40, AgentEndSpeed=10, DynamicDuration=3, DynamicHaltDuration=1, DynamicDelay=1):
-    BehaviorMode = {}
-    BehaviorMode['keeping'] = (
-        'Autocruise.', AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay)  # 等速
-    BehaviorMode['braking'] = (
-        'braking.', AgentSpeed, AgentEndSpeed, DynamicDuration, 'linear', DynamicDelay)  # 減速
-    BehaviorMode['braking_halt'] = (
-        'Braking & Halted halfway.', AgentSpeed, 0, DynamicHaltDuration, 'linear', DynamicDelay)  # 減速|未完成
-    BehaviorMode['sudden_braking_halt'] = (
-        'Sudden braking & Halted halfway.', AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', DynamicDelay)  # 急煞|未完成
-    BehaviorMode['speed_up'] = (
-        'Speed up.', 0, AgentSpeed, DynamicDuration-1, 'linear', DynamicDelay-1)  # 加速
-
-    return BehaviorMode
