@@ -284,45 +284,41 @@ def upload(scenario_id):
     """
 
     valid_conditions = { # Only if these conditions are triggered will the trial be considered valid.
-        "conditionLogic": "And",  # Available options: "And", "Or"
+        "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "EventStartCondition",
-            "act_start"
+            "IS_VALID_Trigger",
         ]
     }
     invalid_condirions = { # If these conditions are triggered, the trial will be considered invalid.
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "AV_CONNECTION_TIMEOUT",
-            "WRONG_START_SPEED",
-            "EGO_TLE",
-            "WRONG_START_SPEED",
-            "AV_CONNECTION_TIMEOUT"
+            "AV_CONNECTION_TIMEOUT_Trigger",
+            "WRONG_START_SPEED_Trigger",
+            "EGO_STROLL_Trigger",
         ]
     }
     fail_conditions = { # If these conditions are triggered, the trial will stop right away.
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "EgoTLE",
-            "EgoCollision",
-            "EgoStroll"
+            "EGO_TLE_Trigger",
+            "EGO_COLLISION_Trigger",
         ]
     }
     end_conditions = { # If these conditions are triggered, the trial will stop right away.
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "AV_CONNECTION_TIMEOUT",
-            "WRONG_START_SPEED",
-            "EGO_REACHED_END",
-            "EGO_TLE",
-            "EGO_COLLISION",
-            "EGO_STROLL",
+            "AV_CONNECTION_TIMEOUT_Trigger",
+            "WRONG_START_SPEED_Trigger",
+            "EGO_REACHED_END_Trigger",
+            "EGO_TLE_Trigger",
+            "EGO_COLLISION_Trigger",
+            "EGO_STROLL_Trigger",
         ]
     }
     start_conditions = {  # After theses events start, the scenario will be recorded.
         "conditionLogic": "And",  # Available options: "And", "Or"
         "conditions": [
-            "EgoApproachInitWp"
+            "EgoHasMoved"
         ]
     }
     conditions = {

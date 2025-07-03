@@ -7,3 +7,4 @@ log.txt
 # 忽略 scenario_config_ 開頭的備份料夾
 scenario_config-*/
 scenario_config_combined_*/
+ignore_folder
