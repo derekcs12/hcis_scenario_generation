@@ -451,7 +451,7 @@ def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStart
     group.add_condition(highspeed_trigger)
     return group
 
-def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=2):
+def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5):
     """
     End Condition (1-d) - Wrong Start Speed Condition
     Test Result: Invalid

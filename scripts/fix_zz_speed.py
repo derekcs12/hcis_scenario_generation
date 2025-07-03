@@ -6,13 +6,17 @@ def fix_zz_speed(input_csv):
 
     for index, row in df.iterrows():
         scenario_name = row.get('scenario_name', '')
+        
         if 'ZZ' in scenario_name:
+            # if scenario_name not in ['01FS-ZZ_02SR-ZZ_3', '01FS-ZZ_02SR-ZZ_4']:
+            #     continue
             # 偵測 ZZ 所屬 agent：如 Agent2
             parts = scenario_name.split('_')
             zz_part = [p for p in parts if 'ZZ' in p]
             if not zz_part:
-                print(f"[跳過] {input_csv} 的 {scenario_name} 沒有 ZZ 部分")
+                print(f"[跳過] {scenario_name} 沒有 ZZ 部分")
                 continue
+            print(f"[檢查] {scenario_name} ")
             
             has_fixed = False
             for part in parts:
@@ -26,16 +30,17 @@ def fix_zz_speed(input_csv):
                 agent_col = f'Agent{int(agent_number)}_1_SA_EndSpeed'
                 if agent_col in df.columns:
                     speed_range = str(row[agent_col])
+                    # print("    ",agent_col, speed_range)
                     if '~' in speed_range:
                         try:
                             min_speed, max_speed = map(float, speed_range.split('~'))
                             if min_speed < 20.0:
-                                print(f"[修正] {input_csv} 的 {agent_col} 值為 {speed_range}，將其設置為 20.0~20.0")
+                                print(f"[修正] {part} ｜ {agent_col} 值為 {speed_range}，將其設置為 20.0~20.0")
                                 df.at[index, agent_col] = '20.0~20.0'
                                 has_fixed = True
 
                             else:
-                                print(f"[跳過] {input_csv} 的 {agent_col} 值為 {speed_range}，不符合條件")
+                                print(f"[跳過] {part} ｜ {agent_col} 值為 {speed_range}，不符合條件")
                                 continue
                             
                         except ValueError:

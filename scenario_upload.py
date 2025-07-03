@@ -14,6 +14,10 @@ from utils.cache_utils import *
 from utils.assign_route import process_yaml_file  # Import the function
 import argparse
 
+"""
+python scenario_upoad.py -s queue
+"""
+
 RUNTIME_DATA_DIR = 'runtime_data'
 
 
@@ -282,21 +286,38 @@ def upload(scenario_id):
     valid_conditions = { # Only if these conditions are triggered will the trial be considered valid.
         "conditionLogic": "And",  # Available options: "And", "Or"
         "conditions": [
-            "EgoApproachInitWp",
+            "EventStartCondition",
             "act_start"
+        ]
+    }
+    invalid_condirions = { # If these conditions are triggered, the trial will be considered invalid.
+        "conditionLogic": "Or",  # Available options: "And", "Or"
+        "conditions": [
+            "AV_CONNECTION_TIMEOUT",
+            "WRONG_START_SPEED",
+            "EGO_TLE",
+            "WRONG_START_SPEED",
+            "AV_CONNECTION_TIMEOUT"
         ]
     }
     fail_conditions = { # If these conditions are triggered, the trial will stop right away.
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "EgoStandStill"
+            "EgoTLE",
+            "EgoCollision",
+            "EgoStroll"
         ]
     }
     end_conditions = { # If these conditions are triggered, the trial will stop right away.
-        # "conditionLogic": "Or",  # Available options: "And", "Or"
-        # "conditions": [
-        #     "Condition D", "Condition E"
-        # ]
+        "conditionLogic": "Or",  # Available options: "And", "Or"
+        "conditions": [
+            "AV_CONNECTION_TIMEOUT",
+            "WRONG_START_SPEED",
+            "EGO_REACHED_END",
+            "EGO_TLE",
+            "EGO_COLLISION",
+            "EGO_STROLL",
+        ]
     }
     start_conditions = {  # After theses events start, the scenario will be recorded.
         "conditionLogic": "And",  # Available options: "And", "Or"
@@ -306,6 +327,7 @@ def upload(scenario_id):
     }
     conditions = {
         "validConditions": valid_conditions,
+        "invalidConditions": invalid_condirions,
         "failConditions": fail_conditions,
         "endConditions": end_conditions,
         "startObservationSamplingConditions": start_conditions
@@ -317,7 +339,7 @@ def upload(scenario_id):
 
 
     filename = f"{result['scenario_name']}"
-    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0516/{filename}.xosc"
+    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0703/{filename}.xosc"
 
     # exit()
     openScenarioField = upload_openscenario_file(file_path)
