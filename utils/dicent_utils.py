@@ -652,7 +652,7 @@ def generate_Agent_Start_Event(actorName, agent, Map):
     #     agentStartTrigger = create_EntityTrigger_at_absolutePos(
     #         Map, agent['Start_trigger'], 'Ego')
     
-    agentStartTrigger = create_agent_start_trigger(actorName)
+    agentStartTrigger = create_flag_trigger('IS_VALID', 'true', delay=0, conditionedge=xosc.ConditionEdge.rising)
 
     advStartSpeedEvent = xosc.Event(
         f"{actorName}_StartSpeedEvent", xosc.Priority.overwrite)
