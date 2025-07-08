@@ -16,7 +16,7 @@ def generate(config, company='HCISLab'):
         # catalog.add_catalog("VehicleCatalog", "/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/Catalogs/Vehicles")
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
-        road = xosc.RoadNetwork(roadfile="hct_6.xodr")
+        road = xosc.RoadNetwork(roadfile="../hct_6.xodr")
         # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/tianjin.xodr")
         # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/cr_file.xodr")
 
@@ -43,10 +43,10 @@ def generate(config, company='HCISLab'):
     egoControllerProperties.add_property(name="mode", value="override")
     egoControllerProperties.add_property(
         name="setSpeed", value="${$Ego_Speed / 3.6}")
-    # egoController = xosc.Controller(
-    #     name=controllerName, properties=egoControllerProperties)
-    egoController = xosc.CatalogReference(
-        catalogname="ControllerCatalog", entryname=controllerName)
+    egoController = xosc.Controller(
+        name=controllerName, properties=egoControllerProperties)
+    # egoController = xosc.CatalogReference(
+    #     catalogname="ControllerCatalog", entryname=controllerName)
     # Entities (document:xosc.Entities)
     agentCount = len(Actors['Agents']) if 'Agents' in Actors else 0
     pedCount = len(Actors['Pedestrians']) if 'Pedestrians' in Actors else 0

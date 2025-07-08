@@ -38,7 +38,7 @@ if 'init':
     tags_to_be_used_in_created_scenario = [
         # "behavior:intersection",
         "party:hcis",
-        "deliver:2025Jun",
+        "deliver:2025Jul",
         "field:hct",
         "vehicle:car",
         "ego-behavior:go-straight",
@@ -48,7 +48,7 @@ if 'init':
         # "edit:narrow-down-param-range",
         # "edit:zz_range",
         # "edit:new_stop_condition",
-        "edit:new_9invalid_condition",
+        "edit:new_invalid_condition",
     ]
         
     
@@ -430,7 +430,7 @@ if __name__ == '__main__':
             scenario_ids = []
             prefix_dict = {}
             # 自行修改路徑
-            for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0516/"):
+            for file in os.listdir("/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0703/"):
                 if file.endswith('.xosc'):
                     if file in skip:
                         continue
@@ -491,17 +491,21 @@ if __name__ == '__main__':
 
             for scenario_id in tqdm(scenario_ids):
             # for scenario_id in ['01FS-ZZ_02SR-ZZ_3']:
-                    print(f"Uploading scenario {scenario_id}...", end=" ")
+                    
                     # if scenario_id in skip2:
                     #     print('Skipped. Since already uploaded, check success_upload_scenario.txt')
                     #     success_upload += 1
                     #     continue
                     
-                    #只更新zigzag range
-                    if 'ZZ'  in scenario_id:
-                        print(' ZZ, skipped.')
+                    # #只更新zigzag range
+                    # if 'ZZ' in scenario_id:
+                    #     print(' ZZ, skipped.')
+                    #     continue
+
+                    if scenario_id not in ['01BL-KEEP_02FS-ZZ_3.xosc','01BL-KEEP_02SR-ZZ_5.xosc','01BR-KEEP_2.xosc','01BR-KEEP_6.xosc','01FR-ZZ_02FR-CI_2.xosc','01FL-TL_14.xosc','01BL-TR_02SL-TR_7.xosc','01BR-KEEP_02SR-ZZ_1.xosc','01FR-CI_02SR-CI_24.xosc','01FL-ZZ_02FR-CI_13.xosc']:
                         continue
-                    
+
+                    print(f"Uploading scenario {scenario_id}...", end=" ")
                     print()
                     if upload(scenario_id):
                         success_upload += 1
