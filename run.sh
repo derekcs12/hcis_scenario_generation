@@ -7,6 +7,9 @@ python scripts/config_generator_straight_at4way.py
 # # Do Config Files Combination (both .yaml & .csv)
 python combine_all.py
 
+# Create Scenario Overview list
+python scripts/combine_csv_files.py
+
 # Turn .yaml into .xosc
 python main.py -c all
 

@@ -291,7 +291,7 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
                               triggerentity=EntityName, triggeringrule="any")
 
 
-def create_timeout_condition(egoName, time=300):
+def create_timeout_condition(egoName, time=60):
     """
     End Condition (1-a) - Timeout Condition
     Description: If the simulation time exceeds the specified time, and the AV system has not connected, the scenario is considered invalid.
