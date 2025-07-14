@@ -24,107 +24,6 @@ except IndexError:
     pass
 
 
-def sort_event(event):
-    d = OrderedDict([
-        ('Type', event['Type']),
-        ('Dynamic_delay', event['Dynamic_delay']),
-        ('Dynamic_duration', event['Dynamic_duration']),
-        ('Dynamic_shape', event['Dynamic_shape']),
-        ('End', event['End']),
-        ('Use_route', event['Use_route'])
-    ])
-    return d
-
-
-def sort_act(act):
-    d = OrderedDict([
-        ('Type', act['Type']),
-        ('Delay', act['Delay']),
-        ('Events', [sort_event(e) for e in act['Events']])
-    ])
-    return d
-
-
-def sort_agent_dict(agent):
-    d = OrderedDict([
-        ('Type', agent['Type']),
-        ('Start_pos', agent['Start_pos']),
-        ('Start_speed', agent['Start_speed']),
-        ('Start_trigger', OrderedDict([
-            ('lane', agent['Start_trigger']['lane']),
-            ('road', agent['Start_trigger']['road']),
-            ('s', agent['Start_trigger']['s']),
-            ('offset', agent['Start_trigger']['offset']),
-            ('type', agent['Start_trigger']['type'])
-        ])),
-        ('Acts', [sort_act(act) for act in agent['Acts']])
-    ])
-    return d
-
-
-def sort_config_dict(data):
-    d = OrderedDict([
-        ('Scenario_name', data['Scenario_name']),
-        ('Ego', OrderedDict([
-            ('Start_pos', data['Ego']['Start_pos']),
-            ('Start_speed', data['Ego']['Start_speed']),
-            ('End_pos', data['Ego']['End_pos'])
-        ])),
-        ('Map', data['Map']),
-        ('Actors', OrderedDict([
-            ('Agents', [sort_agent_dict(ag)
-                        for ag in data['Actors']['Agents']])
-        ]))
-    ])
-
-    return json.loads(json.dumps(d))
-
-
-def generate_gradient(color1=np.array([0, 1, 0]), color2=np.array([1, 0, 0]), n=5):
-    # rgb_space = ['#'+str(c) for c in np.linspace(color1, color2, n)]
-    rgb_space = np.linspace(color1, color2, n)
-    return rgb_space
-
-
-def get_road_info(waypoint, distance=20):
-    """
-    給定一個點，返回前後指定距離的道路信息。
-
-    :param waypoint: carla.Waypoint 對象
-    :param distance: 要查找的距離（默認20m）
-    :return: 前後waypoint
-    """
-
-    # 獲取給定點的s偏移量
-    s = waypoint.s
-    # global carla_map
-    # 獲取前後路徑點
-    wp_forward = waypoint.next(distance)[0] if len(
-        waypoint.next(distance)) > 0 else None
-    wp_backward = waypoint.previous(distance)[0] if len(
-        waypoint.previous(distance)) > 0 else None
-
-    return wp_forward, wp_backward
-
-
-def create_LanePosition_from_wp(waypoint, s=None, s_offset=0, lane_offset=0, orientation=False):
-    sign = np.sign(waypoint.lane_id)
-    final_s = waypoint.s - s_offset * sign if s is None else s
-    # print("s_offset * sign", s_offset * sign)
-    # print("final_s", final_s)
-    # print("waypoint.s", waypoint.s)
-    # print(orientation)
-
-    return xosc.LanePosition(
-        s=final_s,
-        offset=lane_offset,
-        lane_id=waypoint.lane_id,
-        road_id=waypoint.road_id,
-        orientation=xosc.Orientation(
-            h=3.14159, reference='relative') if orientation else xosc.Orientation()
-    )
-
-
 def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=0):
     if s == None:
         # index, lane_id , s = map(int,position.split(' '))
@@ -150,11 +49,6 @@ def get_entity_position(entityName):
     return xosc.RelativeLanePosition(lane_id=0, entity=entityName, dsLane=0)
 
 
-def create_TransitionDynamics_from_sc(agent_sc):
-    dynamic_shape = getattr(xosc.DynamicsShapes, agent_sc.dynamic_shape)
-    return xosc.TransitionDynamics(dynamic_shape, xosc.DynamicsDimension.time, agent_sc.dynamic_duration)
-
-
 def create_TransitionDynamics_from_config(event, actorName, actIndex, eventType, type='other'):
     dynamic_shape = getattr(xosc.DynamicsShapes, event['Dynamic_shape'])
     # if type == 'other':
@@ -166,68 +60,6 @@ def create_TransitionDynamics_from_config(event, actorName, actIndex, eventType,
         f"${actorName}_{actIndex}_{eventType}_DynamicShape", xosc.DynamicsDimension.time, f"${actorName}_{actIndex}_{eventType}_DynamicDuration")
 
     return transition_dynamics
-
-
-def create_ValueTrigger_from_sc(agent_sc=None, agent_name=None, ego_name=None):
-    if agent_sc == None:
-        return xosc.ValueTrigger(
-            name="start_triggerSimulationTime",
-            delay=0.3,
-            conditionedge=xosc.ConditionEdge.none,
-            valuecondition=xosc.SimulationTimeCondition(
-                0, xosc.Rule.greaterThan)
-        )
-    if agent_sc.trigger == 'sim_time':
-        print("USE", agent_sc.trigger)
-        return xosc.ValueTrigger(
-            name="start_triggerSimulationTime",
-            delay=0,
-            conditionedge=xosc.ConditionEdge.none,
-            valuecondition=xosc.SimulationTimeCondition(
-                agent_sc.dyn_start, xosc.Rule.greaterThan)
-        )
-    elif agent_sc.trigger == 'sim_step':
-        return xosc.EntityTrigger(
-            name="EgoCloseToAgent",
-            delay=0,
-            conditionedge=xosc.ConditionEdge.rising,
-            entitycondition=xosc.TimeHeadwayCondition(
-                entity=agent_name,
-                value=agent_sc.dyn_start,
-                rule=xosc.Rule.lessThan if agent_sc.from_opposite else xosc.Rule.greaterThan),
-            triggerentity=ego_name,
-            triggeringrule="any"
-        )
-
-# def create_EntityTrigger_from_sc(egoName, agent_sc=None,):
-#     return xosc.EntityTrigger(
-#                 name = "EgoCloseToAgent",
-#                 delay = 0,
-#                 conditionedge = xosc.ConditionEdge.rising,
-#                 entitycondition = xosc.TimeHeadwayCondition(
-#                                     entity=agent_name,
-#                                     value=agent_sc.dyn_start,
-#                                     rule=xosc.Rule.lessThan if agent_sc.from_opposite else xosc.Rule.greaterThan),
-#                 triggerentity = egoName,
-#                 triggeringrule = "any"
-#             )
-
-
-def create_EntityTrigger_at_egoInitWp(egoName, ego_wp, s="$Ego_S", tolerance=1):
-    sign = -np.sign(ego_wp.lane_id)
-    s = ego_wp.s - sign*27
-    # if s != "$Ego_S":
-    #     s *= sign
-    reachPosCondition = xosc.ReachPositionCondition(xosc.LanePosition(s=s,
-                                                                      offset=0,
-                                                                      lane_id=ego_wp.lane_id,
-                                                                      road_id=ego_wp.road_id),
-                                                    tolerance=tolerance)
-    return xosc.EntityTrigger(name="EgoApproachInitWp",
-                              delay=0,
-                              conditionedge=xosc.ConditionEdge.rising,
-                              entitycondition=reachPosCondition,
-                              triggerentity=egoName, triggeringrule="any")
 
 
 def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName, tolerance=2, delay = 0, triggerName="EgoApproachInitWp"):
@@ -318,7 +150,6 @@ def create_timeout_condition(egoName, time=60):
     group.add_condition(has_moved_trigger)
     return group
 
-
 def create_stand_still_conditions(egoName,time=10):
     """
     End Condition (1-b) - Ego Get Stuck Condition
@@ -376,7 +207,6 @@ def create_invalid_area_condition(Map, egoName, eventStartPoint, xodrPath, dista
     group.add_condition(trigger)
     return group
     
-
 def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5):
     """
     End Condition (1-d) - Right Start Speed Condition
@@ -892,70 +722,6 @@ def set_behavior_dict(behavior_type, behavior_mode):
         zip(behavior_dict, [behavior_type] + extracted_elements))
 
     return behavior_dict
-
-
-"""
-def plan_path(start=None, end=None, WAYPOINT_DISTANCE=1.0, method='greedy'):
-    if method == 'greedy':
-
-        pass
-    elif method=='global_planner':
-        global_planner = GlobalRoutePlanner(carla_map, WAYPOINT_DISTANCE)
-        start = start.transform.location
-        end   = end.transform.location
-        # s = carla_map.get_waypoint(carla.Location(440, 170, 0)).transform.location
-        # e = carla_map.get_waypoint(carla.Location(450, 200, 0)).transform.location
-        # start = s
-        # end   = e
-
-        # route = global_planner.trace_route(e,s)
-        route1 = global_planner.trace_route(start,end)
-        route2 = global_planner.trace_route(end,start)
-        print(len(route1), len(route2))
-        if len(route1) <= len(route2):
-            route = route1
-        else:
-            route = route2
-
-        route = [wp for wp,r in route]
-        # print(route)
-        return route
-"""
-
-
-def remove_yaml_files(directory='./scenario_config'):
-    # Construct the pattern for YAML files
-    pattern = os.path.join(directory, '*.yaml')
-
-    # Find all files matching the pattern
-    yaml_files = glob.glob(pattern)
-
-    # Remove each file
-    for file in yaml_files:
-        os.remove(file)
-        print(f"Removed: {file}")
-
-    try:
-        os.remove('./HCIS_scenarios.csv')
-        print(f"Removed: ./HCIS_scenarios.csv")
-    except:
-        pass
-
-
-def get_behavior_mode(AgentSpeed=40, AgentEndSpeed=10, DynamicDuration=3, DynamicHaltDuration=1, DynamicDelay=1):
-    BehaviorMode = {}
-    BehaviorMode['keeping'] = (
-        'Autocruise.', AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay)  # 等速
-    BehaviorMode['braking'] = (
-        'braking.', AgentSpeed, AgentEndSpeed, DynamicDuration, 'linear', DynamicDelay)  # 減速
-    BehaviorMode['braking_halt'] = (
-        'Braking & Halted halfway.', AgentSpeed, 0, DynamicHaltDuration, 'linear', DynamicDelay)  # 減速|未完成
-    BehaviorMode['sudden_braking_halt'] = (
-        'Sudden braking & Halted halfway.', AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', DynamicDelay)  # 急煞|未完成
-    BehaviorMode['speed_up'] = (
-        'Speed up.', 0, AgentSpeed, DynamicDuration-1, 'linear', DynamicDelay-1)  # 加速
-
-    return BehaviorMode
 
 
 
