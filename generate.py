@@ -391,7 +391,7 @@ def generate_Parameter_Maneuver(config, actors):
         "Set AV Connection Timeout Flag",
         xosc.ParameterSetAction("AV_CONNECTION_TIMEOUT", "true"))
     av_connection_timeout_event.add_trigger(
-        create_timeout_condition('Ego', time=300))
+        create_timeout_condition('Ego', time=60)) #itri: Connecting usually takes less than 30 seconds. So set to 60 seconds
     param_maneuver.add_event(av_connection_timeout_event)
 
     # Detect Wrong Start Speed Event - high
