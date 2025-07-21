@@ -16,8 +16,8 @@ config['Center'] = [685.61, -134.05]
 
 
 
-egoStraightAsideLeft = {'Start_pos': [0, 1, 65, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 40}
-egoStraightAsideRight = {'Start_pos': [0, 2, 65, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 40}
+egoStraightAsideLeft = {'Start_pos': [0, 1, 65, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 30}
+egoStraightAsideRight = {'Start_pos': [0, 2, 65, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 30}
 aside_left_route = 'hsinchu_gfr_pr_br_elr' # 靠左
 aside_right_route = 'hcis_route2' # 靠右
 
@@ -119,7 +119,8 @@ if 1:
         for end, action in [([1, -1, 10, 0, 1],'turning left'), 
                             ([0, -1, 15, 0, 1],'left U turn')]: 
             descript = f"Agent at {relative_pos} {action} - "
-
+            # if action is 'left U turn':
+            #     lateral_behavior = 'TLU'
 
             agent1_lat_event = {}
             agent1_lat_event['Type'] = 'position'
@@ -278,7 +279,7 @@ if 1:
     route = aside_left_route
 
     # Agent
-    lateral_behavior = 'TL'
+    ## lateral_behavior = 'TLU'
     for relative_pos, start_pos, end_pos in [("FL-1",[2, 1, 10, 0, 1],[2, -1, 15, 0, 1]),
                                              ("FL-1",[2, 1, 10, 0, 1],[2, -2, 15, 0, 1])]:
         
@@ -394,7 +395,8 @@ if 1:
         for end, action in [([1, -1, 10, 0, 1],'turning left'), 
                             ([0, -1, 15, 0, 1],'left U turn')]: 
             descript = f"Agent at {relative_pos} {action} - "
-
+            # if action is 'left U turn':
+            #     lateral_behavior = 'TLU'
 
             agent1_lat_event = {}
             agent1_lat_event['Type'] = 'position'

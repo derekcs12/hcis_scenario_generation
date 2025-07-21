@@ -30,12 +30,12 @@ def combine_csv_files():
             print(f"警告: 目錄 {target_dir} 不存在，跳過...")
             continue
             
-        print(f"\n正在處理目錄: {target_dir}")
+        print(f"正在處理目錄: {target_dir}")
         
         # 遍歷所有子目錄
         for subdir in target_dir.iterdir():
             if subdir.is_dir():
-                print(f"  掃描子目錄: {subdir.name}", end=' ')
+                # print(f"  掃描子目錄: {subdir.name}", end=' ')
                 
                 # 查找該子目錄下的所有CSV檔案
                 csv_files = list(subdir.glob("*.csv"))
@@ -44,7 +44,7 @@ def combine_csv_files():
                     print(f"    子目錄 {subdir.name} 中沒有找到CSV檔案")
                     continue
                 
-                print(f"    找到 {len(csv_files)} 個CSV檔案")
+                # print(f"    找到 {len(csv_files)} 個CSV檔案")
                 
                 for csv_file in csv_files:
                     try:
@@ -111,7 +111,7 @@ def combine_csv_files():
 
 def main():
     print("=" * 60)
-    print("CSV檔案整合工具")
+    print("生產Scenario總表")
     print("=" * 60)
     
     try:

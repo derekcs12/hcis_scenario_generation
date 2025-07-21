@@ -6,6 +6,7 @@ import os
 
 CACHE_FILE = 'runtime_data/itri_cache.json'
 CACHE_EXPIRY = 600  # Default cache expiry time in seconds
+CACHE_KEY = "fetch_data_{url}"
 
 global cache
 # Load cache from file if it exists
@@ -44,24 +45,32 @@ def set_to_cache(cache_key, data, ttl=CACHE_EXPIRY):
         'expires_at': current_time + ttl
     }
     save_cache_to_file(cache)
+    
+# set or update cache data
+def fetch_and_update_cache(url, headers=None):
+    # Fetching from API
+    try:
+        response = requests.get(url, headers=headers)
+        # response.raise_for_status()
+        data_list = response.json()  # Assuming the response is JSON
+            
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return False
+        
+    # Update the cache
+    cache_key = CACHE_KEY.format(url=url)  # Create a unique cache key based on the URL
+    set_to_cache(cache_key, data_list, ttl=300)  # Cache for 300 seconds
+    
+    return data_list
 
 def get_cache_data(url, headers=None):
-    cache_key = f"fetch_data_{url}"
+    cache_key = CACHE_KEY.format(url=url)  # Create a unique cache key based on the URL
     data_list = get_from_cache(cache_key)
     
     if data_list is None:
-        try:
-            response = requests.get(url, headers=headers)
-            # response.raise_for_status()
-            data_list = response.json()  # Assuming the response is JSON
-            # print(data_list);exit("DSFDFSDf")
-            print("No Cache data, GET")
-        except Exception as e:
-            print(f"Error fetching data: {e}")
-            return False
-        
-        # Update the cache
-        set_to_cache(cache_key, data_list, ttl=300)  # Cache for 300 seconds
+        print("No cache available. Fetching from API...")
+        data_list = fetch_and_update_cache(url, headers)
     
     return data_list
 

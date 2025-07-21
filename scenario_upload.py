@@ -20,6 +20,9 @@ python scenario_upoad.py -s queue
 
 RUNTIME_DATA_DIR = 'runtime_data'
 
+from datetime import date
+folder = date.today().strftime("%m%d")
+
 
 if 'init':
     base_url = "http://172.30.1.139:3000/api"
@@ -45,10 +48,11 @@ if 'init':
         "roadtype:main-roadway",
         # "combination:none",
         # "edit:5-parameter",
-        # "edit:narrow-down-param-range",
+        "edit:raw-param-range",
+        "edit:10-sample-scenarios",
         # "edit:zz_range",
         # "edit:new_stop_condition",
-        "edit:new_invalid_condition",
+        "edit:ego_speed_30",
     ]
         
     
@@ -81,6 +85,8 @@ if 'init':
     CACHE_FILE = 'cache.json'
     
 def handle_tags_creation_and_get_ids(tags: List[str]):
+    print(f"   [TAG] Handling tags...")
+    
     global base_url
     url = f"{base_url}/tags?depth=1&limit=1000000"
     tags_doc = get_cache_data(url, headers)
@@ -90,56 +96,56 @@ def handle_tags_creation_and_get_ids(tags: List[str]):
     
     tags_doc = tags_doc["docs"]
     all_tags = dict( [ (tag["name"], tag["id"]) for tag in tags_doc ] )
+    
 
     for tag in tags:
         if tag not in all_tags:
+            print(f"   [TAG] Tag '{tag}' does not exist, creating...")
             response = requests.post(
                 f"{base_url}/tags",
                 headers=headers,
                 json={"name": tag}
-            )
+            )    
+            # print(response.json());exit()
             if response.status_code == 201 and response.json().get("message") == "Tag successfully created.":
                 created_id = response.json()["doc"]["id"]
-                print(f"Tag '{tag}' created successfully. ID: {created_id}")
-                all_tags[tag] = created_id
-                tags_doc = get_cache_data(base_url, headers)
-                # print(tags_doc);exit()
-                if "docs" not in tags_doc:
-                    raise KeyError(f"'docs' key not found in the response: {tags_doc}")
-                tags_doc = tags_doc["docs"]
-                all_tags = dict( [ (tag["name"], tag["id"]) for tag in tags_doc ] )
+                print(f"   [TAG] Tag '{tag}' created successfully. ID: {created_id}")
+
             else:
                 raise Exception(f"Unexpected response while creating tag '{tag}': {response.json()}")
-
-    return list({tag: all_tags[tag] for tag in tags}.values())
+            
+    # Update the tags data
+    tags_doc = fetch_and_update_cache(url, headers)  # Update cache after creating tags
+    tags_doc = tags_doc["docs"]
+    all_tags = dict( [ (tag["name"], tag["id"]) for tag in tags_doc ] )
+    tags_ids = [all_tags[tag] for tag in tags]
+    
+    return tags_ids
+                
                 
 def upload_openscenario_file(file_path, filename=None):    
     global base_url
-    url = f"{base_url}/openScenarios?limit=10000"
+    url = f"{base_url}/openScenarios?limit=100000"
     tags_doc = get_cache_data(url, headers)['docs']
-    # tags_doc = requests.get(
-    #     # f"{base_url}/scenarios?where[createdBy][equals]=HCIS%20Lab",
-    #     f"{base_url}/openScenarios?limit=10000",
-    #     headers=headers).json()["docs"]
+
 
     all_tags = dict( [ (tag["filename"], tag["id"]) for tag in tags_doc ] )
 
     if filename is None:
         filename = file_path.split("/")[-1]
         
-    # print(filename)
 
     with open(file_path, "rb") as f:
         files = {
             "file": (filename, f, "application/octet-stream")
-        }
-  
+        }        
         if filename in all_tags.keys():
-            print("   Xosc file already exists.")
-            # return
             scenario_uuid = all_tags[filename]
+            print(f"   [XOSC] File already exists.")
+            # return
+            print(f"   [XOSC] Update by ID....")
+
             # update xosc
-            # exit("upda")
             r = requests.patch(
                 f"{base_url}/openScenarios/{scenario_uuid}",
                 headers=headers,
@@ -148,7 +154,7 @@ def upload_openscenario_file(file_path, filename=None):
             time.sleep(1)
             
         else:
-            # exit('crete')
+            print(f"   [XOSC] Creating file...")
             r = requests.post(
                 f"{base_url}/openScenarios",
                 headers=headers,
@@ -157,7 +163,7 @@ def upload_openscenario_file(file_path, filename=None):
             time.sleep(1)
     scenario_id = r.json()["doc"]["id"]
     # print(json.dumps(r.json(), indent=4))
-    print("  ",r.json().get("message"))
+    print(f"   [XOSC] {r.json().get('message')} ID: {scenario_id}")
     return {
         "type": "File",
         "openScenario": scenario_id
@@ -254,11 +260,11 @@ def upload(scenario_id):
     current_tags_to_be_used_in_created_scenario += add_itri_tags(result)
     tag_ids_to_be_used_in_created_scenario = handle_tags_creation_and_get_ids(current_tags_to_be_used_in_created_scenario)
     # print("current_tags_to_be_used_in_created_scenario",current_tags_to_be_used_in_created_scenario)
+    
     description = result['description']
     
     yaml_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{parenet_folder}/{scenario_folder}/{scenario_index}.yaml'
     route = process_yaml_file(yaml_path)  # Use the function to get the route
-    # exit()
         
     parameters = write_param(result)  # Should be the same name using in the OpenSCENARIO file
 
@@ -330,21 +336,15 @@ def upload(scenario_id):
     }
 
 
-    # observation_recording_agents = ["Agent1"]
     observation_recording_agents = []
 
 
     filename = f"{result['scenario_name']}"
-    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0703/{filename}.xosc"
+    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{filename}.xosc"
 
     # exit()
     openScenarioField = upload_openscenario_file(file_path)
-    # openScenarioField = None
 
-    # openScenarioField = use_scenario_string("<OpenSCENARIO> <!-- some scenario --> </OpenSCENARIO>")
-    # print(openScenarioField)
-    # description = [val for key, val in descriptions.items() if key in filename]
-    # description = " ,and ".join(description)+"."
     data = create_request_body(
         scenarioId = filename,
         tags = tag_ids_to_be_used_in_created_scenario,
@@ -357,7 +357,7 @@ def upload(scenario_id):
         testObjectives = test_objective,
         conditions = conditions,
         observationRecordingAgents = observation_recording_agents,
-        egoTargetSpeed = 50
+        egoTargetSpeed = 30
     )
 
     r = ''
@@ -365,20 +365,19 @@ def upload(scenario_id):
     global base_url
     url = f"{base_url}/scenarios?limit=10000&sort=updatedAt&where[createdBy][equals]=HCIS%20Lab"
     scenarios_doc = get_cache_data(url, headers)['docs']
-    all_scenarios = dict((scenario["scenarioId"], scenario) for scenario in scenarios_doc)
-
+    all_scenarios = dict((scenario["scenarioId"], scenario) for scenario in scenarios_doc)    
     if scenario_id in all_scenarios.keys():
         scenario_id_to_update = all_scenarios[scenario_id]["id"]
-        print(f"Scenario {scenario_id} exists. Updating by ID: {scenario_id_to_update}...")
+        print(f"   [SCENARIO] Scenario exists, updating by ID: {scenario_id_to_update}...")
         r = requests.patch(f"{base_url}/scenarios/{scenario_id_to_update}", headers=headers, json=data)
         time.sleep(3)
     else:
-        print(f"Scenario {scenario_id} does not exist. Creating new...")
+        print(f"   [SCENARIO] Scenario does not exist, creating new...")
         r = requests.post(f"{base_url}/scenarios", headers=headers, json=data)
         time.sleep(3)
 
     try:
-        print("  ",r.json().get("message"))
+        print(f"   [SCENARIO] {r.json().get('message')}")
         if (r.status_code == 201 and r.json().get("message") == "Scenario successfully created.") or \
            (r.status_code == 200 and r.json().get("message") == "Updated successfully."):
             return 1
@@ -460,21 +459,21 @@ if __name__ == '__main__':
                     queue_file.write(f"{scenario_id}\n")
 
             # 紀錄已上傳成功scenario, server crash需要重傳時, 可直接跳過
-            success_upload = 0
+            success_upload = 0            
             with open(f'{RUNTIME_DATA_DIR}/success_upload_scenario.txt', 'w') as success_file:
                 for scenario_id in tqdm(scenario_ids):
-                    print(f"Uploading scenario {scenario_id}...", end=" ")
                     if scenario_id in skip2:
-                        print('Skipped. Since already uploaded, check success_upload_scenario.txt')
+                        print(f'[MAIN] Skipped {scenario_id} - already uploaded')
                         success_upload += 1
                         continue
                     
-                    print()
+                    print(f"\n[MAIN] Processing scenario: {scenario_id}")
                     if upload(scenario_id):
                         success_upload += 1
                         success_file.write(f"{scenario_id}\n")
+                        print(f"[MAIN] ✓ Successfully processed {scenario_id}")
                     else:
-                        print(f"  Failed to upload: {scenario_id}")
+                        print(f"[MAIN] ✗ Failed to upload: {scenario_id}")
 
             # Check if all scenarios were successfully uploaded
             if success_upload == len(scenario_ids):
@@ -500,20 +499,18 @@ if __name__ == '__main__':
                     # #只更新zigzag range
                     # if 'ZZ' in scenario_id:
                     #     print(' ZZ, skipped.')
-                    #     continue
-
-                    if scenario_id not in ['01BL-KEEP_02FS-ZZ_3.xosc','01BL-KEEP_02SR-ZZ_5.xosc','01BR-KEEP_2.xosc','01BR-KEEP_6.xosc','01FR-ZZ_02FR-CI_2.xosc','01FL-TL_14.xosc','01BL-TR_02SL-TR_7.xosc','01BR-KEEP_02SR-ZZ_1.xosc','01FR-CI_02SR-CI_24.xosc','01FL-ZZ_02FR-CI_13.xosc']:
+                    #     continue                    
+                    if scenario_id not in ['01BL-KEEP_02FS-ZZ_3.xosc','01BL-KEEP_02SR-ZZ_5.xosc','01FR-ZZ_02FR-CI_2.xosc','01FL-TL_14.xosc','01BL-TR_02SL-TR_50.xosc','01BR-KEEP_02SR-ZZ_1.xosc','01FR-CI_02SR-CI_24.xosc','01FL-ZZ_02FR-CI_13.xosc','01FL-TL_02FR-TL_1121.xosc','01FL-KEEP_02FR-TL_254.xosc']:
                         continue
 
-                    print(f"Uploading scenario {scenario_id}...", end=" ")
-                    print()
+                    print(f"\n[MAIN] Processing scenario: {scenario_id}")
                     if upload(scenario_id):
                         success_upload += 1
+                        print(f"[MAIN] ✓ Successfully processed {scenario_id}")
                         # break
                         # success_file.write(f"{scenario_id}\n")
                     else:
-                        print(f"  Failed to upload: {scenario_id}")
-
+                        print(f"[MAIN] ✗ Failed to upload: {scenario_id}")    
     finally:
-        # clear_cache_file()
-        print(f'{success_upload} Done.')
+        clear_cache_file()
+        print(f'\n[MAIN] Upload completed! Successfully processed {success_upload} scenarios.')

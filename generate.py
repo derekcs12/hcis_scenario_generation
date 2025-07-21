@@ -318,10 +318,6 @@ def generate_Adv_Maneuver(actorName, agent, Map):
                         actorName, actIndex, 'SA', event, previousEventName, type='zigzag')
                     currentEventName.append(currentEvent.name)
                     advManeuver.add_event(currentEvent)
-                    if event['End'] == 0:
-                        terminateEvent = create_Terminate_Event(
-                            actorName, actIndex, currentEvent)
-                        advManeuver.add_event(terminateEvent)
                 elif event['Type'] == 'offset':
                     zigzagEvent, currentPosition = generate_Zigzag_Event(
                         actorName, actIndex, event, Map, previousEventName, currentPosition)
@@ -338,10 +334,6 @@ def generate_Adv_Maneuver(actorName, agent, Map):
                 if event['Type'] == 'speed':
                     currentEvent = generate_Speed_Event(
                         actorName, actIndex, 'SA', event, previousEventName)
-                    if event['End'] == 0:
-                        terminateEvent = create_Terminate_Event(
-                            actorName, actIndex, currentEvent)
-                        advManeuver.add_event(terminateEvent)
                 elif event['Type'] == 'offset':
                     currentEvent, currentPosition = generate_Offset_Event(
                         actorName, actIndex, 'TA', event, previousEventName, currentPosition)
@@ -391,7 +383,7 @@ def generate_Parameter_Maneuver(config, actors):
         "Set AV Connection Timeout Flag",
         xosc.ParameterSetAction("AV_CONNECTION_TIMEOUT", "true"))
     av_connection_timeout_event.add_trigger(
-        create_timeout_condition('Ego', time=60)) #itri: Connecting usually takes less than 30 seconds. So set to 60 seconds
+        create_timeout_condition('Ego', time=40)) #itri: Connecting usually takes less than 30 seconds. So set to 40 seconds
     param_maneuver.add_event(av_connection_timeout_event)
 
     # Detect Wrong Start Speed Event - high
