@@ -32,10 +32,10 @@ Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_c
 
 ### Code
 - main.py : main program, read config file and write OpenScenario file.
-- dicent_utils.py : some useful function for sceanrio generation.
+- dicent.py : some useful function for sceanrio generation.
 - generate.py : all generation pipeline, include parameter setting, create entity, event generation, and so on.
 - scenario_upload.py : upload scenario to MongoDB
-- upload_utils.py : build tag tree, tags and corresponding params for scenarios
+- upload.py : build tag tree, tags and corresponding params for scenarios
 - combine.py : combine two scenario.
 - combine_all.py : combine all scenarios in `./scenario_config`
 - config_generator_4way.py : generate 4way scenarios, e.g. left turn, U turn, ...

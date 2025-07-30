@@ -3,10 +3,17 @@ import yaml
 import argparse
 from generate import generate
 import argcomplete
+import random
+
+"""
+ Usage:
+    python main.py -c all
+"""
+
 
 def valid_path(path):
     """验证路径是否有效"""
-    if path == 'all':
+    if path == 'all' or path == 'sind':
         return path
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(f"路径无效: {path}")
@@ -41,21 +48,42 @@ def main():
     argcomplete.autocomplete(argparser)
     args = argparser.parse_args()
     
-    
     configFile = []
     if args.config == 'all':
         for root, dirs, files in os.walk('./scenario_config'):
+            for file in files:
+                # # Downsampling
+                # if 1.2 < random.randint(0, 10):
+                #     continue
+                if file.endswith('.yaml'):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        config = yaml.safe_load(f)
+                    configFile.append(config)
+                    # print('find config file: ', len(configFile),end='\r')
+        for root, dirs, files in os.walk('./scenario_config_combined'):
             for file in files:
                 if file.endswith('.yaml'):
                     file_path = os.path.join(root, file)
                     with open(file_path, 'r') as f:
                         config = yaml.safe_load(f)
                     configFile.append(config)
-                    print('find config file: ', len(configFile),end='\r')
+                    # print('find config file: ', len(configFile),end='\r')
+                    
+    elif args.config == 'sind':
+        for root, dirs, files in os.walk('/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/yaml'):
+            for file in files:
+                if file.endswith('.yaml'):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        config = yaml.safe_load(f)
+                    configFile.append(config)
+                    
     elif args.config.endswith('.yaml'):
         with open(args.config,'r') as f:
             config = yaml.safe_load(f)
         configFile.append(config)
+        
     elif os.path.isdir(args.config): 
         for root, dirs, files in os.walk(args.config):
             for file in files:
@@ -67,9 +95,13 @@ def main():
     else:
         raise ValueError("Invalid config file path.")
         
-
-    print("total config: ", len(configFile))
+    print()
+    # # from datetime import date
+    # folder = "0703"
+    # folder = date.today().strftime("%m%d")
+    
     for config in configFile:
+
         """ 
         Build xosc 
         """
@@ -78,13 +110,17 @@ def main():
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
         sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc")
         sce.write_xml(f"./test/{config['Scenario_name']}.xosc")
-        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/keeping/{config['Scenario_name']}.xosc")
+        
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{folder}/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/lin/{config['Scenario_name']}.xosc")
+        
+        continue
         
         config['Control'] = True
         sce = generate(config,company="ITRI")
-        sce.write_xml(f"./xosc_itri/{config['Scenario_name']}.xosc")
-        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/0722/{config['Scenario_name']}.xosc")
-        print(f"Scenario {config['Scenario_name']} is built.")
+        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{config['Scenario_name']}.xosc")
+        
+    print("total config: ", len(configFile))
  
 
 if __name__ == '__main__':

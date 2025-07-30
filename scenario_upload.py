@@ -9,8 +9,8 @@ import copy
 from tqdm import tqdm
 from pprint import pprint
 
-from utils.upload_utils import *
-from utils.cache_utils import *
+from utils.upload import *
+from utils.cache import *
 from utils.assign_route import process_yaml_file  # Import the function
 import argparse
 
