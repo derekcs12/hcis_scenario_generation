@@ -96,9 +96,9 @@ def main():
         raise ValueError("Invalid config file path.")
         
     print()
-    # # from datetime import date
+    from datetime import date
+    folder = date.today().strftime("%m%d")
     # folder = "0703"
-    # folder = date.today().strftime("%m%d")
     
     for config in configFile:
 
@@ -107,12 +107,12 @@ def main():
         """
         # config['DeactivateControl'] = args.deactivate
         sce = generate(config)
-        sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
-        sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc")
-        sce.write_xml(f"./test/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc")
+        # sce.write_xml(f"./test/{config['Scenario_name']}.xosc")
         
-        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{folder}/{config['Scenario_name']}.xosc")
-        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/lin/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{folder}/{config['Scenario_name']}.xosc")
+        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/lin/{config['Scenario_name']}.xosc")
         
         continue
         

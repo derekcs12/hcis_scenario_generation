@@ -5,6 +5,7 @@
 log.txt
 
 # 忽略 scenario_config_ 開頭的備份料夾
-scenario_config-*/
-scenario_config_combined_*/
+scenario_config*/
+scenario_config_combined*/
 ignore_folder
+scenario_config/01BL-KEEP/1.csv
