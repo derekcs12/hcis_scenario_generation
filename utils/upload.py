@@ -187,7 +187,12 @@ def write_param(csv):
         param_info["name"] = col
         param_info["min"] = csv[col].split('~')[0]
         param_info["max"] = csv[col].split('~')[1]
+
+        if float(param_info["min"]) >= float(param_info["max"]):
+            continue # Skip parameters with the same min and max values(07/28, itir)
+        
         parameters.append(param_info)
+        
     return parameters
 
     
@@ -242,7 +247,8 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
     """
     print(f"write {scenario_id}, description: {content[0]['description']}.")
 
-    columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'route_name' ,'cetran_number', 'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
+    columns = ['scenario_id','scenario_name','description','road_layout','road_layout_mode', 'route_name' ,'cetran_number', 
+               'ego_long_mode','ego_long_mode_type', 'ego_lat_mode', 'ego_lat_direction',
                'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
                'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
                'Agent1_S','Agent1_Speed','Agent1_1_SA_EndSpeed','Agent1_1_SA_DynamicDuration','Agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
@@ -380,7 +386,7 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
             '1_TA_Times': '2', #'1~5'
         })
         ## 加上 zigzag 最低限速
-        for name in ['1_Speed', '1_SA_EndSpeed']:
+        for name in ['Speed', '1_SA_EndSpeed']:
             range = content.agents[0][name]
             try:
                 min_speed, max_speed = map(float, range.split('~'))
@@ -388,8 +394,8 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
                     print(f"[修正] {scenario_name} {name}的值為 {range}，將其設置為 20.0~20.0")
                 content.agents[0][name] = '20.0~20.0'
 
-            # else:
-            #     print(f"[跳過] {scenario_name} 1_SA_EndSpeed的值為 {speed_range}，不符合條件")
+                # else:
+                #     print(f"[跳過] {scenario_name} 1_SA_EndSpeed的值為 {speed_range}，不符合條件")
                         
                 pass
             except ValueError:

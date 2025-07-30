@@ -1,7 +1,8 @@
 import numpy as np
-import xosc
+from scenariogeneration import xosc
 
-from trigger import 
+from config import RELATIVE_TRIGGER_POSITIONS
+from utils.trigger import * 
 
 def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=0):
     if s == None:

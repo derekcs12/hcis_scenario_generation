@@ -1,7 +1,8 @@
 import numpy as np
-import xosc
+from scenariogeneration import xosc
 
-from trigger import *
+from utils.trigger import *
+from utils.position import *
 
 
 def create_collision_condition(egoName, agentCount=1):

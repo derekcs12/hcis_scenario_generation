@@ -1,5 +1,5 @@
 import numpy as np
-import xosc
+from scenariogeneration import xosc
 
 
 def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName, tolerance=2, delay = 0, triggerName="EgoApproachInitWp"):

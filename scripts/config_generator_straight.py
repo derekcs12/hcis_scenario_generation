@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from utils.dicent_utils import *
-from utils.upload_utils import *
+from utils.upload import *
+from utils.position import *
 from config import RELATIVE_TRIGGER_POSITIONS
 from operator import *
 

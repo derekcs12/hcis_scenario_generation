@@ -1,8 +1,8 @@
 import numpy as np
-import xosc
+from scenariogeneration import xosc
 
-from trigger import *
-from position import *
+from utils.trigger import *
+from utils.position import *
 
 
 def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
