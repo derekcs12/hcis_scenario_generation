@@ -26,119 +26,112 @@ from utils.event import (
 )
 
 def generate(config, company='HCISLab'):
-
+    
+    # === 基本參數與 Actor 數量 ===
     Actors = config['Actors']
-    paramdec = parameter_Declaration(Actors, config['Ego'])
+    EgoConfig = config['Ego']
+    MapConfig = config['Map']
+    ScenarioName = config['Scenario_name']
     xodrPath = './hct_6.xodr'
+    agentCount = len(Actors.get('Agents', []))
+    pedCount = len(Actors.get('Pedestrians', []))
+
+
+    # === 1. 宣告參數與 Catalogs ===
+    paramdec = parameter_Declaration(Actors, EgoConfig)
+
     # CatalogLocations & RoadNetwork (document:xosc.utiles)
     catalog = xosc.Catalog()
     if company == 'HCISLab':
         catalog.add_catalog("VehicleCatalog", "./Catalogs/Vehicles")
         catalog.add_catalog("ControllerCatalog", "./Catalogs/Controllers")
-        # catalog.add_catalog("VehicleCatalog", "/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/Catalogs/Vehicles")
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
-        road = xosc.RoadNetwork(roadfile="../hct_6.xodr")
-        # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/tianjin.xodr")
-        # road = xosc.RoadNetwork(roadfile="/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/cr_file.xodr")
-
-        # ACC controller
+        road = xosc.RoadNetwork(roadfile=xodrPath)
         controllerName = "ACCController"
         # controllerName = "interactiveDriver"
-
-    else:  # ITRI
-        # CatalogLocations
+        
+    else: # ITRI
         catalog.add_catalog("VehicleCatalog", "../Catalogs/Vehicles")
         catalog.add_catalog("ControllerCatalog", "../Catalogs/Controllers")
-
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "../Catalogs/Pedestrians")
-
-        # RoadNetwork
         road = xosc.RoadNetwork(roadfile="../../xodr/itri/hct_6.xodr")
-
-        # construct ego controller - ROS
         controllerName = "ROSController"
 
+
+    # === 2. 建立 Ego Controller 實體 ===
     egoControllerProperties = xosc.Properties()
     egoControllerProperties.add_property(name="timeGap", value="1.0")
     egoControllerProperties.add_property(name="mode", value="override")
-    egoControllerProperties.add_property(
-        name="setSpeed", value="${$Ego_Speed / 3.6}")
-    egoController = xosc.Controller(
-        name=controllerName, properties=egoControllerProperties)
-    # egoController = xosc.CatalogReference(
-    #     catalogname="ControllerCatalog", entryname=controllerName)
-    # Entities (document:xosc.Entities)
-    agentCount = len(Actors['Agents']) if 'Agents' in Actors else 0
-    pedCount = len(Actors['Pedestrians']) if 'Pedestrians' in Actors else 0
+    egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
+    egoController = xosc.Controller(name=controllerName, properties=egoControllerProperties)
+    # egoController = xosc.CatalogReference(catalogname="ControllerCatalog", entryname=controllerName)
+
+
+    # === 3. 建立 Entities (Ego + Agents + Pedestrians)(document:xosc.Entities) ===
     entities = create_Entity(egoController, agentCount, pedCount)
 
-    step_time = xosc.TransitionDynamics(
-        xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0)
 
-    # Storyboard - Init 初始設定
-    # Ego 初始化
+    # --- 4. Storyboard ---
+    # === 4.1 建立 Init 動作 ===
+    step_time = xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0)
     init = xosc.Init()
-    egostart = xosc.TeleportAction(create_LanePosition_from_config(
-        config['Map'], config['Ego']['Start_pos']))
-    egospeed = xosc.AbsoluteSpeedAction("${$Ego_Speed / 3.6}", step_time)
-    # egospeed = xosc.AbsoluteSpeedAction(30/3.6, step_time)
-    # activate_controller = 'false' if config['DeactivateControl'] else 'true'
-    activate_controller = 'true'
-    egocontl = xosc.ActivateControllerAction(
-        lateral=activate_controller, longitudinal=activate_controller)
-    egoEndPosition = create_LanePosition_from_config(
-        config['Map'], config['Ego']['End_pos'])
-    egofinal = xosc.AcquirePositionAction(egoEndPosition)  # Ego終點
-    init.add_init_action('Ego', egostart)
-    # init.add_init_action('Ego', egospeed)
-    init.add_init_action('Ego', egocontl)
-    init.add_init_action('Ego', egofinal)
 
-    # Actor 初始化
+    # Ego 初始位置、控制器啟動與終點位置
+    egoStartPos = create_LanePosition_from_config(MapConfig, EgoConfig['Start_pos'])
+    egoEndPos = create_LanePosition_from_config(MapConfig, EgoConfig['End_pos'])
+    egoController = True
+
+    init.add_init_action('Ego', xosc.TeleportAction(egoStartPos))
+    init.add_init_action('Ego', xosc.ActivateControllerAction(lateral=egoController, longitudinal=egoController))
+    init.add_init_action('Ego', xosc.AcquirePositionAction(egoEndPos))
+    # init.add_init_action('Ego', xosc.AbsoluteSpeedAction("${$Ego_Speed / 3.6}", step_time))
+    
+
+    # Agents / Pedestrians 初始位置
     for cata in Actors:
-        for actorIndex, actor in enumerate(Actors[cata], start=1):
-            actorStart = xosc.TeleportAction(create_LanePosition_from_config(
-                config['Map'], actor['Start_pos'], s=f"${cata[:-1]}{actorIndex}_S"))
-            init.add_init_action(f"{cata[:-1]}{actorIndex}", actorStart)
+        for idx, actor in enumerate(Actors[cata], start=1):
+            actorName = f"{cata[:-1]}{idx}"
+            startPos = create_LanePosition_from_config(MapConfig, actor['Start_pos'], s=f"${actorName}_S")
+            init.add_init_action(actorName, xosc.TeleportAction(startPos))
 
-    # Storyboard - boolean condition
-    paraManeuver = generate_Parameter_Maneuver(config, actors=Actors)
-
-    # Storyboard - Event
-    allEvent = []
-    allManeuver = {}
+    # === 4.2 產生 Maneuvers 與 Events ===
+    egoParamManeuver = generate_Parameter_Maneuver(config, actors=Actors)
+    allManeuvers = {}
     allStartEvent = []
-    for actors in Actors:
-        for actorIndex, actor in enumerate(Actors[actors], start=1):
-            actorName = f"{actors[:-1]}{actorIndex}"
-            agentManeuver, previousEventNames = generate_Adv_Maneuver(
-                actorName, actor, config['Map'])
-            if agentManeuver is not None:
-                allStartEvent.append(previousEventNames[0])
-                allEvent.extend(previousEventNames)
-                allManeuver[actorName] = agentManeuver
 
+    for cata in Actors:
+        for idx, actor in enumerate(Actors[cata], start=1):
+            actorName = f"{cata[:-1]}{idx}"
+            maneuvers, previousEventNames = generate_Adv_Maneuver(actorName, actor, MapConfig)
+            if maneuvers:
+                allManeuvers[actorName] = maneuvers
+                allStartEvent.append(previousEventNames[0])
+
+    # === 4.3 建立 StopTrigger 終止條件 ===
     sb_stoptrigger = create_StopTrigger(
-        Map=config['Map'],
+        Map=MapConfig,
         egoName='Ego',
         eventStartPoint=Actors['Agents'][0]['Start_trigger'],
-        eventStartSpeed=float(config['Ego']['Start_speed']),
-        egoTargetPoint=config['Ego']['End_pos'],
-        xodrPath=xodrPath)
+        eventStartSpeed=float(EgoConfig['Start_speed']),
+        egoTargetPoint=EgoConfig['End_pos'],
+        xodrPath=xodrPath
+    )
 
+    # === 4.4 Storyboard 組裝 ===
     sb = xosc.StoryBoard(init, sb_stoptrigger)
-    for man in allManeuver:
-        sb.add_maneuver(allManeuver[man], man)
 
-    # sb.add_maneuver(status_maneuver, "Ego")
-    # sb.add_maneuver(approach_init_wp_maneuver, "Ego")
-    sb.add_maneuver(paraManeuver, "Ego")
+    for name, maneuver in allManeuvers.items():
+        sb.add_maneuver(maneuver, name)
 
-    # Create Scenario
-    sce = xosc.Scenario(
-        name="hct_"+config['Scenario_name'],
+    sb.add_maneuver(egoParamManeuver, "Ego")
+
+
+
+    # === 5. 組裝 Scenario 實體並回傳 ===
+    scenario = xosc.Scenario(
+        name="hct_" + ScenarioName,
         author="HCIS_ChengYuSheng",
         parameters=paramdec,
         entities=entities,
@@ -148,7 +141,7 @@ def generate(config, company='HCISLab'):
         osc_minor_version=0
     )
 
-    return sce
+    return scenario
 
 
 def parameter_Declaration(Actors, Ego):
@@ -378,93 +371,68 @@ def generate_Adv_Maneuver(actorName, agent, Map):
 
 def generate_Parameter_Maneuver(config, actors):
     param_maneuver = xosc.Maneuver("ParameterManeuver")
+    ego_name = 'Ego'
+    ego_speed = float(config['Ego']['Start_speed'])
+    agent = actors['Agents'][0]
+    MapConfig = config['Map']
 
-    # Detect Ego Has Moved Event
-    status_event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
-    status_event.add_action("Set EgoHasMoved Flag",
-                            xosc.ParameterSetAction("AV_CONNECTED", "true"))
-    status_event.add_trigger(xosc.EntityTrigger(
-        "EgoHasMoved", 0, xosc.ConditionEdge.rising, xosc.SpeedCondition(0, xosc.Rule.greaterThan), "Ego"))
-    param_maneuver.add_event(status_event)
+    # === Detect Ego Has Moved Event ===
+    event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
+    event.add_action("Set EgoHasMoved Flag", xosc.ParameterSetAction("AV_CONNECTED", "true"))
+    event.add_trigger(xosc.EntityTrigger("EgoHasMoved", 0, xosc.ConditionEdge.rising,
+                      xosc.SpeedCondition(0, xosc.Rule.greaterThan), ego_name))
+    param_maneuver.add_event(event)
 
-    # Valid Maneuver Event
-    valid_event = xosc.Event("ValidManeuverEvent", xosc.Priority.parallel)
-    valid_event.add_action(
-        "Set Valid Flag",
-        xosc.ParameterSetAction("IS_VALID", "true"))
-    # invalid_event.add_trigger(create_timeout_condition('Ego', time=300))
-    valid_trigger = create_right_start_speed_condition(
-        config['Map'], 'Ego', actors['Agents'][0]['Start_trigger'], float(config['Ego']['Start_speed']))
-    valid_event.add_trigger(valid_trigger)
-    param_maneuver.add_event(valid_event)
+    # === Init Valid Flag ===
+    event = xosc.Event("ValidManeuverEvent", xosc.Priority.parallel)
+    event.add_action("Set Valid Flag", xosc.ParameterSetAction("IS_VALID", "true"))
+    valid_trigger = create_right_start_speed_condition(MapConfig, ego_name, agent['Start_trigger'], ego_speed)
+    event.add_trigger(valid_trigger)
+    param_maneuver.add_event(event)
 
-    # Detect AV Connection Timeout Event
-    av_connection_timeout_event = xosc.Event(
-        "DetectAVConnectionTimeoutEvent", xosc.Priority.parallel)
-    av_connection_timeout_event.add_action(
-        "Set AV Connection Timeout Flag",
-        xosc.ParameterSetAction("AV_CONNECTION_TIMEOUT", "true"))
-    av_connection_timeout_event.add_trigger(
-        create_timeout_condition('Ego', time=40)) #itri: Connecting usually takes less than 30 seconds. So set to 40 seconds
-    param_maneuver.add_event(av_connection_timeout_event)
+    # === Detect AV Connection Timeout Event(30) ===
+    event = xosc.Event("DetectAVConnectionTimeoutEvent", xosc.Priority.parallel)
+    event.add_action("Set AV Connection Timeout Flag", xosc.ParameterSetAction("AV_CONNECTION_TIMEOUT", "true"))
+    event.add_trigger(create_timeout_condition(ego_name, time=30))
+    param_maneuver.add_event(event)
 
-    # Detect Wrong Start Speed Event - high
-    wrong_start_speed_event = xosc.Event(
-        "DetectHighStartSpeedEvent", xosc.Priority.parallel)
-    wrong_start_speed_event.add_action(
-        "Set High Start Speed Flag",
-        xosc.ParameterSetAction("WRONG_START_SPEED", "true"))
+    # === Detect Wrong Start Speed Event - above tolerance ===
     low_group, high_group = create_wrong_start_speed_condition(
-        config['Map'], 'Ego', actors['Agents'][0]['Start_trigger'], float(config['Ego']['Start_speed']), tolerance=2)
-    wrong_start_speed_event.add_trigger(high_group)
-    param_maneuver.add_event(wrong_start_speed_event)
+        MapConfig, ego_name, agent['Start_trigger'], ego_speed, tolerance=2)
 
-    # Detect Wrong Start Speed Event - low
-    wrong_start_speed_event = xosc.Event(
-        "DetectLowStartSpeedEvent", xosc.Priority.parallel)
-    wrong_start_speed_event.add_action(
-        "Set Low Start Speed Flag",
-        xosc.ParameterSetAction("WRONG_START_SPEED", "true"))
-    low_group, high_group = create_wrong_start_speed_condition(
-        config['Map'], 'Ego', actors['Agents'][0]['Start_trigger'], float(config['Ego']['Start_speed']), tolerance=2)
-    wrong_start_speed_event.add_trigger(low_group)
-    param_maneuver.add_event(wrong_start_speed_event)
+    event = xosc.Event("DetectHighStartSpeedEvent", xosc.Priority.parallel)
+    event.add_action("Set High Start Speed Flag", xosc.ParameterSetAction("WRONG_START_SPEED", "true"))
+    event.add_trigger(high_group)
+    param_maneuver.add_event(event)
 
-    # Detect Ego Reached End Event
-    ego_reached_end_event = xosc.Event(
-        "DetectEgoReachedEndEvent", xosc.Priority.parallel)
-    ego_reached_end_event.add_action(
-        "Set Ego Reached End Flag",
-        xosc.ParameterSetAction("EGO_REACHED_END", "true"))
-    ego_reached_end_event.add_trigger(create_reach_target_condition(
-        config['Map'], 'Ego', config['Ego']['End_pos']))
-    param_maneuver.add_event(ego_reached_end_event)
+    # === Detect Wrong Start Speed Event - below tolerance ===
+    event = xosc.Event("DetectLowStartSpeedEvent", xosc.Priority.parallel)
+    event.add_action("Set Low Start Speed Flag", xosc.ParameterSetAction("WRONG_START_SPEED", "true"))
+    event.add_trigger(low_group)
+    param_maneuver.add_event(event)
 
-    #  Detect Ego TLE Event
-    ego_tle_event = xosc.Event("DetectEgoTLEEvent", xosc.Priority.parallel)
-    ego_tle_event.add_action(
-        "Set Ego TLE Flag",
-        xosc.ParameterSetAction("EGO_TLE", "true"))
-    ego_tle_event.add_trigger(create_ego_tle_condition(
-        config['Map'], actors['Agents'][0]['Start_trigger'], 'Ego', time=30))
-    param_maneuver.add_event(ego_tle_event)
+    # === Detect Ego Reached End Event ===
+    event = xosc.Event("DetectEgoReachedEndEvent", xosc.Priority.parallel)
+    event.add_action("Set Ego Reached End Flag", xosc.ParameterSetAction("EGO_REACHED_END", "true"))
+    event.add_trigger(create_reach_target_condition(MapConfig, ego_name, config['Ego']['End_pos']))
+    param_maneuver.add_event(event)
 
-    # Detect Ego Collision Event
-    ego_collision_event = xosc.Event(
-        "DetectEgoCollisionEvent", xosc.Priority.parallel)
-    ego_collision_event.add_action(
-        "Set Ego Collision Flag",
-        xosc.ParameterSetAction("EGO_COLLISION", "true"))
-    ego_collision_event.add_trigger(
-        create_collision_condition('Ego', agentCount=1))
-    param_maneuver.add_event(ego_collision_event)
+    # === Detect Ego TLE Event ===
+    event = xosc.Event("DetectEgoTLEEvent", xosc.Priority.parallel)
+    event.add_action("Set Ego TLE Flag", xosc.ParameterSetAction("EGO_TLE", "true"))
+    event.add_trigger(create_ego_tle_condition(MapConfig, agent['Start_trigger'], ego_name, time=30))
+    param_maneuver.add_event(event)
 
-    # Create Ego Stroll Event
-    ego_stroll_event = xosc.Event("EgoStrollEvent", xosc.Priority.parallel)
-    ego_stroll_event.add_action(
-        "Set Ego Stroll Flag",
-        xosc.ParameterSetAction("EGO_STROLL", "true"))
-    ego_stroll_event.add_trigger(create_ego_stroll_condition(time=30))
-    param_maneuver.add_event(ego_stroll_event)
+    # === Detect Ego Collision Event ===
+    event = xosc.Event("DetectEgoCollisionEvent", xosc.Priority.parallel)
+    event.add_action("Set Ego Collision Flag", xosc.ParameterSetAction("EGO_COLLISION", "true"))
+    event.add_trigger(create_collision_condition(ego_name, agentCount=1))
+    param_maneuver.add_event(event)
+
+    # === Create Ego Stroll Event ===
+    event = xosc.Event("EgoStrollEvent", xosc.Priority.parallel)
+    event.add_action("Set Ego Stroll Flag", xosc.ParameterSetAction("EGO_STROLL", "true"))
+    event.add_trigger(create_ego_stroll_condition(time=5))
+    param_maneuver.add_event(event)
 
     return param_maneuver

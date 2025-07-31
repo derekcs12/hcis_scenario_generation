@@ -50,6 +50,7 @@ def main():
     
     configFile = []
     if args.config == 'all':
+        print('Loading all config files...')
         for root, dirs, files in os.walk('./scenario_config'):
             for file in files:
                 # # Downsampling
@@ -69,16 +70,7 @@ def main():
                         config = yaml.safe_load(f)
                     configFile.append(config)
                     # print('find config file: ', len(configFile),end='\r')
-                    
-    elif args.config == 'sind':
-        for root, dirs, files in os.walk('/home/hcis-s19/Documents/ChengYu/retrive_scene_nps/yaml'):
-            for file in files:
-                if file.endswith('.yaml'):
-                    file_path = os.path.join(root, file)
-                    with open(file_path, 'r') as f:
-                        config = yaml.safe_load(f)
-                    configFile.append(config)
-                    
+
     elif args.config.endswith('.yaml'):
         with open(args.config,'r') as f:
             config = yaml.safe_load(f)
@@ -96,9 +88,9 @@ def main():
         raise ValueError("Invalid config file path.")
         
     print()
-    # from datetime import date
-    # folder = date.today().strftime("%m%d")
-    # # folder = "0703"
+    from datetime import date
+    folder = date.today().strftime("%m%d")
+    # folder = "0729"
     
     for config in configFile:
 

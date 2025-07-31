@@ -76,7 +76,7 @@ def combine_csv_files():
     combined_df = pd.concat(all_dataframes, ignore_index=True)
     
     # 輸出檔案路徑
-    output_file = script_dir / "runtime_data/scenario_overview.csv"
+    output_file = script_dir / "runtime_data/scenario_list.csv"
     
     # 儲存合併後的CSV檔案
     try:

@@ -8,4 +8,5 @@ log.txt
 scenario_config*/
 scenario_config_combined*/
 ignore_folder
+runtime_data
 scenario_config/01BL-KEEP/1.csv

@@ -24,7 +24,7 @@ def create_collision_condition(egoName, agentCount=1):
     return group    
 
 
-def create_ego_stroll_condition(time=30):
+def create_ego_stroll_condition(time=5):
     """
     Replace (1-c) and (2-d): Ego enters invalid area => check if the ego is connected and does not arrive the trigger point in x seconds
     Test Result: invalid
