@@ -315,7 +315,6 @@ def create_Entity(egoController, agentCount, pedCount, agentController):
     entities.add_scenario_object(
         name="Ego", entityobject=egoObject, controller=egoController)
     
-    print(f"Add Ego: {egoObject} with controller: {egoController}")
 
     # agents
     for i in range(agentCount):

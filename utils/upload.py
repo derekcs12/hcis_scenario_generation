@@ -252,6 +252,7 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
                'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
                'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
                'Agent1_S','Agent1_Speed','Agent1_1_SA_EndSpeed','Agent1_1_SA_DynamicDuration','Agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
+               'Agent1_Offset', 'Agent1_TA_Offset',
               ]   
     
     for col in content[0].keys():
@@ -264,8 +265,7 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
             
         df = pd.DataFrame(columns=columns)
         df.to_csv(file_path, index=False)
-    # print(file_path)
-    # print(df);exit()
+
             
     # Check if content is a list of dictionaries
     if isinstance(content, list) and all(isinstance(row, dict) for row in content):
@@ -385,7 +385,7 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
             '1_TA_Period': '0.2~1',
             '1_TA_Times': '2', #'1~5'
         })
-        ## 加上 zigzag 最低限速
+        ## 加上 zigzag 最低限速，避免車頭太不自然
         for name in ['Speed', '1_SA_EndSpeed']:
             range = content.agents[0][name]
             try:
@@ -402,7 +402,12 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
                 # 若格式錯誤，跳過
                 pass
 
-        
+
+    # Customize Parameter Range
+    agent = set_offset(content, descript, lateral_behavior, agent1_init_direction)
+    content.agents[0].update(agent)
+    
+
     description = descript + behavior_type + lateral_behavior
     csv_row = {'description': description, 'scenario_name': scenario_name, 'route_name': route_name}
     csv_row.update(content.to_dict())
@@ -449,3 +454,37 @@ def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agen
     csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, route, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo,  agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag)
     # print(csv_row);exit()
     write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
+
+
+
+# ================
+# Customize Offset
+# ================
+def set_offset(content, descript, lateral_behavior, agent1_init_direction):
+    agent = content.agents[0]
+
+    def is_motorcycle_left(): return 'R-M2' in descript or 'L-M3' in descript
+    def is_motorcycle_right(): return 'R-M3' in descript or 'L-M2' in descript
+    def is_car(): return not (is_motorcycle_left() or is_motorcycle_right())
+
+    # _Offset: 起始偏移量, _TA_Offset: 結束偏移量
+    if 'CI' in lateral_behavior or 'CO' in lateral_behavior:
+        if is_motorcycle_left():
+            agent.update({'1_Offset': '-1.5~-0.5'})
+        elif is_motorcycle_right():
+            agent.update({'1_Offset': '0.5~1.5'})
+        else:
+            agent.update({'1_Offset': '-1.5~1.5'})
+
+    elif ('U turn' in descript or 'turning left' in descript) and agent1_init_direction == 'sameAsEgo':
+        if 'R-M2' in descript:
+            agent.update({'1_Offset': '-1.5~-0.5'})
+        elif 'R-M3' in descript:
+            agent.update({'1_Offset': '0.5~1.5'})
+        elif any(tag in descript for tag in ['-3', '-5', '-8']):
+            agent.update({'1_Offset': '-1.5~1.5'})
+
+    elif 'U turn' in descript and agent1_init_direction == 'oncoming':
+        agent.update({'1_TA_Offset': '-1.5~1.5'})
+        
+    return agent

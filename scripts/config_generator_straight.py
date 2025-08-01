@@ -353,7 +353,8 @@ if 1:
                                    ("SR-M1",[-1, 0]),
                                    ("SR-M2",[-1, 0]),
                                    ("SR-M3",[-1, 0]),
-                         ("FR-M2",[-1, 1.5]),("FR-M3",[-1, 1.5]),("SR-M2",[-1, 1.5]),("SR-M3",[-1, 1.5])]:
+                                   ("FR-M2",[-1, 1.5]),("FR-M3",[-1, 1.5]),("SR-M2",[-1, 1.5]),("SR-M3",[-1, 1.5]) #nearside
+                                ]:
         descript = f"Bike cutting in to middle {relative_pos} - "
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
