@@ -4,20 +4,30 @@ from scenariogeneration import xosc
 from config import RELATIVE_TRIGGER_POSITIONS
 from utils.trigger import * 
 
-def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=0):
+def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=None):
     if s == None:
         # index, lane_id , s = map(int,position.split(' '))
-        index, lane_id, s, offset, orientation = position
+        index, lane_id, s, _, orientation = position
     else:
         # index, lane_id , _ = map(int,position.split(' '))
-        index, lane_id, _, offset, orientation = position
+        index, lane_id, _, _, orientation = position
+
+    if offset is not None:
+        offset = offset
+    else:
+        offset = position[3] if len(position) > 3 else 0
 
     orientation = True if orientation == -1 else False
     # print("index, lane_id , s", index, lane_id , s)
     road = int(Map[index]) # if index < 4 else index #derek: SinD地圖太亂，traj直接給road比較快
+    if np.sign(lane_id) == -1:
+        if isinstance(offset, str):
+            offset = f'${{-{offset}}}'
+        else:
+            offset = -offset
     return xosc.LanePosition(
         s=s,
-        offset=offset*np.sign(lane_id),
+        offset=offset,
         lane_id=lane_id,
         road_id=road,
         orientation=xosc.Orientation(

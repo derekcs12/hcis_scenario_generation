@@ -93,7 +93,7 @@ def generate(config, company='HCISLab'):
     for cata in Actors:
         for idx, actor in enumerate(Actors[cata], start=1):
             actorName = f"{cata[:-1]}{idx}"
-            startPos = create_LanePosition_from_config(MapConfig, actor['Start_pos'], s=f"${actorName}_S")
+            startPos = create_LanePosition_from_config(MapConfig, actor['Start_pos'], s=f"${actorName}_S", offset=f"${actorName}_Offset")
             init.add_init_action(actorName, xosc.TeleportAction(startPos))
 
     # === 4.2 產生 Maneuvers 與 Events ===
@@ -204,7 +204,9 @@ def parameter_Declaration(Actors, Ego):
                 name=f"{actorName}_Speed", parameter_type="double", value=str(actor['Start_speed']))
             actorInitS = xosc.Parameter(
                 name=f"{actorName}_S", parameter_type="double", value=str(actor['Start_pos'][2]))
-            paraList.extend([actorType, actorInitSpeed, actorInitS])
+            actorInitOffset = xosc.Parameter(
+                name=f"{actorName}_Offset", parameter_type="double", value=str(actor['Start_pos'][3]))
+            paraList.extend([actorType, actorInitSpeed, actorInitS, actorInitOffset])
 
             # check if actor has 'Acts'
             if 'Acts' not in actor:
@@ -253,6 +255,19 @@ def parameter_Declaration(Actors, Ego):
                             name=f"{actorName}_{actIndex}_{actionName}_DynamicDuration", parameter_type="double", value=str(event['Dynamic_duration']))
                         dynamicShape = xosc.Parameter(
                             name=f"{actorName}_{actIndex}_{actionName}_DynamicShape", parameter_type="string", value=event['Dynamic_shape'])
+                        
+                        if event['Type'] == 'cut' :
+                            dynamicOffset = xosc.Parameter(
+                                name=f"{actorName}_{actIndex}_{actionName}_Offset", parameter_type="double", value=str(event['End'][1]))
+                            paraList.append(dynamicOffset)
+                            
+                        elif event['Type'] == 'position' and len(event['End']) >= 4:
+                            dynamicOffset = xosc.Parameter(
+                                name=f"{actorName}_{actIndex}_{actionName}_Offset", parameter_type="double", value=str(event['End'][3]))
+                            paraList.append(dynamicOffset)
+
+                        
+
                         paraList.extend(
                             [dynamicDelay, dynamicDuration, dynamicShape])
 
@@ -374,6 +389,7 @@ def generate_Parameter_Maneuver(config, actors):
     ego_name = 'Ego'
     ego_speed = float(config['Ego']['Start_speed'])
     agent = actors['Agents'][0]
+    agent_count = len(actors['Agents'])
     MapConfig = config['Map']
 
     # === Detect Ego Has Moved Event ===
@@ -426,7 +442,7 @@ def generate_Parameter_Maneuver(config, actors):
     # === Detect Ego Collision Event ===
     event = xosc.Event("DetectEgoCollisionEvent", xosc.Priority.parallel)
     event.add_action("Set Ego Collision Flag", xosc.ParameterSetAction("EGO_COLLISION", "true"))
-    event.add_trigger(create_collision_condition(ego_name, agentCount=1))
+    event.add_trigger(create_collision_condition(ego_name, agentCount=agent_count))
     param_maneuver.add_event(event)
 
     # === Create Ego Stroll Event ===

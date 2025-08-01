@@ -76,10 +76,18 @@ def generate_Speed_Event(actorName, actIndex, eventType, event, previousEventNam
 
 def generate_Cut_Event(actorName, actIndex, eventIndex, event, previousEventName, currentPosition):
     targetLane = event['End'][0]
-    targetOffset = event['End'][1]
-    targetOffset = targetOffset * np.sign(targetLane)
+    # offset = event['End'][1]
+    # if isinstance(offset, str) and np.sign(targetLane) == -1:
+    #     target_offset = f'${{{offset}}}'
+    # elif isinstance(offset, (int, float)):
+    #     target_offset = target_offset * np.sign(targetLane)
+    target_offset = f'${actorName}_{actIndex}_{eventIndex}_Offset'
+
+    if np.sign(targetLane) == -1:
+        target_offset = f'${{-{target_offset}}}'
+
     advgoal = xosc.AbsoluteLaneChangeAction(targetLane, create_TransitionDynamics_from_config(
-        event, actorName, actIndex, eventIndex), target_lane_offset=targetOffset)
+        event, actorName, actIndex, eventIndex), target_lane_offset=target_offset)
 
     trigger = create_Trigger_following_previous(
         previousEventName, delay=f'${actorName}_{actIndex}_TA_DynamicDelay', state='complete')
@@ -114,8 +122,18 @@ def generate_Offset_Event(actorName, actIndex, eventType, event, previousEventNa
 
 
 def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, currentPosition):
-    targetPoint = xosc.WorldPosition(event['End'][0], event['End'][1]) if len(
-        event['End']) == 2 else create_LanePosition_from_config(Map, event['End'])
+    if len(event['End']) == 2:
+        targetPoint = xosc.WorldPosition(event['End'][0], event['End'][1])
+    else:
+        target = event['End']
+        target[3] = f'${actorName}_{actIndex}_TA_Offset'
+        targetPoint = create_LanePosition_from_config(Map, target)
+
+    currentPosition[2] = f'${actorName}_{actIndex-1}_S' if actIndex > 1 else f'${actorName}_S'
+    currentPosition[3] = f'${actorName}_{actIndex-1}_TA_Offset' if actIndex > 1 else f'${actorName}_Offset'
+
+    # targetPoint = xosc.WorldPosition(event['End'][0], event['End'][1]) if len(
+    #     event['End']) == 2 else create_LanePosition_from_config(Map, event['End'])
     if event['Dynamic_shape'] == 'Straight':
         trajectory = xosc.Trajectory('selfDefineTrajectory', False)
         nurbs = xosc.Nurbs(2)

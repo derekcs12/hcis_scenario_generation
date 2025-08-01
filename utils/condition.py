@@ -11,7 +11,7 @@ def create_collision_condition(egoName, agentCount=1):
     Test Result: Valid/Success
     """
     group = xosc.ConditionGroup()
-    condition = xosc.CollisionCondition('Agent1')
+    condition = xosc.CollisionCondition(xosc.ObjectType.vehicle)
     trigger = xosc.EntityTrigger(
         name="EgoCollision",
         delay=0,
@@ -21,7 +21,7 @@ def create_collision_condition(egoName, agentCount=1):
         triggeringrule="any"
     )
     group.add_condition(trigger)
-    return group    
+    return group
 
 
 def create_ego_stroll_condition(time=5):
