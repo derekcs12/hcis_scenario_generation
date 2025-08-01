@@ -1,4 +1,5 @@
 import os
+from time import time
 import numpy as np
 from scenariogeneration import xosc, prettyprint
 from utils.position import create_LanePosition_from_config
@@ -70,7 +71,8 @@ def generate(config, company='HCISLab'):
 
 
     # === 3. 建立 Entities (Ego + Agents + Pedestrians)(document:xosc.Entities) ===
-    entities = create_Entity(egoController, agentCount, pedCount)
+    agentController = xosc.Controller(name="ALKSController", properties=xosc.Properties())
+    entities = create_Entity(egoController, agentCount, pedCount, agentController=agentController)
 
 
     # --- 4. Storyboard ---
@@ -97,7 +99,12 @@ def generate(config, company='HCISLab'):
             init.add_init_action(actorName, xosc.TeleportAction(startPos))
 
     # === 4.2 產生 Maneuvers 與 Events ===
+    # invalid condition flags
     egoParamManeuver = generate_Parameter_Maneuver(config, actors=Actors)
+    
+    # Activate Agents Controllers
+    activateControllerManeuver = generate_Activate_Controller_Action(Actors)
+    
     allManeuvers = {}
     allStartEvent = []
 
@@ -121,6 +128,7 @@ def generate(config, company='HCISLab'):
 
     # === 4.4 Storyboard 組裝 ===
     sb = xosc.StoryBoard(init, sb_stoptrigger)
+    sb.add_story(activateControllerManeuver)
 
     for name, maneuver in allManeuvers.items():
         sb.add_maneuver(maneuver, name)
@@ -205,6 +213,9 @@ def parameter_Declaration(Actors, Ego):
             actorInitS = xosc.Parameter(
                 name=f"{actorName}_S", parameter_type="double", value=str(actor['Start_pos'][2]))
             paraList.extend([actorType, actorInitSpeed, actorInitS])
+            # actorInitS = xosc.Parameter(
+            #     name=f"{actorName}_Offset", parameter_type="double", value=str(actor['Start_pos'][2]))
+            # paraList.extend([actorType, actorInitSpeed, actorInitS])
 
             # check if actor has 'Acts'
             if 'Acts' not in actor:
@@ -266,7 +277,7 @@ def create_Catalog_and_RoadNetwork():
     ...
 
 
-def create_Entity(egoController, agentCount, pedCount):
+def create_Entity(egoController, agentCount, pedCount, agentController):
     # construct CatalogReference
     egoObject = xosc.CatalogReference(
         catalogname="VehicleCatalog", entryname="$Ego_Vehicle")  # xosc.utils
@@ -291,11 +302,13 @@ def create_Entity(egoController, agentCount, pedCount):
     # ego
     entities.add_scenario_object(
         name="Ego", entityobject=egoObject, controller=egoController)
+    
+    print(f"Add Ego: {egoObject} with controller: {egoController}")
 
     # agents
     for i in range(agentCount):
         entities.add_scenario_object(
-            name=f"Agent{i+1}", entityobject=agentObjectList[i])
+            name=f"Agent{i+1}", entityobject=agentObjectList[i], controller=agentController)
 
     # pedestrians
     for i in range(pedCount):
@@ -436,3 +449,54 @@ def generate_Parameter_Maneuver(config, actors):
     param_maneuver.add_event(event)
 
     return param_maneuver
+
+
+def generate_Activate_Controller_Action(Actors):
+    """
+    Generate ActivateControllerAction for the actor.
+    """
+
+    def create_maneuver_group(agent_name, delay_time):
+        
+        mg = xosc.ManeuverGroup(name=f"{agent_name}", maxexecution=1)
+        mg.add_actor(agent_name)
+
+        maneuver = xosc.Maneuver(name=f"{agent_name}")
+        
+        # action = xosc.PrivateAction()
+        # action.add_controller_action(xosc.ActivateControllerAction(longitudinal=True, lateral=True))
+        name = f"Activate_{agent_name}Controller"
+        event = xosc.Event(name, priority="overwrite", maxexecution=1)
+        event.add_action(f"Activate{agent_name}", xosc.ActivateControllerAction(longitudinal=True, lateral=True))
+        
+
+
+        trigger = xosc.ValueTrigger(
+                name=f"activate_{agent_name}_controller",
+                delay=delay_time,
+                conditionedge=xosc.ConditionEdge.none,
+                valuecondition=xosc.SimulationTimeCondition(0, xosc.Rule.greaterThan)
+            )
+        group = xosc.ConditionGroup()
+        group.add_condition(trigger)
+        event.add_trigger(group)
+        maneuver.add_event(event)
+        mg.add_maneuver(maneuver)
+        return mg
+
+    # 建立 Act 並加入兩個 agent 的 ManeuverGroup
+    delay_time = 0.0
+    act = xosc.Act(name="act_activate_controllers")
+    for cata in Actors:
+        for idx, actor in enumerate(Actors[cata], start=1):
+            actorName = f"{cata[:-1]}{idx}"
+            act.add_maneuver_group(create_maneuver_group(actorName, delay_time=delay_time))
+            delay_time += 0.1
+
+    
+    # 包成 Story
+    story = xosc.Story(name="story_activate_controllers")
+    story.add_act(act)
+    
+    return story
+    
