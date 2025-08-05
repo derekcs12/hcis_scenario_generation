@@ -50,7 +50,6 @@ def main():
     
     configFile = []
     if args.config == 'all':
-        print('Loading all config files...')
         for root, dirs, files in os.walk('./scenario_config'):
             for file in files:
                 # # Downsampling
@@ -61,7 +60,7 @@ def main():
                     with open(file_path, 'r') as f:
                         config = yaml.safe_load(f)
                     configFile.append(config)
-                    # print('find config file: ', len(configFile),end='\r')
+                    print('find config file: ', len(configFile),end='\r')
         for root, dirs, files in os.walk('./scenario_config_combined'):
             for file in files:
                 if file.endswith('.yaml'):
@@ -69,7 +68,7 @@ def main():
                     with open(file_path, 'r') as f:
                         config = yaml.safe_load(f)
                     configFile.append(config)
-                    # print('find config file: ', len(configFile),end='\r')
+                    print('find config file: ', len(configFile),end='\r')
 
     elif args.config.endswith('.yaml'):
         with open(args.config,'r') as f:
@@ -106,8 +105,7 @@ def main():
         # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/esmini-demo/resources/xosc/built_from_conf/{folder}/{config['Scenario_name']}.xosc")
         # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/lin/{config['Scenario_name']}.xosc")
         
-        continue
-        
+        # continue
         config['Control'] = True
         sce = generate(config,company="ITRI")
         sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{config['Scenario_name']}.xosc")

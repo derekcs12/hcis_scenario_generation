@@ -445,7 +445,7 @@ def generate_Parameter_Maneuver(config, actors):
     # === Detect Ego TLE Event ===
     event = xosc.Event("DetectEgoTLEEvent", xosc.Priority.parallel)
     event.add_action("Set Ego TLE Flag", xosc.ParameterSetAction("EGO_TLE", "true"))
-    event.add_trigger(create_ego_tle_condition(MapConfig, agent['Start_trigger'], ego_name, time=30))
+    event.add_trigger(create_ego_tle_condition(MapConfig, agent['Start_trigger'], ego_name, time=20))
     param_maneuver.add_event(event)
 
     # === Detect Ego Collision Event ===
@@ -457,7 +457,7 @@ def generate_Parameter_Maneuver(config, actors):
     # === Create Ego Stroll Event ===
     event = xosc.Event("EgoStrollEvent", xosc.Priority.parallel)
     event.add_action("Set Ego Stroll Flag", xosc.ParameterSetAction("EGO_STROLL", "true"))
-    event.add_trigger(create_ego_stroll_condition(time=5))
+    event.add_trigger(create_ego_stroll_condition(time=20))
     param_maneuver.add_event(event)
 
     return param_maneuver

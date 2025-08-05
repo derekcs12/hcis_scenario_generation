@@ -389,6 +389,14 @@ def upload(scenario_id):
         print(f"   [SCENARIO] {r.json().get('message')}")
         if ((r.status_code == 201 and r.json().get("message") == "Scenario successfully created.") or
            (r.status_code == 200 and r.json().get("message") == "Updated successfully.")):
+            # 更新預覽圖和影片
+            print("   [SCENARIO] Updating preview schematic and video...")
+            update_url = f"{base_url}/updatePreviewSchematicAndVideo/{scenario_id}"
+            r = requests.post(
+                update_url,
+                headers=headers
+            )
+            print(f"   [SCENARIO] {r.json().get('message')}")
             return 1
         else:
             print("status", r.status_code)

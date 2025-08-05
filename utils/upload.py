@@ -175,14 +175,17 @@ def write_param(csv):
         #     param_info["unit"] = "s"
         # elif '_Delay' in col:
         #     param_info["unit"] = "s"
-        # elif '_Offset' in col:
-        #     param_info["unit"] = "m"
+        elif '_Offset' in col:
+            param_info["unit"] = "m"
         elif '_Period' in col:
             param_info["unit"] = "1/s"
         # elif '_Times' in col:
         #     param_info["unit"] = "times"
         else:
             continue
+
+        if not csv[col] or '~' not in str(csv[col]):
+            continue # Skip parameters without range (e.g., 'null')
 
         param_info["name"] = col
         param_info["min"] = csv[col].split('~')[0]
@@ -463,8 +466,8 @@ def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agen
 def set_offset(content, descript, lateral_behavior, agent1_init_direction):
     agent = content.agents[0]
 
-    def is_motorcycle_left(): return 'R-M2' in descript or 'L-M3' in descript
-    def is_motorcycle_right(): return 'R-M3' in descript or 'L-M2' in descript
+    def is_motorcycle_left(): return 'R-M2' in descript or 'L-M3' in descript #No M1, since M1 near ego, will cause collision at the beginning 
+    def is_motorcycle_right(): return 'R-M3' in descript or 'L-M2' in descript #No M1, since M1 near ego, will cause collision at the beginning 
     def is_car(): return not (is_motorcycle_left() or is_motorcycle_right())
 
     # _Offset: 起始偏移量, _TA_Offset: 結束偏移量
@@ -475,6 +478,7 @@ def set_offset(content, descript, lateral_behavior, agent1_init_direction):
             agent.update({'1_Offset': '0.5~1.5'})
         else:
             agent.update({'1_Offset': '-1.5~1.5'})
+            agent.update({'1_TA_Offset': '-1.5~1.5'})
 
     elif ('U turn' in descript or 'turning left' in descript) and agent1_init_direction == 'sameAsEgo':
         if 'R-M2' in descript:
