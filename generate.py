@@ -102,8 +102,6 @@ def generate(config, company='HCISLab'):
     # invalid condition flags
     egoParamManeuver = generate_Parameter_Maneuver(config, actors=Actors)
     
-    # Activate Agents Controllers
-    activateControllerManeuver = generate_Activate_Controller_Action(Actors)
     
     allManeuvers = {}
     allStartEvent = []
@@ -128,8 +126,6 @@ def generate(config, company='HCISLab'):
 
     # === 4.4 Storyboard 組裝 ===
     sb = xosc.StoryBoard(init, sb_stoptrigger)
-    sb.add_story(activateControllerManeuver)
-
     for name, maneuver in allManeuvers.items():
         sb.add_maneuver(maneuver, name)
 
@@ -463,52 +459,4 @@ def generate_Parameter_Maneuver(config, actors):
     return param_maneuver
 
 
-def generate_Activate_Controller_Action(Actors):
-    """
-    Generate ActivateControllerAction for the actor.
-    """
-
-    def create_maneuver_group(agent_name, delay_time):
-        
-        mg = xosc.ManeuverGroup(name=f"{agent_name}", maxexecution=1)
-        mg.add_actor(agent_name)
-
-        maneuver = xosc.Maneuver(name=f"{agent_name}")
-        
-        # action = xosc.PrivateAction()
-        # action.add_controller_action(xosc.ActivateControllerAction(longitudinal=True, lateral=True))
-        name = f"Activate_{agent_name}Controller"
-        event = xosc.Event(name, priority="overwrite", maxexecution=1)
-        event.add_action(f"Activate{agent_name}", xosc.ActivateControllerAction(longitudinal=True, lateral=True))
-        
-
-
-        trigger = xosc.ValueTrigger(
-                name=f"activate_{agent_name}_controller",
-                delay=delay_time,
-                conditionedge=xosc.ConditionEdge.none,
-                valuecondition=xosc.SimulationTimeCondition(0, xosc.Rule.greaterThan)
-            )
-        group = xosc.ConditionGroup()
-        group.add_condition(trigger)
-        event.add_trigger(group)
-        maneuver.add_event(event)
-        mg.add_maneuver(maneuver)
-        return mg
-
-    # 建立 Act 並加入兩個 agent 的 ManeuverGroup
-    delay_time = 0.0
-    act = xosc.Act(name="act_activate_controllers")
-    for cata in Actors:
-        for idx, actor in enumerate(Actors[cata], start=1):
-            actorName = f"{cata[:-1]}{idx}"
-            act.add_maneuver_group(create_maneuver_group(actorName, delay_time=delay_time))
-            delay_time += 0.1
-
-    
-    # 包成 Story
-    story = xosc.Story(name="story_activate_controllers")
-    story.add_act(act)
-    
-    return story
     

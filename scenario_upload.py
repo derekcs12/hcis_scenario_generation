@@ -134,26 +134,41 @@ def handle_tags_creation_and_get_ids(tags: List[str]):
 def upload_openscenario_file(file_path, filename=None):
     """Upload or update an OpenScenario file."""
     global base_url
-    url = f"{base_url}/openScenarios?limit=100000"
-    tags_doc = get_cache_data(url, headers)['docs']
-
-
-    all_tags = dict([(tag["filename"], tag["id"]) for tag in tags_doc])
-
+    
     if filename is None:
         filename = file_path.split("/")[-1]
+    
+    # First check if scenario exists in /scenarios endpoint
+    scenarios_url = f"{base_url}/scenarios?limit=100000"
+    scenarios_doc = get_cache_data(scenarios_url, headers)['docs']
+    
+    # Check if any scenario uses this filename in its openScenario
+    scenario_uuid = None
+    for scenario in scenarios_doc:
+        if (scenario.get('openScenario') and 
+            scenario['openScenario'].get('type') == 'File' and
+            scenario['openScenario'].get('filename') == filename):
+            scenario_uuid = scenario['openScenario']['openScenario']
+            print(f"   [XOSC] Found existing scenario using this file, openScenario UUID: {scenario_uuid}")
+            break
+    
+    # If not found in scenarios, check openScenarios endpoint
+    if scenario_uuid is None:
+        openscenarios_url = f"{base_url}/openScenarios?limit=100000"
+        openscenarios_doc = get_cache_data(openscenarios_url, headers)['docs']
+        all_openscenarios = dict([(tag["filename"], tag["id"]) for tag in openscenarios_doc])
+        
+        if filename in all_openscenarios.keys():
+            scenario_uuid = all_openscenarios[filename]
+            print("   [XOSC] File already exists in openScenarios.")
 
     with open(file_path, "rb") as f:
         files = {
             "file": (filename, f, "application/octet-stream")
         }
         
-        if filename in all_tags.keys():
-            scenario_uuid = all_tags[filename]
-            print("   [XOSC] File already exists.")
-            # return
+        if scenario_uuid is not None:
             print("   [XOSC] Update by ID....")
-
             # Update xosc
             r = requests.patch(
                 f"{base_url}/openScenarios/{scenario_uuid}",
@@ -426,28 +441,36 @@ if __name__ == '__main__':
         args = argparser.parse_args()
 
 
-        # === 跳過不傳的檔案 ===
-        skip = [
+        # === 建立跳過檔案清單 ===
+        # 手動指定要跳過的檔案
+        manually_skipped_files = [
             '01FL-KEEP_6.xosc', '01FL-KEEP_7.xosc', '01FL-KEEP_8.xosc', 
             '01FL-KEEP_9.xosc', '01FL-KEEP_10.xosc'
         ]
         
-        # 跳過none critical scenario
-        skip_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0115.txt'
-        with open(skip_file_path, 'r') as file:
+        # 載入none-critical scenario清單（從檔案讀取）
+        non_critical_scenarios = []
+        non_critical_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0806.txt'
+        with open(non_critical_file_path, 'r') as file:
             for line in file:
-                if line.strip():
-                    scenario_name = line.strip().replace('_metrics.csv', '.xosc')
-                    skip.append(scenario_name)
+                line = line.strip()
+                if line:
+                    scenario_name = line.replace('_metrics.csv', '.xosc')
+                    non_critical_scenarios.append(scenario_name)
                     
-        # 跳過上傳成功過的xosc
-        skip2 = []
+        # print(none_critical_scenario_combined_0806)
+        
+        # 載入已成功上傳的情境清單
+        already_uploaded_scenarios = []
         success_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/success_upload_scenario.txt'
         with open(success_file_path, 'r') as file:
             for line in file:
-                if line.strip():
-                    scenario_name = line.strip()
-                    skip2.append(scenario_name)
+                line = line.strip()
+                if line:
+                    already_uploaded_scenarios.append(line)
+        
+        # 合併所有要跳過的檔案
+        non_critical_scenarios += manually_skipped_files
 
         scenario_ids = args.sc
         
@@ -460,7 +483,7 @@ if __name__ == '__main__':
             xosc_dir = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/"
             for file in os.listdir(xosc_dir):
                 if file.endswith('.xosc'):
-                    if file in skip:
+                    if file in non_critical_scenarios:
                         continue
 
                     prefix = "_".join(file.split("_")[:-1])
@@ -470,15 +493,15 @@ if __name__ == '__main__':
             
             # Combined scnearios參數排列組合較多, 抽樣上傳, 避免crash
             for prefix, files in prefix_dict.items():
-                if '02' in prefix and len(files) > 1500:
+                if '02' in prefix and len(files) > 500:
                     # continue
-                    sampled_files = np.random.choice(files, 15, replace=False)
+                    sampled_files = np.random.choice(files, 100, replace=False)
                     scenario_ids.extend(sampled_files)
                 else:
                     scenario_ids.extend(files)
 
             print("Scenarios in queue: ", len(scenario_ids))
-            print("Scenarios to upload: ", len(set(scenario_ids) - set(skip2)))
+            print("Scenarios to upload: ", len(set(scenario_ids) - set(already_uploaded_scenarios)))
 
             # Save the scenario_ids to a queue file
             queue_file_path = f'{RUNTIME_DATA_DIR}/scenario_queue.txt'
@@ -490,7 +513,7 @@ if __name__ == '__main__':
             success_upload = 0
             with open(f'{RUNTIME_DATA_DIR}/success_upload_scenario.txt', 'w') as success_file:
                 for scenario_id in tqdm(scenario_ids):
-                    if scenario_id in skip2:
+                    if scenario_id in already_uploaded_scenarios:
                         print(f'[MAIN] Skipped {scenario_id} - already uploaded')
                         success_upload += 1
                         continue
@@ -517,18 +540,17 @@ if __name__ == '__main__':
                 scenario_ids = [line.strip() for line in queue_file.readlines()]
             # scenario_ids.reverse()
 
-            target_scenarios = [
-                '01BL-KEEP_02FS-ZZ_3.xosc', '01BL-KEEP_02SR-ZZ_5.xosc', 
-                '01FR-ZZ_02FR-CI_2.xosc', '01FL-TL_14.xosc', 
-                '01BL-TR_02SL-TR_50.xosc', '01BR-KEEP_02SR-ZZ_1.xosc', 
-                '01FR-CI_02SR-CI_24.xosc', '01FL-ZZ_02FR-CI_13.xosc', 
-                '01FL-TL_02FR-TL_1121.xosc', '01FL-KEEP_02FR-TL_254.xosc'
-            ]
+
 
             for scenario_id in tqdm(scenario_ids):
             # for scenario_id in ['01FS-ZZ_02SR-ZZ_3']:
                     
-                # if scenario_id in skip2:
+                # if scenario_id in non_critical_scenarios:
+                #         print('Skipped. None-critical scenario.')
+                #         # success_upload += 1
+                #         continue
+                    
+                # if scenario_id in already_uploaded_scenarios:
                 #     print('Skipped. Since already uploaded, check success_upload_scenario.txt')
                 #     success_upload += 1
                 #     continue
@@ -537,9 +559,17 @@ if __name__ == '__main__':
                 # if 'ZZ' in scenario_id:
                 #     print(' ZZ, skipped.')
                 #     continue     
-                               
-                if scenario_id not in target_scenarios:
-                    continue
+                  
+                # # 僅上傳10個 sample scenarios 供itri快速測試
+                # target_scenarios = [
+                #     '01BL-KEEP_02FS-ZZ_3.xosc', '01BL-KEEP_02SR-ZZ_5.xosc', 
+                #     '01FR-ZZ_02FR-CI_2.xosc', '01FL-TL_14.xosc', 
+                #     '01BL-TR_02SL-TR_50.xosc', '01BR-KEEP_02SR-ZZ_1.xosc', 
+                #     '01FR-CI_02SR-CI_24.xosc', '01FL-ZZ_02FR-CI_13.xosc', 
+                #     '01FL-TL_02FR-TL_1121.xosc', '01FL-KEEP_02FR-TL_254.xosc'
+                # ]
+                # if scenario_id not in target_scenarios:
+                #     continue
 
                 print(f"\n[MAIN] Processing scenario: {scenario_id}")
                 if upload(scenario_id):

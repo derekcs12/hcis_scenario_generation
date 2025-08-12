@@ -47,6 +47,8 @@ def generate_Agent_Start_Event(actorName, agent, Map):
         f"{actorName}_StartSpeedEvent", xosc.Priority.overwrite)
     advStartSpeedEvent.add_action(
         f"{actorName}_StartSpeedAction", agentInitSpeed)
+    advStartSpeedEvent.add_action(
+        f"{actorName}_ActivateController", xosc.ActivateControllerAction(longitudinal=True, lateral=True))
     advStartSpeedEvent.add_trigger(agentStartTrigger)
 
     return advStartSpeedEvent
