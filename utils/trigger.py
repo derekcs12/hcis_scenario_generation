@@ -51,11 +51,11 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
                               triggerentity=EntityName, triggeringrule="any")
     
 
-def create_flag_trigger(parameter_name, value='true', delay=0, conditionedge=xosc.ConditionEdge.rising):
+def create_flag_trigger(variable_name, value='true', delay=0, conditionedge=xosc.ConditionEdge.rising):
     group = xosc.ConditionGroup()
-    condition = xosc.ParameterCondition(parameter_name, value, xosc.Rule.equalTo)
+    condition = xosc.VariableCondition(variable_name, value, xosc.Rule.equalTo)
     trigger = xosc.ValueTrigger(
-        name=f"{parameter_name}_Trigger",
+        name=f"{variable_name}_Trigger",
         delay=delay,
         conditionedge=conditionedge,
         valuecondition=condition
@@ -64,9 +64,9 @@ def create_flag_trigger(parameter_name, value='true', delay=0, conditionedge=xos
     return group
 
 
-def create_StopTrigger(Map, egoName, eventStartPoint, eventStartSpeed, egoTargetPoint, xodrPath):
+def create_StopTrigger():
     stopTrigger = xosc.Trigger('stop')
-    
+
     """NEW END CONDITIONS"""
     # Condition 1 - AV Connection timeout => Invalid
     stopTrigger.add_conditiongroup(create_flag_trigger('AV_CONNECTION_TIMEOUT', 'true'))

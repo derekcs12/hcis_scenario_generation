@@ -30,14 +30,14 @@ def create_ego_stroll_condition(time=25):
     Test Result: invalid
     """
     group = xosc.ConditionGroup()
-    connected_condition = xosc.ParameterCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
+    connected_condition = xosc.VariableCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
     connected_trigger = xosc.ValueTrigger(
         name="EgoStroll",
         delay=time,
         conditionedge=xosc.ConditionEdge.none,
         valuecondition=connected_condition
     )
-    event_started = xosc.ParameterCondition("IS_VALID", "false", xosc.Rule.equalTo)
+    event_started = xosc.VariableCondition("IS_VALID", "false", xosc.Rule.equalTo)
     event_started_trigger = xosc.ValueTrigger(
         name="EventStarted",
         delay=0,
@@ -153,14 +153,14 @@ def create_stand_still_conditions(egoName,time=10):
         entitycondition=stand_still,
         triggerentity=egoName
     )
-    has_moved = xosc.ParameterCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
+    has_moved = xosc.VariableCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
     has_moved_trigger = xosc.ValueTrigger(
         name="egoHasMoved",
         delay=0,
         conditionedge=xosc.ConditionEdge.none,
         valuecondition=has_moved
     )
-    event_started = xosc.ParameterCondition("IS_VALID", "false", xosc.Rule.equalTo)
+    event_started = xosc.VariableCondition("IS_VALID", "false", xosc.Rule.equalTo)
     event_started_trigger = xosc.ValueTrigger(
         name="EventStarted",
         delay=0,
@@ -188,7 +188,7 @@ def create_timeout_condition(egoName, time=60):
         valuecondition=condition,
     )
 
-    has_moved = xosc.ParameterCondition("AV_CONNECTED", "false", xosc.Rule.equalTo)
+    has_moved = xosc.VariableCondition("AV_CONNECTED", "false", xosc.Rule.equalTo)
     has_moved_trigger = xosc.ValueTrigger(
         name="EgoHasNotMoved",
         delay=0,

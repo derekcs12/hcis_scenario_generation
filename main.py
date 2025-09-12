@@ -41,8 +41,8 @@ def main():
     argparser.add_argument(
         '--controller',
         metavar='CONTROLLER',
-        default='ACCController',
-        help='Controller name (default: ACCController)')
+        default='',
+        help='Controller name (default: None)')
     
     argcomplete.autocomplete(argparser)
     args = argparser.parse_args()
