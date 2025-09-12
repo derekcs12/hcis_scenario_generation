@@ -39,6 +39,7 @@ def generate(config, company='HCISLab'):
 
 
     # === 1. 宣告參數與 Catalogs ===
+    vardec = variable_Declaration()
     paramdec = parameter_Declaration(Actors, EgoConfig)
 
     # CatalogLocations & RoadNetwork (document:xosc.utiles)
@@ -142,51 +143,56 @@ def generate(config, company='HCISLab'):
         storyboard=sb,
         roadnetwork=road,
         catalog=catalog,
-        osc_minor_version=0
+        osc_minor_version=2,
+        variable_declaration=vardec
     )
 
     return scenario
 
+def variable_Declaration():
+    vardec = xosc.VariableDeclarations()
+    var_list = []
+    egoConnectedFlag = xosc.Variable(
+        name="AV_CONNECTED", variable_type="boolean", value="false")
+    vardec.add_variable(egoConnectedFlag)
+
+    eventStartFlag = xosc.Variable(
+        name="EVENT_START", variable_type="boolean", value="false")
+    vardec.add_variable(eventStartFlag)
+
+    invalidFlag = xosc.Variable(
+        name="IS_VALID", variable_type="boolean", value="false")
+    vardec.add_variable(invalidFlag)
+
+    avConnectionTimeoutFlag = xosc.Variable(
+        name="AV_CONNECTION_TIMEOUT", variable_type="boolean", value="false")
+    vardec.add_variable(avConnectionTimeoutFlag)
+
+    wrongStartSpeedFlag = xosc.Variable(
+        name="WRONG_START_SPEED", variable_type="boolean", value="false")
+    vardec.add_variable(wrongStartSpeedFlag)
+
+    egoreachedEndFlag = xosc.Variable(
+        name="EGO_REACHED_END", variable_type="boolean", value="false")
+    vardec.add_variable(egoreachedEndFlag)
+
+    egoTLEFlag = xosc.Variable(
+        name="EGO_TLE", variable_type="boolean", value="false")
+    vardec.add_variable(egoTLEFlag)
+
+    egoCollisionFlag = xosc.Variable(
+        name="EGO_COLLISION", variable_type="boolean", value="false")
+    vardec.add_variable(egoCollisionFlag)
+
+    egoStrollFlag = xosc.Variable(
+        name="EGO_STROLL", variable_type="boolean", value="false")
+    vardec.add_variable(egoStrollFlag)
+
+    return vardec
 
 def parameter_Declaration(Actors, Ego):
     paramdec = xosc.ParameterDeclarations()
     paraList = []
-
-    egoConnectedFlag = xosc.Parameter(
-        name="AV_CONNECTED", parameter_type="boolean", value="false")
-    paraList.append(egoConnectedFlag)
-
-    eventStartFlag = xosc.Parameter(
-        name="EVENT_START", parameter_type="boolean", value="false")
-    paraList.append(eventStartFlag)
-
-    invalidFlag = xosc.Parameter(
-        name="IS_VALID", parameter_type="boolean", value="false")
-    paraList.append(invalidFlag)
-
-    avConnectionTimeoutFlag = xosc.Parameter(
-        name="AV_CONNECTION_TIMEOUT", parameter_type="boolean", value="false")
-    paraList.append(avConnectionTimeoutFlag)
-
-    wrongStartSpeedFlag = xosc.Parameter(
-        name="WRONG_START_SPEED", parameter_type="boolean", value="false")
-    paraList.append(wrongStartSpeedFlag)
-
-    egoreachedEndFlag = xosc.Parameter(
-        name="EGO_REACHED_END", parameter_type="boolean", value="false")
-    paraList.append(egoreachedEndFlag)
-
-    egoTLEFlag = xosc.Parameter(
-        name="EGO_TLE", parameter_type="boolean", value="false")
-    paraList.append(egoTLEFlag)
-
-    egoCollisionFlag = xosc.Parameter(
-        name="EGO_COLLISION", parameter_type="boolean", value="false")
-    paraList.append(egoCollisionFlag)
-
-    egoStrollFlag = xosc.Parameter(
-        name="EGO_STROLL", parameter_type="boolean", value="false")
-    paraList.append(egoStrollFlag)
 
     # ParameterDeclarations
     egoInit = xosc.Parameter(
@@ -399,21 +405,21 @@ def generate_Parameter_Maneuver(config, actors):
 
     # === Detect Ego Has Moved Event ===
     event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
-    event.add_action("Set EgoHasMoved Flag", xosc.ParameterSetAction("AV_CONNECTED", "true"))
+    event.add_action("Set EgoHasMoved Flag", xosc.VariableSetAction("AV_CONNECTED", "true"))
     event.add_trigger(xosc.EntityTrigger("EgoHasMoved", 0, xosc.ConditionEdge.rising,
                       xosc.SpeedCondition(0, xosc.Rule.greaterThan), ego_name))
     param_maneuver.add_event(event)
 
     # === Init Valid Flag ===
     event = xosc.Event("ValidManeuverEvent", xosc.Priority.parallel)
-    event.add_action("Set Valid Flag", xosc.ParameterSetAction("IS_VALID", "true"))
+    event.add_action("Set Valid Flag", xosc.VariableSetAction("IS_VALID", "true"))
     valid_trigger = create_right_start_speed_condition(MapConfig, ego_name, agent['Start_trigger'], ego_speed)
     event.add_trigger(valid_trigger)
     param_maneuver.add_event(event)
 
     # === Detect AV Connection Timeout Event(30) ===
     event = xosc.Event("DetectAVConnectionTimeoutEvent", xosc.Priority.parallel)
-    event.add_action("Set AV Connection Timeout Flag", xosc.ParameterSetAction("AV_CONNECTION_TIMEOUT", "true"))
+    event.add_action("Set AV Connection Timeout Flag", xosc.VariableSetAction("AV_CONNECTION_TIMEOUT", "true"))
     event.add_trigger(create_timeout_condition(ego_name, time=30))
     param_maneuver.add_event(event)
 
@@ -422,37 +428,37 @@ def generate_Parameter_Maneuver(config, actors):
         MapConfig, ego_name, agent['Start_trigger'], ego_speed, tolerance=2)
 
     event = xosc.Event("DetectHighStartSpeedEvent", xosc.Priority.parallel)
-    event.add_action("Set High Start Speed Flag", xosc.ParameterSetAction("WRONG_START_SPEED", "true"))
+    event.add_action("Set High Start Speed Flag", xosc.VariableSetAction("WRONG_START_SPEED", "true"))
     event.add_trigger(high_group)
     param_maneuver.add_event(event)
 
     # === Detect Wrong Start Speed Event - below tolerance ===
     event = xosc.Event("DetectLowStartSpeedEvent", xosc.Priority.parallel)
-    event.add_action("Set Low Start Speed Flag", xosc.ParameterSetAction("WRONG_START_SPEED", "true"))
+    event.add_action("Set Low Start Speed Flag", xosc.VariableSetAction("WRONG_START_SPEED", "true"))
     event.add_trigger(low_group)
     param_maneuver.add_event(event)
 
     # === Detect Ego Reached End Event ===
     event = xosc.Event("DetectEgoReachedEndEvent", xosc.Priority.parallel)
-    event.add_action("Set Ego Reached End Flag", xosc.ParameterSetAction("EGO_REACHED_END", "true"))
+    event.add_action("Set Ego Reached End Flag", xosc.VariableSetAction("EGO_REACHED_END", "true"))
     event.add_trigger(create_reach_target_condition(MapConfig, ego_name, config['Ego']['End_pos']))
     param_maneuver.add_event(event)
 
     # === Detect Ego TLE Event ===
     event = xosc.Event("DetectEgoTLEEvent", xosc.Priority.parallel)
-    event.add_action("Set Ego TLE Flag", xosc.ParameterSetAction("EGO_TLE", "true"))
+    event.add_action("Set Ego TLE Flag", xosc.VariableSetAction("EGO_TLE", "true"))
     event.add_trigger(create_ego_tle_condition(MapConfig, agent['Start_trigger'], ego_name, time=20))
     param_maneuver.add_event(event)
 
     # === Detect Ego Collision Event ===
     event = xosc.Event("DetectEgoCollisionEvent", xosc.Priority.parallel)
-    event.add_action("Set Ego Collision Flag", xosc.ParameterSetAction("EGO_COLLISION", "true"))
+    event.add_action("Set Ego Collision Flag", xosc.VariableSetAction("EGO_COLLISION", "true"))
     event.add_trigger(create_collision_condition(ego_name, agentCount=agent_count))
     param_maneuver.add_event(event)
 
     # === Create Ego Stroll Event ===
     event = xosc.Event("EgoStrollEvent", xosc.Priority.parallel)
-    event.add_action("Set Ego Stroll Flag", xosc.ParameterSetAction("EGO_STROLL", "true"))
+    event.add_action("Set Ego Stroll Flag", xosc.VariableSetAction("EGO_STROLL", "true"))
     event.add_trigger(create_ego_stroll_condition(time=20))
     param_maneuver.add_event(event)
 
