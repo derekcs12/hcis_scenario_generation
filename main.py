@@ -12,27 +12,21 @@ import random
 
 
 def valid_path(path):
-    """验证路径是否有效"""
+    """驗證路徑是否有效"""
     if path == 'all' or path == 'sind':
         return path
     if not os.path.exists(path):
-        raise argparse.ArgumentTypeError(f"路径无效: {path}")
+        raise argparse.ArgumentTypeError(f"invalid path: {path}")
     return path
 
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        '-p', '--port',
-        metavar='P',
-        default=2000,
-        type=int,
-        help='TCP port to listen to (default: 2000)')
-    argparser.add_argument(
         '-s', '--sc',
         metavar='S',
         default='',
         nargs="+",
-        help='Scenario category (default: all)')
+        help='Scenario category')
     # config path
     argparser.add_argument(
         '-c', '--config',
@@ -44,6 +38,11 @@ def main():
         '-d', '--deactivate',
         action='store_true',
         help='Whether to deactivate the controller')
+    argparser.add_argument(
+        '--controller',
+        metavar='CONTROLLER',
+        default='ACCController',
+        help='Controller name (default: ACCController)')
     
     argcomplete.autocomplete(argparser)
     args = argparser.parse_args()
@@ -97,6 +96,7 @@ def main():
         Build xosc 
         """
         # config['DeactivateControl'] = args.deactivate
+        config['Controller'] = args.controller
         sce = generate(config)
         # sce.write_xml(f"/home/hcis-s05/Downloads/esmini-demo/resources/xosc/{config['Scenario_name']}.xosc")
         sce.write_xml(f"/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc")
@@ -108,7 +108,7 @@ def main():
         # continue
         config['Control'] = True
         sce = generate(config,company="ITRI")
-        sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{config['Scenario_name']}.xosc")
+        # sce.write_xml(f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{config['Scenario_name']}.xosc")
         
     print("total config: ", len(configFile))
  

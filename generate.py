@@ -50,7 +50,7 @@ def generate(config, company='HCISLab'):
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "./Catalogs/Pedestrians")
         road = xosc.RoadNetwork(roadfile=xodrPath)
-        controllerName = "ACCController"
+        # controllerName = "ACCController"
         # controllerName = "interactiveDriver"
         
     else: # ITRI
@@ -59,16 +59,12 @@ def generate(config, company='HCISLab'):
         if 'Pedestrians' in Actors:
             catalog.add_catalog("PedestrianCatalog", "../Catalogs/Pedestrians")
         road = xosc.RoadNetwork(roadfile="../../xodr/itri/hct_6.xodr")
-        controllerName = "ROSController"
+        # controllerName = "ROSController"
+        config['Controller'] = "ROSController"
 
 
     # === 2. 建立 Ego Controller 實體 ===
-    egoControllerProperties = xosc.Properties()
-    egoControllerProperties.add_property(name="timeGap", value="1.0")
-    egoControllerProperties.add_property(name="mode", value="override")
-    egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
-    egoController = xosc.Controller(name=controllerName, properties=egoControllerProperties)
-    # egoController = xosc.CatalogReference(catalogname="ControllerCatalog", entryname=controllerName)
+    egoController = get_Ego_Controller(config['Controller'])
 
 
     # === 3. 建立 Entities (Ego + Agents + Pedestrians)(document:xosc.Entities) ===
@@ -287,9 +283,20 @@ def parameter_Declaration(Actors, Ego):
     return paramdec
 
 
-def create_Catalog_and_RoadNetwork():
-    ...
+def get_Ego_Controller(controller_name):
+    if controller_name == "ACCController" or controller_name == "ACC":
+        egoControllerProperties = xosc.Properties()
+        egoControllerProperties.add_property(name="timeGap", value="1.0")
+        egoControllerProperties.add_property(name="mode", value="override")
+        egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
+        return xosc.Controller(name="ACCController", properties=egoControllerProperties)
+    elif controller_name == "interactiveDriver":
+        return xosc.CatalogReference(catalogname="ControllerCatalog", entryname="interactiveDriver")
+    elif controller_name == "ROSController" or controller_name == "ROS":
+        return xosc.CatalogReference(catalogname="ControllerCatalog", entryname="ROSController")
 
+    print("Controller not found, use ACCController as default")
+    return xosc.CatalogReference(catalogname="ControllerCatalog", entryname="ACCController")
 
 def create_Entity(egoController, agentCount, pedCount, agentController):
     # construct CatalogReference
