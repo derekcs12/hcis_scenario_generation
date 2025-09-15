@@ -3,6 +3,8 @@
 **/__pycache__/
 *.xosc
 log.txt
+config/*
+
 
 # 忽略 scenario_config_ 開頭的備份料夾
 scenario_config*/

@@ -30,14 +30,14 @@ def create_ego_stroll_condition(time=25):
     Test Result: invalid
     """
     group = xosc.ConditionGroup()
-    connected_condition = xosc.VariableCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
+    connected_condition = xosc.VariableCondition("FLAG-AV_CONNECTED", "true", xosc.Rule.equalTo)
     connected_trigger = xosc.ValueTrigger(
         name="EgoStroll",
         delay=time,
         conditionedge=xosc.ConditionEdge.none,
         valuecondition=connected_condition
     )
-    event_started = xosc.VariableCondition("IS_VALID", "false", xosc.Rule.equalTo)
+    event_started = xosc.VariableCondition("FLAG-IS_VALID", "false", xosc.Rule.equalTo)
     event_started_trigger = xosc.ValueTrigger(
         name="EventStarted",
         delay=0,
@@ -54,6 +54,7 @@ def create_ego_tle_condition(Map, eventStartPoint, egoName, time=30):
     End Condition (2-b) - Ego TLE
     Test Result: Valid/Success
     """
+    """有助跑版本: 在經過trigger point後開始計時"""
     group = xosc.ConditionGroup()
     trigger = create_EntityTrigger_at_absolutePos(Map, eventStartPoint, egoName, delay=time, triggerName="EgoTLE")
     group.add_condition(trigger)
@@ -139,38 +140,38 @@ def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStart
     return group
 
 
-def create_stand_still_conditions(egoName,time=10):
-    """
-    End Condition (1-b) - Ego Get Stuck Condition
-    Test Result: Invalid
-    """
-    group = xosc.ConditionGroup()
-    stand_still = xosc.StandStillCondition(time)
-    stand_trigger = xosc.EntityTrigger(
-        name="EgoStandStill",
-        delay=0,
-        conditionedge=xosc.ConditionEdge.none,
-        entitycondition=stand_still,
-        triggerentity=egoName
-    )
-    has_moved = xosc.VariableCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
-    has_moved_trigger = xosc.ValueTrigger(
-        name="egoHasMoved",
-        delay=0,
-        conditionedge=xosc.ConditionEdge.none,
-        valuecondition=has_moved
-    )
-    event_started = xosc.VariableCondition("IS_VALID", "false", xosc.Rule.equalTo)
-    event_started_trigger = xosc.ValueTrigger(
-        name="EventStarted",
-        delay=0,
-        conditionedge=xosc.ConditionEdge.none,
-        valuecondition=event_started
-    )
-    group.add_condition(stand_trigger)
-    group.add_condition(has_moved_trigger)
-    group.add_condition(event_started_trigger)
-    return group
+# def create_stand_still_conditions(egoName,time=10):
+#     """
+#     End Condition (1-b) - Ego Get Stuck Condition
+#     Test Result: Invalid
+#     """
+#     group = xosc.ConditionGroup()
+#     stand_still = xosc.StandStillCondition(time)
+#     stand_trigger = xosc.EntityTrigger(
+#         name="EgoStandStill",
+#         delay=0,
+#         conditionedge=xosc.ConditionEdge.none,
+#         entitycondition=stand_still,
+#         triggerentity=egoName
+#     )
+#     has_moved = xosc.VariableCondition("AV_CONNECTED", "true", xosc.Rule.equalTo)
+#     has_moved_trigger = xosc.ValueTrigger(
+#         name="egoHasMoved",
+#         delay=0,
+#         conditionedge=xosc.ConditionEdge.none,
+#         valuecondition=has_moved
+#     )
+#     event_started = xosc.VariableCondition("IS_VALID", "false", xosc.Rule.equalTo)
+#     event_started_trigger = xosc.ValueTrigger(
+#         name="EventStarted",
+#         delay=0,
+#         conditionedge=xosc.ConditionEdge.none,
+#         valuecondition=event_started
+#     )
+#     group.add_condition(stand_trigger)
+#     group.add_condition(has_moved_trigger)
+#     group.add_condition(event_started_trigger)
+#     return group
 
     
 def create_timeout_condition(egoName, time=60):
@@ -188,7 +189,7 @@ def create_timeout_condition(egoName, time=60):
         valuecondition=condition,
     )
 
-    has_moved = xosc.VariableCondition("AV_CONNECTED", "false", xosc.Rule.equalTo)
+    has_moved = xosc.VariableCondition("FLAG-AV_CONNECTED", "false", xosc.Rule.equalTo)
     has_moved_trigger = xosc.ValueTrigger(
         name="EgoHasNotMoved",
         delay=0,

@@ -64,22 +64,69 @@ def create_flag_trigger(variable_name, value='true', delay=0, conditionedge=xosc
     return group
 
 
-def create_StopTrigger():
+def has_name(variable_list, name):
+    for var in variable_list:
+        if var['name'] == name:
+            return True
+    return False
+
+def av_connection_timeout_trigger(variable_dict): # 0
+    assert 'FLAG-AV_CONNECTION_TIMEOUT' in variable_dict and 'FLAG-AV_CONNECTED' in variable_dict, "Variable FLAG-AV_CONNECTION_TIMEOUT or FLAG-AV_CONNECTED not defined."
+    return create_flag_trigger('FLAG-AV_CONNECTION_TIMEOUT', 'true')
+
+def wrong_start_speed_trigger(variable_dict): # 1
+    assert 'FLAG-WRONG_START_SPEED' in variable_dict, "Variable FLAG-WRONG_START_SPEED not defined."
+    return create_flag_trigger('FLAG-WRONG_START_SPEED', 'true')
+
+def ego_reached_end_trigger(variable_dict): # 2
+    assert 'FLAG-EGO_REACHED_END' in variable_dict, "Variable FLAG-EGO_REACHED_END not defined."
+    return create_flag_trigger('FLAG-EGO_REACHED_END', 'true')
+
+def ego_tle_trigger(variable_dict): # 3
+    assert 'FLAG-EGO_TLE' in variable_dict, "Variable FLAG-EGO_TLE not defined."
+    return create_flag_trigger('FLAG-EGO_TLE', 'true')
+
+def ego_collision_trigger(variable_dict): # 4
+    assert 'FLAG-EGO_COLLISION' in variable_dict, "Variable FLAG-EGO_COLLISION not defined."
+    return create_flag_trigger('FLAG-EGO_COLLISION', 'true')
+
+def ego_stroll_trigger(variable_dict): # 5
+    assert 'FLAG-EGO_STROLL' in variable_dict, "Variable FLAG-EGO_STROLL not defined."
+    return create_flag_trigger('FLAG-EGO_STROLL', 'true')   
+
+end_condition_triggers = [av_connection_timeout_trigger,
+                          wrong_start_speed_trigger,
+                          ego_reached_end_trigger,
+                          ego_tle_trigger,
+                          ego_collision_trigger,
+                            ego_stroll_trigger]
+
+
+
+def create_StopTrigger(end_condition_indices, variable_dict):
     stopTrigger = xosc.Trigger('stop')
 
-    """NEW END CONDITIONS"""
-    # Condition 1 - AV Connection timeout => Invalid
-    stopTrigger.add_conditiongroup(create_flag_trigger('AV_CONNECTION_TIMEOUT', 'true'))
-    # Condition 2 - Wrong Start Speed => Invalid
-    stopTrigger.add_conditiongroup(create_flag_trigger('WRONG_START_SPEED', 'true'))
-    # Condition 3 - Ego reaches the target point => Valid/Success
-    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_REACHED_END', 'true'))
-    # Condition 4 - Ego TLE => Valid/Fail
-    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_TLE', 'true'))
-    # Condition 5 - Collision => Valid/Fail
-    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_COLLISION', 'true'))
-    # Condition 6 - Ego Stroll => Invalid
-    stopTrigger.add_conditiongroup(create_flag_trigger('EGO_STROLL', 'true'))
+    for idx in end_condition_indices:
+        if idx < 0 or idx >= len(end_condition_triggers):
+            print(f"Invalid end condition index: {idx}")
+            continue
+        stopTrigger.add_conditiongroup(end_condition_triggers[idx](variable_dict))
+
+    # """NEW END CONDITIONS"""
+    # # Condition 1 - AV Connection timeout => Invalid
+    # stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-AV_CONNECTION_TIMEOUT', 'true'))
+    # # Condition 2 - Wrong Start Speed => Invalid
+    # stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-WRONG_START_SPEED', 'true'))
+    # # Condition 3 - Ego reaches the target point => Valid/Success
+    # stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_REACHED_END', 'true'))
+    # # Condition 4 - Ego TLE => Valid/Fail
+    # stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_TLE', 'true'))
+    # # Condition 5 - Collision => Valid/Fail
+    # stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_COLLISION', 'true'))
+    # # Condition 6 - Ego Stroll => Invalid
+    # stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_STROLL', 'true'))
+
+
     
 
     return stopTrigger
@@ -117,3 +164,5 @@ def create_Trigger_following_previous(previousEventName, delay=0, state='init'):
     trigger = xosc.Trigger()
     trigger.add_conditiongroup(conditionGroup)
     return trigger
+
+

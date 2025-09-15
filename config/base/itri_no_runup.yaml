@@ -1,0 +1,47 @@
+company: ITRI # or HCIS
+
+store_path:
+  - "./test/itri"
+  - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+
+xodr_path: "../../xodr/itri/hct_6.xodr"
+
+ego:
+  name: "EGO"
+  controller: "ROSController"
+
+catalogs:
+  - name: VehicleCatalog
+    path: "../Catalogs/Vehicles"
+  - name: PedestrianCatalog
+    path: "../Catalogs/Pedestrians"
+  - name: ControllerCatalog
+    path: "../Catalogs/Controllers"
+
+variables:
+  - name: FLAG-AV_CONNECTED
+    type: boolean
+    value: false
+  - name: FLAG-IS_VALID
+    type: boolean
+    value: false
+  - name: FLAG-AV_CONNECTION_TIMEOUT
+    type: boolean
+    value: false
+  - name: VAL-AV_CONNECTION_TIMEOUT
+    type: double
+    value: 3.0
+  - name: FLAG-EGO_REACHED_END
+    type: boolean
+    value: false
+  - name: FLAG-EGO_TLE
+    type: boolean
+    value: false
+  - name: VAL-EGO_TLE
+    type: double
+    value: 5.0
+  - name: FLAG-EGO_COLLISION
+    type: boolean
+    value: false
+
+stop_conditions: [0, 2, 3, 4]
