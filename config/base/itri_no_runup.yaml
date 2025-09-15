@@ -1,13 +1,13 @@
 company: ITRI # or HCIS
 
-store_path:
+save_paths:
   - "./test/itri"
   - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
 
 xodr_path: "../../xodr/itri/hct_6.xodr"
 
 ego:
-  name: "EGO"
+  name: "Ego"
   controller: "ROSController"
 
 catalogs:
