@@ -18,8 +18,8 @@ config['Map'] = [144, 36]
 
 # egoStraightAsideLeft = {'Start_pos' : [0, -1, 40, 0, 1], 'End_pos': [1, 1, 10, 0, 1],'Start_speed': 40} # for [139, 166]
 # egoStraightAsideRight = {'Start_pos': [0, -2, 40, 0, 1], 'End_pos': [1, 2, 10, 0, 1],'Start_speed': 40} # for [139, 166]
-egoStraightAsideLeft = {'Start_pos' : [0, -1, 10, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 30} # for [144, 36]
-egoStraightAsideRight = {'Start_pos': [0, -2, 10, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 30} # for [144, 36]
+egoStraightAsideLeft = {'Start_pos' : [0, -1, 15, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 30} # for [144, 36]
+egoStraightAsideRight = {'Start_pos': [0, -2, 15, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 30} # for [144, 36]
 
 agentFromSameDirectionAsideLeft = [0, -1, 60, 0, 1]
 agentFromSameDirectionAsideRight = [0, -2, 60, 0, 1]
@@ -35,10 +35,10 @@ DynamicHaltDuration = 1 #1
 DynamicDelay = 1 #1
 
 BehaviorMode = {}
-BehaviorMode['keeping']  = ('Cruise.',AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay,'drivingForward','cruising') #等速
-BehaviorMode['braking'] = ('Braking.',AgentSpeed, AgentLowSpeed, DynamicDuration, 'linear', DynamicDelay,'drivingForward','braking')  #減速
-BehaviorMode['braking_halt'] = ('Braking & Halted halfway.',AgentSpeed, 0, DynamicHaltDuration, 'linear', DynamicDelay,'drivingForward','braking') #減速|未完成
-BehaviorMode['sudden_braking_halt'] = ('Sudden braking & Halted halfway.',AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', DynamicDelay,'drivingForward','braking')  #急煞|未完成
+# BehaviorMode['keeping']  = ('Cruise.',AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay,'drivingForward','cruising') #等速
+# BehaviorMode['braking'] = ('Braking.',AgentSpeed, AgentLowSpeed, DynamicDuration, 'linear', DynamicDelay,'drivingForward','braking')  #減速
+# BehaviorMode['braking_halt'] = ('Braking & Halted halfway.',AgentSpeed, 0, DynamicHaltDuration, 'linear', DynamicDelay,'drivingForward','braking') #減速|未完成
+# BehaviorMode['sudden_braking_halt'] = ('Sudden braking & Halted halfway.',AgentSpeed, 0, DynamicHaltDuration, 'sinusoidal', DynamicDelay,'drivingForward','braking')  #急煞|未完成
 BehaviorMode['speed_up'] = ( 'Speed up.',0, AgentSpeed, DynamicDuration-1, 'linear', DynamicDelay-1,'drivingForward','accelerating') #加速
     
 
@@ -62,7 +62,7 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 50, 0, 1]
+    egoTriggerAt = [0, -1, 20, 0, 1]
     agent1_lat_mode = 'changingLane'
     agent1_lat_direction = 'left'
     agent1_init_direction = 'sameAsEgo'
@@ -102,7 +102,7 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 50, 0, 1]
+    egoTriggerAt = [0, -1, 20, 0, 1]
     agent1_lat_mode = 'changingLane'
     agent1_lat_direction = 'left'
     agent1_init_direction = 'sameAsEgo'
@@ -142,7 +142,7 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 50, 0, 1]
+    egoTriggerAt = [0, -1, 20, 0, 1]
     agent1_lat_mode = 'changingLane'
     agent1_lat_direction = 'right'
     agent1_init_direction = 'sameAsEgo'
@@ -181,7 +181,7 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
     
-    egoTriggerAt = [0, -1, 50, 0, 1]
+    egoTriggerAt = [0, -1, 20, 0, 1]
     agent1_lat_mode = 'goingStraight'
     agent1_lat_direction = ''
     agent1_init_direction = 'sameAsEgo'
@@ -220,7 +220,7 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 50, 0, 1]
+    egoTriggerAt = [0, -1, 20, 0, 1]
     agent1_lat_mode = 'goingStraight'
     agent1_lat_direction = ''
     agent1_init_direction = 'sameAsEgo'
@@ -265,7 +265,7 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
         
         # 固定ego trigger 點，來設置agent 起始位置
-        egoTriggerAt = [0, -1, 50, 0, 1]
+        egoTriggerAt = [0, -1, 20, 0, 1]
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
@@ -310,7 +310,7 @@ if 1:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
         
-        egoTriggerAt = [0, -1, 50, 0, 1]
+        egoTriggerAt = [0, -1, 20, 0, 1]
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
@@ -360,7 +360,7 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
         
         # 固定ego trigger 點，來設置agent 起始位置
-        egoTriggerAt = [0, -1, 50, 0, 1]
+        egoTriggerAt = [0, -1, 20, 0, 1]
         agent1_lat_mode = 'changingLane'
         agent1_lat_direction = 'right' if relative_pos[1] == 'L' else 'left'
         agent1_init_direction = 'sameAsEgo'
@@ -404,7 +404,7 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
     
         # 固定ego trigger 點，來設置agent 起始位置
-        egoTriggerAt = [0, -1, 50, 0, 1]
+        egoTriggerAt = [0, -1, 20, 0, 1]
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
