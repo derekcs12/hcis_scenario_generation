@@ -560,15 +560,14 @@ if __name__ == '__main__':
                 #     print(' ZZ, skipped.')
                 #     continue     
                   
-                # # 僅上傳10個 sample scenarios 供itri快速測試
-                # target_scenarios = [
+                # sample_scenarios = [
                 #     '01BL-KEEP_02FS-ZZ_3.xosc', '01BL-KEEP_02SR-ZZ_5.xosc', 
                 #     '01FR-ZZ_02FR-CI_2.xosc', '01FL-TL_14.xosc', 
                 #     '01BL-TR_02SL-TR_50.xosc', '01BR-KEEP_02SR-ZZ_1.xosc', 
                 #     '01FR-CI_02SR-CI_24.xosc', '01FL-ZZ_02FR-CI_13.xosc', 
                 #     '01FL-TL_02FR-TL_1121.xosc', '01FL-KEEP_02FR-TL_254.xosc'
                 # ]
-                # if scenario_id not in target_scenarios:
+                # if scenario_id not in sample_scenarios:
                 #     continue
 
                 print(f"\n[MAIN] Processing scenario: {scenario_id}")
