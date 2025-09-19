@@ -1,7 +1,8 @@
 import os
+from pprint import pprint
 from time import time
 import numpy as np
-from scenariogeneration import xosc, prettyprint
+from scenariogeneration import xosc, prettyprint, esmini
 from utils.position import create_LanePosition_from_config
 from utils.trigger import create_StopTrigger
 from utils.condition import (
@@ -28,7 +29,7 @@ from utils.event import (
 
 
 
-def generate(base_config, scenario_config, company='HCISLab'):
+def generate(base_config, scenario_config):
     
     # === 基本參數與 Actor 數量 ===
     EgoName = base_config['ego'].get('name', 'Ego')

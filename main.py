@@ -1,7 +1,7 @@
 import os
 import yaml
 import argparse
-from generate import generate
+from generate import generate, esmini
 import argcomplete
 import random
 
@@ -47,6 +47,11 @@ def parse_args():
         metavar='CONTROLLER',
         default='',
         help='Controller name (default: None)')
+    argparser.add_argument(
+        '--esmini-path',
+        type=valid_path,
+        default=None,
+        help='Esmini path')
     
     argcomplete.autocomplete(argparser)
     return argparser.parse_args()
@@ -77,8 +82,8 @@ def main():
     scenario_configs = []
     if args.config == 'all':
         # collect all files in the folder
-        scenario_configs.extend(collect_scenarios('./scenario_config'))
-        scenario_configs.extend(collect_scenarios('./scenario_config_additional'))
+        scenario_configs.extend(collect_scenarios('./config/scenario_config'))
+        scenario_configs.extend(collect_scenarios('./config/scenario_config_combined'))
     elif args.config.endswith('.yaml'):
         # collect single file
         with open(args.config,'r') as f:
@@ -96,6 +101,9 @@ def main():
 
         # Generate xosc 
         sce = generate(base_config, scenario_config)
+        
+        if args.esmini_path is not None:
+            esmini(sce, esminipath=args.esmini_path, window_size="60 60 1920 1080")
 
         # Save xosc
         for path in base_config['save_paths']:
