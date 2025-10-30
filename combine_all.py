@@ -15,7 +15,7 @@ def combine_all_scenarios(basic_scenarios_folder):
     # Define save folder
     # save_root = f'scenario_config_combined/{datetime.datetime.now()}'
     # save_root = f'scenario_config_combined/{datetime.datetime.date(datetime.datetime.now())}'
-    save_root = f'scenario_config_combined'
+    save_root = f'config/scenario_config_combined'
 
     # Create save folder
     if not os.path.exists(save_root):
@@ -29,8 +29,8 @@ def combine_all_scenarios(basic_scenarios_folder):
     for cata1, cata2 in tqdm(cata_combinations):
         success = True
         # get the number of scenarios in each folder
-        cata_1s = len(glob.glob(os.path.join(f'./scenario_config/{cata1}', '*.yaml'), recursive=False))
-        cata_2s = len(glob.glob(os.path.join(f'./scenario_config/{cata2}', '*.yaml'), recursive=False))
+        cata_1s = len(glob.glob(os.path.join(f'./config/scenario_config/{cata1}', '*.yaml'), recursive=False))
+        cata_2s = len(glob.glob(os.path.join(f'./config/scenario_config/{cata2}', '*.yaml'), recursive=False))
 
         # get all combinations of scenarios (scenario's index starts from 1)
         sce_combinations = list(itertools.product(range(1,cata_1s+1), range(1,cata_2s+1)))
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     argparser.add_argument(
         '-f', '--folder',
         metavar='FOLDER',
-        default='scenario_config',
+        default='config/scenario_config',
         type=str,
         help='basic scenario folder')
     

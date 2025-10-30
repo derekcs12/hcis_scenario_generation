@@ -32,6 +32,7 @@ class ScenarioContent:
             'init_long_pos': None,
             'S': '0~20',
             'Speed': '0~20',
+            'Offset': '0~0',
             '1_SA_EndSpeed': None,
             '1_SA_DynamicDuration': None,
             '1_SA_DynamicDelay': None,
@@ -255,7 +256,7 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
                'Agent1_type', 'Agent1_long_mode', 'Agent1_long_mode_type', 'Agent1_lat_mode', 'Agent1_lat_direction',
                'Agent1_init_direction', 'Agent1_init_dynm', 'Agent1_init_lat_pos', 'Agent1_init_long_pos',
                'Agent1_S','Agent1_Speed','Agent1_1_SA_EndSpeed','Agent1_1_SA_DynamicDuration','Agent1_1_SA_DynamicDelay', # BehaviorMode Parameters
-               'Agent1_Offset', 'Agent1_TA_Offset',
+               'Agent1_Offset',
               ]   
     
     for col in content[0].keys():
@@ -289,7 +290,7 @@ def write_to_scenario_table(scenario_id, content, file_path='./HCIS_scenarios.cs
             writer.writerows(content_with_id)
 
 
-def _get_next_id_in_folder(folder_name, directory='./scenario_config'):
+def _get_next_id_in_folder(folder_name, directory='./config/scenario_config'):
     file_path = f'{directory}/{folder_name}/'
     ensure_folder_exists(file_path)
     # Regular expression to match filenames with format {party}_{scenario_id}
@@ -340,7 +341,8 @@ def _get_param_by_behaviormode(behavior_type):
         return ['0~20','40~60','0~0','0.5~2','0~3', '0~2', '5~5', '0~1'] 
         # return ['0~20','40~60','0~0','0.5~2', '5~5'] 
     elif behavior_type == 'speed_up':    
-        return ['0~20','0~10','40~60','2~4','0~2', '0~2', '5~5', '0~1']
+        return ['0~20','0~0','20~60','2~4','0~2', '0~2', '5~5', '0~1'] #因ITRI要求agent只能從0開始, 在ego車速30下, 無法與前車產生互動, 故調大末速range提升與前車互動機率
+        # return ['0~20','0~0','40~60','2~4','0~2', '0~2', '5~5', '0~1']
         # return ['0~20','0~10','40~60','2~4', '5~5']
 
 def _get_tag(value, param_name):
@@ -370,9 +372,9 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
         'init_dynm': _get_tag(behavior[1], 'init_dynm'),
         'init_lat_pos': _get_tag(initRelPostAbbvLat, 'init_lat_pos'),
         'init_long_pos': _get_tag(initRelPostAbbvLon, 'init_long_pos'),
-        'S': _get_param_by_behaviormode(behavior_type)[0],
+        'S': '0~0', #_get_param_by_behaviormode(behavior_type)[0],  工研院不用Agent_S, 確保Agent在安全距離外
         'Speed': _get_param_by_behaviormode(behavior_type)[1],
-        '1_DynamicDelay': '0~0', # _get_param_by_behaviormode(behavior_type)[5]
+        '1_Delay': '0~0', # _get_param_by_behaviormode(behavior_type)[5]
         '1_SA_EndSpeed': _get_param_by_behaviormode(behavior_type)[2],
         '1_SA_DynamicDuration': _get_param_by_behaviormode(behavior_type)[3],
         '1_SA_DynamicDelay': '0~0', # _get_param_by_behaviormode(behavior_type)[4]
@@ -404,6 +406,10 @@ def generate_csv_content(behavior, behavior_type, descript, lateral_behavior, sc
             except ValueError:
                 # 若格式錯誤，跳過
                 pass
+
+    # 1027 工研院需求調整： 地圖問題直線不夠長, 避免CI變CO
+    if 'FR-CI' in scenario_name:
+        content.agents[0]['1_SA_EndSpeed'] = '20~30'  # 降低末速，增加切入成功率
 
 
     # Customize Parameter Range
@@ -451,12 +457,12 @@ def clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agen
     next_id = _get_next_id_in_folder(name_attribute)
     scenario_name = f'{name_attribute}_{next_id}'
     config['Scenario_name'] = scenario_name
-    save_config_yaml(config, f'./scenario_config/{name_attribute}/{next_id}.yaml')
+    save_config_yaml(config, f'./config/scenario_config/{name_attribute}/{next_id}.yaml')
 
     isZigzag = True if agent1_act['Type'] == 'zigzag' else False
     csv_row = generate_csv_content(behavior, behavior_type, descript, lateral_behavior, scenario_name, route, initRelPostAbbvLat, initRelPostAbbvLon, cetranNo,  agent1_lat_mode, agent1_lat_direction, agent1_init_direction, isZigzag)
     # print(csv_row);exit()
-    write_to_scenario_table(next_id, [csv_row], file_path= f'./scenario_config/{name_attribute}/{next_id}.csv')
+    write_to_scenario_table(next_id, [csv_row], file_path= f'./config/scenario_config/{name_attribute}/{next_id}.csv')
 
 
 
@@ -473,20 +479,20 @@ def set_offset(content, descript, lateral_behavior, agent1_init_direction):
     # _Offset: 起始偏移量, _TA_Offset: 結束偏移量
     if 'CI' in lateral_behavior or 'CO' in lateral_behavior:
         if is_motorcycle_left():
-            agent.update({'1_Offset': '-1.5~-0.5'})
+            agent.update({'Offset': '-1.5~-0.5'})
         elif is_motorcycle_right():
-            agent.update({'1_Offset': '0.5~1.5'})
+            agent.update({'Offset': '0.5~1.5'})
         else:
-            agent.update({'1_Offset': '-1.5~1.5'})
+            agent.update({'Offset': '-1.5~1.5'})
             agent.update({'1_TA_Offset': '-1.5~1.5'})
 
     elif ('U turn' in descript or 'turning left' in descript) and agent1_init_direction == 'sameAsEgo':
         if 'R-M2' in descript:
-            agent.update({'1_Offset': '-1.5~-0.5'})
+            agent.update({'Offset': '-1.5~-0.5'})
         elif 'R-M3' in descript:
-            agent.update({'1_Offset': '0.5~1.5'})
+            agent.update({'Offset': '0.5~1.5'})
         elif any(tag in descript for tag in ['-3', '-5', '-8']):
-            agent.update({'1_Offset': '-1.5~1.5'})
+            agent.update({'Offset': '-1.5~1.5'})
 
     elif 'U turn' in descript and agent1_init_direction == 'oncoming':
         agent.update({'1_TA_Offset': '-1.5~1.5'})

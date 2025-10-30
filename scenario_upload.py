@@ -19,7 +19,7 @@ from utils.assign_route import process_yaml_file
 
 """
 Usage:
-    python scenario_upload.py -s queue
+    python scenario_upload.py -s sample
 """
 
 RUNTIME_DATA_DIR = 'runtime_data'
@@ -45,18 +45,21 @@ if 'init':
     tags_to_be_used_in_created_scenario = [
         # "behavior:intersection",
         "party:hcis",
-        "deliver:2025Jul",
+        "deliver:2025Oct",
         "field:hct",
         "vehicle:car",
         "ego-behavior:go-straight",
         "roadtype:main-roadway",
         # "combination:none",
         # "edit:5-parameter",
-        "edit:raw-param-range",
-        "edit:10-sample-scenarios",
+        "edit:narrow-param-range",
+        "edit:full-scenarios",
         # "edit:zz_range",
         # "edit:new_stop_condition",
         "edit:ego_speed_30",
+        "edit:ego_norunup",
+        "edit:agent_from_standstill",
+        "edit:ego_start_clearanece",
     ]
         
     
@@ -245,9 +248,9 @@ def upload(scenario_id):
     scenario_id = scenario_id.replace(".xosc", "")  # Remove the .xosc extension for consistency
     
     if "_" in scenario_folder:
-        parent_folder = "scenario_config_combined"
+        parent_folder = "config/scenario_config_combined"
     else:
-        parent_folder = "scenario_config"
+        parent_folder = "config/scenario_config"
     # print(f'./scenario_config/{scenario_folder}/{scenario_index}.csv')
     # exit()
 
@@ -304,9 +307,10 @@ def upload(scenario_id):
 
     # Only if these conditions are triggered will the trial be considered valid
     valid_conditions = {
-        "conditionLogic": "Or",  # Available options: "And", "Or"
+        "conditionLogic": "And",  # Available options: "And", "Or"
         "conditions": [
-            "IS_VALID_Trigger",
+            "FLAG-AV_CONNECTED_Trigger",
+            "EgoHasMoved"
         ]
     }
     
@@ -314,9 +318,7 @@ def upload(scenario_id):
     invalid_conditions = {
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "AV_CONNECTION_TIMEOUT_Trigger",
-            "WRONG_START_SPEED_Trigger",
-            "EGO_STROLL_Trigger",
+            "FLAG-AV_CONNECTION_TIMEOUT_Trigger",
         ]
     }
     
@@ -324,8 +326,8 @@ def upload(scenario_id):
     fail_conditions = {
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "EGO_TLE_Trigger",
-            "EGO_COLLISION_Trigger",
+            "FLAG-EGO_TLE_Trigger",
+            "FLAG-EGO_COLLISION_Trigger",
         ]
     }
     
@@ -333,12 +335,10 @@ def upload(scenario_id):
     end_conditions = {
         "conditionLogic": "Or",  # Available options: "And", "Or"
         "conditions": [
-            "AV_CONNECTION_TIMEOUT_Trigger",
-            "WRONG_START_SPEED_Trigger",
-            "EGO_REACHED_END_Trigger",
-            "EGO_TLE_Trigger",
-            "EGO_COLLISION_Trigger",
-            "EGO_STROLL_Trigger",
+            "FLAG-AV_CONNECTION_TIMEOUT_Trigger",
+            "FLAG-EGO_REACHED_END_Trigger",
+            "FLAG-EGO_TLE_Trigger",
+            "FLAG-EGO_COLLISION_Trigger",
         ]
     }
     
@@ -361,7 +361,8 @@ def upload(scenario_id):
 
     observation_recording_agents = []
 
-    folder = date.today().strftime("%m%d")
+    # folder = date.today().strftime("%m%d")
+    folder = '1027'
     filename = f"{result['scenario_name']}"
     file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{filename}.xosc"
 
@@ -391,10 +392,11 @@ def upload(scenario_id):
     all_scenarios = dict((scenario["scenarioId"], scenario) for scenario in scenarios_doc)
     
     if scenario_id in all_scenarios.keys():
-        scenario_id_to_update = all_scenarios[scenario_id]["id"]
-        print(f"   [SCENARIO] Scenario exists, updating by ID: {scenario_id_to_update}...")
-        r = requests.patch(f"{base_url}/scenarios/{scenario_id_to_update}", headers=headers, json=data)
-        time.sleep(3)
+        return True
+        # scenario_id_to_update = all_scenarios[scenario_id]["id"]
+        # print(f"   [SCENARIO] Scenario exists, updating by ID: {scenario_id_to_update}...")
+        # r = requests.patch(f"{base_url}/scenarios/{scenario_id_to_update}", headers=headers, json=data)
+        # time.sleep(3)
     else:
         print("   [SCENARIO] Scenario does not exist, creating new...")
         r = requests.post(f"{base_url}/scenarios", headers=headers, json=data)
@@ -404,14 +406,14 @@ def upload(scenario_id):
         print(f"   [SCENARIO] {r.json().get('message')}")
         if ((r.status_code == 201 and r.json().get("message") == "Scenario successfully created.") or
            (r.status_code == 200 and r.json().get("message") == "Updated successfully.")):
-            # 更新預覽圖和影片
-            print("   [SCENARIO] Updating preview schematic and video...")
-            update_url = f"{base_url}/updatePreviewSchematicAndVideo/{scenario_id}"
-            r = requests.post(
-                update_url,
-                headers=headers
-            )
-            print(f"   [SCENARIO] {r.json().get('message')}")
+            # # 更新預覽圖和影片
+            # print("   [SCENARIO] Updating preview schematic and video...")
+            # update_url = f"{base_url}/updatePreviewSchematicAndVideo/{scenario_id}"
+            # r = requests.post(
+            #     update_url,
+            #     headers=headers
+            # )
+            # print(f"   [SCENARIO] {r.json().get('message')}")
             return 1
         else:
             print("status", r.status_code)
@@ -450,7 +452,7 @@ if __name__ == '__main__':
         
         # 載入none-critical scenario清單（從檔案讀取）
         non_critical_scenarios = []
-        non_critical_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0806.txt'
+        non_critical_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_1027.txt'
         with open(non_critical_file_path, 'r') as file:
             for line in file:
                 line = line.strip()
@@ -463,23 +465,27 @@ if __name__ == '__main__':
         # 載入已成功上傳的情境清單
         already_uploaded_scenarios = []
         success_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/success_upload_scenario.txt'
-        with open(success_file_path, 'r') as file:
-            for line in file:
-                line = line.strip()
-                if line:
-                    already_uploaded_scenarios.append(line)
+        if os.path.exists(success_file_path):
+            with open(success_file_path, 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    if line:
+                        already_uploaded_scenarios.append(line)
         
         # 合併所有要跳過的檔案
         non_critical_scenarios += manually_skipped_files
+        
 
         scenario_ids = args.sc
         
-        if args.sc[0] == 'all' and 0:
+        if args.sc[0] == 'all':
             scenario_ids = []
             prefix_dict = {}
+            non_critical_scenarios += already_uploaded_scenarios
             
             # 請修改路徑
             folder = date.today().strftime("%m%d")
+            folder = '1029'
             xosc_dir = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/"
             for file in os.listdir(xosc_dir):
                 if file.endswith('.xosc'):
@@ -535,6 +541,17 @@ if __name__ == '__main__':
             print("Upload scenarios from queue list...")
             success_upload = 0
             
+            # 載入none-critical scenario清單（從檔案讀取）
+            non_critical_scenarios = []
+            non_critical_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_1027.txt'
+            with open(non_critical_file_path, 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    if line:
+                        scenario_name = line.replace('_metrics.csv', '.xosc')
+                        non_critical_scenarios.append(scenario_name)
+
+
             queue_file_path = f'{RUNTIME_DATA_DIR}/scenario_queue.txt'
             with open(queue_file_path, 'r') as queue_file:
                 scenario_ids = [line.strip() for line in queue_file.readlines()]
@@ -559,17 +576,14 @@ if __name__ == '__main__':
                 # if 'ZZ' in scenario_id:
                 #     print(' ZZ, skipped.')
                 #     continue     
-                  
-                # sample_scenarios = [
-                #     '01BL-KEEP_02FS-ZZ_3.xosc', '01BL-KEEP_02SR-ZZ_5.xosc', 
-                #     '01FR-ZZ_02FR-CI_2.xosc', '01FL-TL_14.xosc', 
-                #     '01BL-TR_02SL-TR_50.xosc', '01BR-KEEP_02SR-ZZ_1.xosc', 
-                #     '01FR-CI_02SR-CI_24.xosc', '01FL-ZZ_02FR-CI_13.xosc', 
-                #     '01FL-TL_02FR-TL_1121.xosc', '01FL-KEEP_02FR-TL_254.xosc'
-                # ]
-                # if scenario_id not in sample_scenarios:
-                #     continue
+                # if scenario_id != '01FR-TR_1.xosc':
+                #         continue
 
+                if scenario_id in non_critical_scenarios:
+                        print(f'Skipped {scenario_id}. None-critical scenario.')
+                        # success_upload += 1
+                        continue
+                
                 print(f"\n[MAIN] Processing scenario: {scenario_id}")
                 if upload(scenario_id):
                     success_upload += 1
@@ -579,6 +593,72 @@ if __name__ == '__main__':
                 else:
                     print(f"[MAIN] ✗ Failed to upload: {scenario_id}")
                     
+        elif args.sc[0] == 'sample':
+            print("Upload scenarios from sample list...")
+            success_upload = 0
+            
+            # 載入none-critical scenario清單（從檔案讀取）
+            non_critical_scenarios = []
+            non_critical_file_path = f'/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0919.txt'
+            with open(non_critical_file_path, 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    if line:
+                        scenario_name = line.replace('_metrics.csv', '.xosc')
+                        non_critical_scenarios.append(scenario_name)
+
+            # sample_scenarios = [
+            #     '01BL-KEEP_02FS-ZZ_3.xosc', '01BL-KEEP_02SR-ZZ_5.xosc', 
+            #     '01FR-ZZ_02FR-CI_2.xosc', '01FL-TL_14.xosc', 
+            #     '01BL-TR_02SL-TR_50.xosc', '01BR-KEEP_02SR-ZZ_1.xosc', 
+            #     '01FR-CI_02SR-CI_24.xosc', '01FL-ZZ_02FR-CI_13.xosc', 
+            #     '01FL-TL_02FR-TL_1121.xosc', '01FL-KEEP_02FR-TL_254.xosc'
+            # ]
+
+
+            sample_scenarios = [                    
+                '01FS-CO_02SR-CI_5.xosc', #None-critical
+
+
+                '01BL-KEEP_02FS-ZZ_1.xosc', 
+                '01SR-CI_13.xosc', #None-critical
+
+                '01FS-TR_02SR-TR_1.xosc', 
+
+
+                '01BR-KEEP_02FS-ZZ_1.xosc',
+
+
+
+                '01SL-KEEP_02FR-ZZ_1.xosc',  #None-critical
+                # '01FL-TR_02FR-TR_1.xosc', #----
+                # '01SR-TR_02SL-TR_1.xosc', #後面撞 
+                '01FL-ZZ_02FR-CI_1.xosc',
+                # '01FS-CO_02FR-CI_3.xosc',  #不自然 
+                # '01FR-CI_02SR-CI_3.xosc',  #後面撞  <----
+                '01BL-TR_02SL-TR_1.xosc', 
+                '01SL-TL_02FS-TL_3.xosc',
+                '01SR-TL_02FR-TL_10.xosc',
+            ]
+
+            for scenario_id in tqdm(sample_scenarios):
+            # for scenario_id in ['01FS-ZZ_02SR-ZZ_3']:
+                
+                if scenario_id in non_critical_scenarios:
+                        print(f'Skipped {scenario_id}. None-critical scenario.')
+                        # success_upload += 1
+                        continue
+                
+                print(f"\n[MAIN] Processing scenario: {scenario_id}")
+                if upload(scenario_id):
+                    success_upload += 1
+                    print(f"[MAIN] ✓ Successfully processed {scenario_id}")
+                    # break
+                    # success_file.write(f"{scenario_id}\n")
+                else:
+                    print(f"[MAIN] ✗ Failed to upload: {scenario_id}")
+
+
     finally:
         clear_cache_file()
         print(f'\n[MAIN] Upload completed! Successfully processed {success_upload} scenarios.')

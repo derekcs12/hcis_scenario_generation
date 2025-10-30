@@ -16,8 +16,8 @@ def combine_csv_files():
     
     # 定義要掃描的目錄
     target_dirs = [
-        script_dir / "scenario_config",
-        script_dir / "scenario_config_combined"
+        script_dir / "config/scenario_config",
+        script_dir / "config/scenario_config_combined"
     ]
     
     all_dataframes = []

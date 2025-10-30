@@ -7,7 +7,8 @@ import random
 
 """
  Usage:
-    python main.py -c all
+    python main.py -b config/base/hcis_no_runup.yaml -c all
+    python main.py -b config/base/hcis_no_runup.yaml -c all --esmini-path /home/hcis-s19/Documents/ChengYu/esmini  #(跑完自動開啟esmini)
 """
 
 def valid_path(path):

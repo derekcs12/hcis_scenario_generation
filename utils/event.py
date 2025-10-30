@@ -159,8 +159,8 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
         console = console.Console()
         # console.log(currentPosition);exit()
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
-        # nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s = 0))) #與出發點同道之進入路口點，加這個點軌跡比較自然
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #與出發點同道之進入路口點，加這個點軌跡比較自然
+        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s = 0))) #與出發點同道之進入路口點，加這個點軌跡比較自然
+        # nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #與出發點同道之進入路口點，加這個點軌跡比較自然
         if event['Use_route'] != None:
             nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
                 road_center[0], road_center[1]), weight=0.5))  # 路口中心

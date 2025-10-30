@@ -18,8 +18,8 @@ config['Map'] = [144, 36]
 
 # egoStraightAsideLeft = {'Start_pos' : [0, -1, 40, 0, 1], 'End_pos': [1, 1, 10, 0, 1],'Start_speed': 40} # for [139, 166]
 # egoStraightAsideRight = {'Start_pos': [0, -2, 40, 0, 1], 'End_pos': [1, 2, 10, 0, 1],'Start_speed': 40} # for [139, 166]
-egoStraightAsideLeft = {'Start_pos' : [0, -1, 15, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 30} # for [144, 36]
-egoStraightAsideRight = {'Start_pos': [0, -2, 15, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 30} # for [144, 36]
+egoStraightAsideLeft = {'Start_pos' : [0, -1, 10, 0, 1], 'End_pos': [1, -1, 10, 0, 1],'Start_speed': 30} # for [144, 36]
+egoStraightAsideRight = {'Start_pos': [0, -2, 10, 0, 1], 'End_pos': [1, -2, 10, 0, 1],'Start_speed': 30} # for [144, 36]
 
 agentFromSameDirectionAsideLeft = [0, -1, 60, 0, 1]
 agentFromSameDirectionAsideRight = [0, -2, 60, 0, 1]
@@ -62,7 +62,8 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 20, 0, 1]
+    # egoTriggerAt = [0, -1, 20, 0, 1]
+    egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
     agent1_lat_mode = 'changingLane'
     agent1_lat_direction = 'left'
     agent1_init_direction = 'sameAsEgo'
@@ -82,7 +83,7 @@ if 1:
 
     agent1_lat_event = {}
     agent1_lat_event['Type'] = 'cut'
-    agent1_lat_event['Dynamic_delay'] = 0
+    agent1_lat_event['Dynamic_delay'] = 4
     agent1_lat_event['Dynamic_duration'] = 2.5
     agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
     agent1_lat_event['End'] = [-1, 0]
@@ -102,7 +103,8 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 20, 0, 1]
+    # egoTriggerAt = [0, -1, 20, 0, 1]
+    egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
     agent1_lat_mode = 'changingLane'
     agent1_lat_direction = 'left'
     agent1_init_direction = 'sameAsEgo'
@@ -122,7 +124,7 @@ if 1:
 
     agent1_lat_event = {}
     agent1_lat_event['Type'] = 'cut'
-    agent1_lat_event['Dynamic_delay'] = 0
+    agent1_lat_event['Dynamic_delay'] = 4
     agent1_lat_event['Dynamic_duration'] = 2.5
     agent1_lat_event['Dynamic_shape'] = 'linear'
     agent1_lat_event['End'] = [-1, 0]
@@ -142,7 +144,8 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 20, 0, 1]
+    # egoTriggerAt = [0, -1, 20, 0, 1]
+    egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
     agent1_lat_mode = 'changingLane'
     agent1_lat_direction = 'right'
     agent1_init_direction = 'sameAsEgo'
@@ -163,7 +166,7 @@ if 1:
 
     agent1_lat_event = {}
     agent1_lat_event['Type'] = 'cut'
-    agent1_lat_event['Dynamic_delay'] = 0
+    agent1_lat_event['Dynamic_delay'] = 2
     agent1_lat_event['Dynamic_duration'] = 2.5
     agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
     agent1_lat_event['End'] = [-2, 0] #set_agentpos_relative_to_egopos(config['Ego']['Start_pos'], s_offset=1) 
@@ -181,7 +184,8 @@ if 1:
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
     
-    egoTriggerAt = [0, -1, 20, 0, 1]
+    # egoTriggerAt = [0, -1, 20, 0, 1]
+    egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
     agent1_lat_mode = 'goingStraight'
     agent1_lat_direction = ''
     agent1_init_direction = 'sameAsEgo'
@@ -213,14 +217,15 @@ if 1:
         clone_behavior_mode_and_wriite_content(behavior_type, behavior, agent1, agent1_act, agent1_lat_event, config, initRelPostAbbvLat, initRelPostAbbvLon, lateral_behavior, descript, agent1_lat_mode, agent1_lat_direction, agent1_init_direction)
         
 # keeping at 2 far
-if 1:
+if False:
     lateral_behavior = 'KEEP'
     descript == "keeping at 2 far"
     relative_pos = 'FS-2'
     initRelPostAbbvLon = relative_pos[0]
     initRelPostAbbvLat = relative_pos[1]
 
-    egoTriggerAt = [0, -1, 20, 0, 1]
+    # egoTriggerAt = [0, -1, 20, 0, 1]
+    egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
     agent1_lat_mode = 'goingStraight'
     agent1_lat_direction = ''
     agent1_init_direction = 'sameAsEgo'
@@ -265,7 +270,8 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
         
         # 固定ego trigger 點，來設置agent 起始位置
-        egoTriggerAt = [0, -1, 20, 0, 1]
+        # egoTriggerAt = [0, -1, 20, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
@@ -292,7 +298,7 @@ if 1:
         agent1_lat_event['Dynamic_duration'] = 0.3
         agent1_lat_event['Dynamic_shape'] = 1.5
         agent1_lat_event['End'] = [1, 1, 30, 0, 1]
-        agent1_lat_event['Use_route'] = 3
+        agent1_lat_event['Use_route'] = 2
 
         
         for behavior_type, behavior in BehaviorMode.items():
@@ -305,12 +311,21 @@ if 1:
     agent1['Type'] = 'bicycle'
     lateral_behavior = 'KEEP'
     for relative_pos in ["FL-M1","FR-M1","SL-M1","SR-M1","BL-M1","BR-M1"]:
+    # for relative_pos in ["FL-M1","FR-M1","SL-M1","SR-M1"]:
         descript = f"Bike keeping at nearside {relative_pos[:2]}"
         # relative_pos = 'FS-2'
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
         
-        egoTriggerAt = [0, -1, 20, 0, 1]
+        # egoTriggerAt = [0, -1, 20, 0, 1]
+        # # 直線不夠長, ego基本從s=0,BL/BR的時候再往前提
+        # if 'B' in relative_pos:
+        #     config['Ego'] = egoStraightAsideLeftFar
+        #     egoTriggerAt = egoStraightAsideLeftFar['Start_pos'] # 改成trigger = ego start pos
+        # else:
+        #     config['Ego'] = egoStraightAsideLeft
+        #     egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
+
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
@@ -360,7 +375,8 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
         
         # 固定ego trigger 點，來設置agent 起始位置
-        egoTriggerAt = [0, -1, 20, 0, 1]
+        # egoTriggerAt = [0, -1, 20, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'changingLane'
         agent1_lat_direction = 'right' if relative_pos[1] == 'L' else 'left'
         agent1_init_direction = 'sameAsEgo'
@@ -381,7 +397,7 @@ if 1:
 
         agent1_lat_event = {}
         agent1_lat_event['Type'] = 'cut'
-        agent1_lat_event['Dynamic_delay'] = 0
+        agent1_lat_event['Dynamic_delay'] = 4
         agent1_lat_event['Dynamic_duration'] = 2.5
         agent1_lat_event['Dynamic_shape'] = 'sinusoidal'
         agent1_lat_event['End'] = end_lane
@@ -404,7 +420,8 @@ if 1:
         initRelPostAbbvLat = relative_pos[1]
     
         # 固定ego trigger 點，來設置agent 起始位置
-        egoTriggerAt = [0, -1, 20, 0, 1]
+        # egoTriggerAt = [0, -1, 20, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = ''
         agent1_init_direction = 'sameAsEgo'
@@ -431,7 +448,7 @@ if 1:
         agent1_lat_event['Dynamic_duration'] = 0.3
         agent1_lat_event['Dynamic_shape'] = 1.5
         agent1_lat_event['End'] = [1, 1, 30, 0, 1]
-        agent1_lat_event['Use_route'] = 3
+        agent1_lat_event['Use_route'] = 2
 
     
         for behavior_type, behavior in BehaviorMode.items():

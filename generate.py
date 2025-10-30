@@ -58,7 +58,7 @@ def generate(base_config, scenario_config):
 
 
     # === 3. 建立 Entities (Ego + Agents + Pedestrians)(document:xosc.Entities) ===
-    agentController = xosc.Controller(name="ALKSController", properties=xosc.Properties())
+    agentController = xosc.Controller(name="IgnoreEgoACCController", properties=xosc.Properties())
     entities = create_Entity(egoController, agentCount, pedCount, agentController=agentController)
 
 

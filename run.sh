@@ -11,7 +11,9 @@ python combine_all.py
 python scripts/combine_csv_files.py
 
 # Turn .yaml into .xosc
-python main.py -c all
+python main.py -b config/base/hcis_no_runup.yaml -c all
+# python main.py -b config/base/itri_no_runup.yaml -c all
+# python main.py -b config/base/hcis_no_runup.yaml -c all --esmini-path /home/hcis-s19/Documents/ChengYu/esmini
 
 # Upload .xosc with csv's paramerter ranges to itri payload
 # python scenario_upload.py -s all

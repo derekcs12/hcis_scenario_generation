@@ -8,9 +8,9 @@ RELATIVE_TRIGGER_POSITIONS = {
     "FR-3": ("relative",  1,  0,  40,  0),
     "SL-4": ("relative", -1,  0,   0,  0),
     "SR-5": ("relative",  1,  0,   0,  0),
-    "BL-6": ("relative", -1,  0, -15,  0),
-    "BS-7": ("relative",  0,  0, -15,  0),
-    "BR-8": ("relative",  1,  0, -15,  0),
+    "BL-6": ("relative", -1,  0, -10,  0),
+    "BS-7": ("relative",  0,  0, -10,  0),
+    "BR-8": ("relative",  1,  0, -10,  0),
     
     # Motor/Bike
     "FL-M1": ("relative",  0,  0, 40, -1.5),
@@ -25,12 +25,12 @@ RELATIVE_TRIGGER_POSITIONS = {
     "SR-M1": ("relative",  0,  0,  0,  1.5),
     "SR-M2": ("relative",  1,  0,  0, -1.5),
     "SR-M3": ("relative",  1,  0,  0,  1.5),
-    "BL-M1": ("relative",  0,  0, -15, -1.5),
-    "BL-M2": ("relative", -1,  0, -15,  1.5),
-    "BL-M3": ("relative", -1,  0, -15, -1.5),
-    "BR-M1": ("relative",  0,  0, -15,  1.5),
-    "BR-M2": ("relative",  1,  0, -15, -1.5),
-    "BR-M3": ("relative",  1,  0, -15,  1.5),
+    "BL-M1": ("relative",  0,  0, -10, -1.5),
+    "BL-M2": ("relative", -1,  0, -10,  1.5),
+    "BL-M3": ("relative", -1,  0, -10, -1.5),
+    "BR-M1": ("relative",  0,  0, -10,  1.5),
+    "BR-M2": ("relative",  1,  0, -10, -1.5),
+    "BR-M3": ("relative",  1,  0, -10,  1.5),
 }
 
 

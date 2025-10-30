@@ -16,8 +16,8 @@ config['Center'] = [685.61, -134.05]
 
 
 
-egoStraightAsideLeft = {'Start_pos': [0, 1, 40, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 30}
-egoStraightAsideRight = {'Start_pos': [0, 2, 40, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 30}
+egoStraightAsideLeft = {'Start_pos': [0, 1, 50, 0, 1], 'End_pos': [2, -1, 10, 0, 1],'Start_speed': 30}
+egoStraightAsideRight = {'Start_pos': [0, 2, 50, 0, 1], 'End_pos': [2, -2, 10, 0, 1],'Start_speed': 30}
 aside_left_route = 'hsinchu_gfr_pr_br_elr' # 靠左
 aside_right_route = 'hcis_route2' # 靠右
 
@@ -57,7 +57,8 @@ if 1:
 
         config['Ego'] = egoStraightAsideRight
         route = aside_right_route
-        egoTriggerAt = [0, 2, 40, 0, 1]
+        # egoTriggerAt = [0, 2, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideRight['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'turning'
         agent1_lat_direction = 'right'
         agent1_init_direction = 'sameAsEgo'
@@ -98,7 +99,8 @@ if 1:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
-        egoTriggerAt = [0, 1, 40, 0, 1]
+        # egoTriggerAt = [0, 1, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'turning'
         agent1_lat_direction = 'left'
         agent1_init_direction = 'sameAsEgo'
@@ -126,7 +128,7 @@ if 1:
             agent1_lat_event['Type'] = 'position'
             agent1_lat_event['Dynamic_delay'] = 0
             agent1_lat_event['Dynamic_duration'] = 1
-            agent1_lat_event['Dynamic_shape'] = shape
+            agent1_lat_event['Dynamic_shape'] = "Curve" if action == 'left U turn' else shape
             agent1_lat_event['End'] = end
             agent1_lat_event['Use_route'] = list(config['Center']) if action == 'left U turn' else use_route
 
@@ -150,7 +152,8 @@ if 1:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
-        egoTriggerAt = [0, 1, 40, 0, 1]
+        # egoTriggerAt = [0, 1, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = None
         agent1_init_direction = 'oncoming'
@@ -197,7 +200,8 @@ if 1:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
-        egoTriggerAt = [0, 1, 40, 0, 1]
+        # egoTriggerAt = [0, 1, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = None
         agent1_init_direction = 'oncoming'
@@ -235,14 +239,15 @@ if 1:
     route = aside_left_route
 
     # Agent
-    lateral_behavior = 'TL'
+    lateral_behavior = 'TR'
     for relative_pos, start_pos, end_pos in [("FR-3",[3, 1, 10, 0, 1],[2, -1, 15, 0, 1])]:
-        
-        descript = f"Agent at {relative_pos} turning left - "
+
+        descript = f"Agent at {relative_pos} turning right - "
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
-        egoTriggerAt = [0, 1, 40, 0, 1]
+        # egoTriggerAt = [0, 1, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = None
         agent1_init_direction = 'oncoming'
@@ -265,9 +270,9 @@ if 1:
         agent1_lat_event['Type'] = 'position'
         agent1_lat_event['Dynamic_delay'] = 0
         agent1_lat_event['Dynamic_duration'] = 1
-        agent1_lat_event['Dynamic_shape'] = 'Route'
+        agent1_lat_event['Dynamic_shape'] = 'Curve'
         agent1_lat_event['End'] = end_pos
-        agent1_lat_event['Use_route'] = None
+        agent1_lat_event['Use_route'] = list(config['Center'])
 
         
         for behavior_type, behavior in BehaviorMode.items():
@@ -287,7 +292,8 @@ if 1:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
-        egoTriggerAt = [0, 1, 40, 0, 1]
+        # egoTriggerAt = [0, 1, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'goingStraight'
         agent1_lat_direction = None
         agent1_init_direction = 'oncoming'
@@ -326,13 +332,15 @@ agent1['Type'] = 'bicycle'
 if 1: 
     lateral_behavior = 'TR'
     for relative_pos in ["FL-M1","FR-M1","SL-M1","SR-M1","BL-M1","BR-M1","FL-M2","SL-M2"]:
+    # for relative_pos in ["FL-M1","FR-M1","SL-M1","SR-M1","FL-M2","SL-M2"]:
         descript = f"Agent at {relative_pos} turning right - "
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
         config['Ego'] = egoStraightAsideRight
         route = aside_right_route
-        egoTriggerAt = [0, 2, 40, 0, 1]
+        # egoTriggerAt = [0, 2, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideRight['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'turning'
         agent1_lat_direction = 'right'
         agent1_init_direction = 'sameAsEgo'
@@ -374,7 +382,8 @@ if 1:
         initRelPostAbbvLon = relative_pos[0]
         initRelPostAbbvLat = relative_pos[1]
 
-        egoTriggerAt = [0, 1, 40, 0, 1]
+        # egoTriggerAt = [0, 1, 40, 0, 1]
+        egoTriggerAt = egoStraightAsideLeft['Start_pos'] # 改成trigger = ego start pos
         agent1_lat_mode = 'turning'
         agent1_lat_direction = 'left'
         agent1_init_direction = 'sameAsEgo'
@@ -402,9 +411,9 @@ if 1:
             agent1_lat_event['Type'] = 'position'
             agent1_lat_event['Dynamic_delay'] = 0
             agent1_lat_event['Dynamic_duration'] = 1
-            agent1_lat_event['Dynamic_shape'] = 'Curve' #if action is 'left U turn' else 'Route'
+            agent1_lat_event['Dynamic_shape'] = 'Curve' if (action == 'left U turn' or 'M2' in relative_pos) else 'Route'
             agent1_lat_event['End'] = end
-            agent1_lat_event['Use_route'] = list(config['Center']) # if action is 'left U turn' else None
+            agent1_lat_event['Use_route'] = list(config['Center']) if (action == 'left U turn' or 'M2' in relative_pos) else None
 
             
             for behavior_type, behavior in BehaviorMode.items():
