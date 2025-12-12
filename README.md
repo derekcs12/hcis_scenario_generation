@@ -109,6 +109,14 @@ python main.py -b [BASE_CONFIG_PATH] -c [SCENARIO_CONFIG_PATH]
 
 If `CONFIG_PATH == "all"`, the generator will automatically convert **all** scenario configurations located in:`./config/scenario_config/`
 
+### Scenario Upload
+`python scenario_upload.py -s sample`
+- tag, route, condition等皆在此檔案設定
+- -s sample: 上傳指定的10個sample, -s all:上傳全部
+
+### Scenarios overview table
+- `runtime_data/scenario_list.csv` Scenarios overview table
+
 ---
 
 ## References & Documentation
