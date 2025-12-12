@@ -54,8 +54,6 @@ if "init":
         # "edit:5-parameter",
         "edit:narrow-param-range",
         "edit:full-scenarios",
-        # "edit:zz_range",
-        # "edit:new_stop_condition",
         "edit:ego_speed_30",
         "edit:ego_norunup",
         "edit:agent_from_standstill",
