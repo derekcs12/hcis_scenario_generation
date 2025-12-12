@@ -1,0 +1,61 @@
+company: HCIS # or ITRI
+
+save_paths:
+  - "./results/"
+  # - "./[additional path]/" ...
+
+xodr_path: "./hct_6.xodr"
+
+ego:
+  name: "Ego"
+  controller: null # Assign ego controller's name
+
+catalogs:
+  - name: VehicleCatalog
+    path: "./Catalogs/Vehicles"
+  - name: PedestrianCatalog
+    path: "./Catalogs/Pedestrians"
+  - name: ControllerCatalog
+    path: "./Catalogs/Controllers"
+
+variables:
+  - name: FLAG-AV_CONNECTED
+    type: boolean
+    value: false
+  - name: FLAG-IS_VALID
+    type: boolean
+    value: false
+  - name: FLAG-AV_CONNECTION_TIMEOUT
+    type: boolean
+    value: false
+  - name: VAL-AV_CONNECTION_TIMEOUT
+    type: double
+    value: 20.0
+  - name: FLAG-EGO_REACHED_END
+    type: boolean
+    value: false
+  - name: FLAG-EGO_TLE
+    type: boolean
+    value: false
+  - name: VAL-EGO_TLE
+    type: double
+    value: 20.0
+  - name: FLAG-EGO_COLLISION
+    type: boolean
+    value: false
+
+# """END CONDITIONS"""
+# # Condition 1 - AV Connection timeout => Invalid
+# stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-AV_CONNECTION_TIMEOUT', 'true'))
+# # Condition 2 - Wrong Start Speed => Invalid
+# stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-WRONG_START_SPEED', 'true'))
+# # Condition 3 - Ego reaches the target point => Valid/Success
+# stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_REACHED_END', 'true'))
+# # Condition 4 - Ego TLE => Valid/Fail
+# stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_TLE', 'true'))
+# # Condition 5 - Collision => Valid/Fail
+# stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_COLLISION', 'true'))
+# # Condition 6 - Ego Stroll => Invalid
+# stopTrigger.add_conditiongroup(create_flag_trigger('FLAG-EGO_STROLL', 'true'))
+
+stop_conditions: [0, 2, 3, 4] # List of stop condition indices to include
