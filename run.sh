@@ -5,6 +5,7 @@ python scripts/config_generator_straight.py
 python scripts/config_generator_straight_at4way.py
 
 # # Do Config Files Combination (both .yaml & .csv)
+# # If you don’t want the combined scenario, comment it out.
 python combine_all.py
 
 # Create Scenario Overview list

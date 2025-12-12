@@ -115,7 +115,7 @@ def handle_tags_creation_and_get_ids(tags: List[str]):
             response = requests.post(
                 f"{base_url}/tags", headers=headers, json={"name": tag}
             )
-            # print(response.json()); exit()
+            
             if (
                 response.status_code == 201
                 and response.json().get("message") == "Tag successfully created."
@@ -218,8 +218,6 @@ def use_scenario_string(content):
 
 
 def fetch_scenarios(url, headers):
-    # print(url)
-    # print(headers)
     response = requests.get(url, headers=headers)
     return response.json()["docs"]
 
@@ -259,13 +257,11 @@ def upload(scenario_id):
         parent_folder = "config/scenario_config_combined"
     else:
         parent_folder = "config/scenario_config"
-    # print(f'./scenario_config/{scenario_folder}/{scenario_index}.csv')
-    # exit()
 
     df = pd.read_csv(
         f"{PROJECT_PATH}/hcis_scenario_generation/{parent_folder}/{scenario_folder}/{scenario_index}.csv"
     )
-    # print(df)
+    
     result = df.replace({np.nan: None})
     if result.empty:
         print(
@@ -367,11 +363,9 @@ def upload(scenario_id):
     observation_recording_agents = []
 
     # folder = date.today().strftime("%m%d")
-    folder = "1027"
     filename = f"{result['scenario_name']}"
-    file_path = f"{PROJECT_PATH}/ITRI/xosc/{folder}/{filename}.xosc"
+    file_path = f"./results/{filename}.xosc"
 
-    # exit()
     openScenarioField = upload_openscenario_file(file_path)
 
     data = create_request_body(
@@ -425,12 +419,12 @@ def upload(scenario_id):
             #     headers=headers
             # )
             # print(f"   [SCENARIO] {r.json().get('message')}")
-            return 1
+            return True
         else:
             print("status", r.status_code)
             print(json.dumps(r.json(), indent=4))
             pprint(tag_tree)
-            return 0
+            return False
     except Exception as e:
         print(e)
     except:
@@ -457,13 +451,7 @@ if __name__ == "__main__":
 
         # === 建立跳過檔案清單 ===
         # 手動指定要跳過的檔案
-        manually_skipped_files = [
-            "01FL-KEEP_6.xosc",
-            "01FL-KEEP_7.xosc",
-            "01FL-KEEP_8.xosc",
-            "01FL-KEEP_9.xosc",
-            "01FL-KEEP_10.xosc",
-        ]
+        manually_skipped_files = []
 
         # 載入none-critical scenario清單（從檔案讀取）
         non_critical_scenarios = []
@@ -475,7 +463,6 @@ if __name__ == "__main__":
                     scenario_name = line.replace("_metrics.csv", ".xosc")
                     non_critical_scenarios.append(scenario_name)
 
-        # print(none_critical_scenario_combined_0806)
 
         # 載入已成功上傳的情境清單
         already_uploaded_scenarios = []
@@ -498,9 +485,7 @@ if __name__ == "__main__":
             non_critical_scenarios += already_uploaded_scenarios
 
             # 請修改路徑
-            folder = date.today().strftime("%m%d")
-            folder = "1029"
-            xosc_dir = f"{PROJECT_PATH}/ITRI/xosc/{folder}/"
+            xosc_dir = f"./results/"
             for file in os.listdir(xosc_dir):
                 if file.endswith(".xosc"):
                     if file in non_critical_scenarios:
@@ -576,7 +561,6 @@ if __name__ == "__main__":
             # scenario_ids.reverse()
 
             for scenario_id in tqdm(scenario_ids):
-                # for scenario_id in ['01FS-ZZ_02SR-ZZ_3']:
 
                 # if scenario_id in non_critical_scenarios:
                 #         print('Skipped. None-critical scenario.')
@@ -587,13 +571,6 @@ if __name__ == "__main__":
                 #     print('Skipped. Since already uploaded, check success_upload_scenario.txt')
                 #     success_upload += 1
                 #     continue
-
-                # # 只更新zigzag range
-                # if 'ZZ' in scenario_id:
-                #     print(' ZZ, skipped.')
-                #     continue
-                # if scenario_id != '01FR-TR_1.xosc':
-                #         continue
 
                 if scenario_id in non_critical_scenarios:
                     print(f"Skipped {scenario_id}. None-critical scenario.")
@@ -623,33 +600,17 @@ if __name__ == "__main__":
                         scenario_name = line.replace("_metrics.csv", ".xosc")
                         non_critical_scenarios.append(scenario_name)
 
-            # sample_scenarios = [
-            #     '01BL-KEEP_02FS-ZZ_3.xosc', '01BL-KEEP_02SR-ZZ_5.xosc',
-            #     '01FR-ZZ_02FR-CI_2.xosc', '01FL-TL_14.xosc',
-            #     '01BL-TR_02SL-TR_50.xosc', '01BR-KEEP_02SR-ZZ_1.xosc',
-            #     '01FR-CI_02SR-CI_24.xosc', '01FL-ZZ_02FR-CI_13.xosc',
-            #     '01FL-TL_02FR-TL_1121.xosc', '01FL-KEEP_02FR-TL_254.xosc'
-            # ]
-
             sample_scenarios = [
-                "01FS-CO_02SR-CI_5.xosc",  # None-critical
                 "01BL-KEEP_02FS-ZZ_1.xosc",
-                "01SR-CI_13.xosc",  # None-critical
                 "01FS-TR_02SR-TR_1.xosc",
                 "01BR-KEEP_02FS-ZZ_1.xosc",
-                "01SL-KEEP_02FR-ZZ_1.xosc",  # None-critical
-                # '01FL-TR_02FR-TR_1.xosc', #----
-                # '01SR-TR_02SL-TR_1.xosc', #後面撞
                 "01FL-ZZ_02FR-CI_1.xosc",
-                # '01FS-CO_02FR-CI_3.xosc',  #不自然
-                # '01FR-CI_02SR-CI_3.xosc',  #後面撞  <----
                 "01BL-TR_02SL-TR_1.xosc",
                 "01SL-TL_02FS-TL_3.xosc",
                 "01SR-TL_02FR-TL_10.xosc",
             ]
 
             for scenario_id in tqdm(sample_scenarios):
-                # for scenario_id in ['01FS-ZZ_02SR-ZZ_3']:
 
                 if scenario_id in non_critical_scenarios:
                     print(f"Skipped {scenario_id}. None-critical scenario.")

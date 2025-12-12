@@ -23,16 +23,16 @@ egoStraightAsideRight = {
     "End_pos": [2, -2, 10, 0, 1],
     "Start_speed": 30,
 }
-aside_left_route = "hsinchu_gfr_pr_br_elr"  # 靠左
-aside_right_route = "hcis_route2"  # 靠右
+aside_left_route = "hsinchu_gfr_pr_br_elr"  # 靠左道
+aside_right_route = "hcis_route2"  # 靠右道
 
 
 # BehaviorMode
 AgentSpeed = 40
 AgentLowSpeed = 10
-DynamicDuration = 3  # 3.0
-DynamicHaltDuration = 1  # 1
-DynamicDelay = 1  # 1
+DynamicDuration = 3
+DynamicHaltDuration = 1
+DynamicDelay = 1
 
 BehaviorMode = {}
 # BehaviorMode['keeping']  = ('Cruise.',AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay,'drivingForward','cruising') #等速
@@ -60,7 +60,7 @@ agent1["Type"] = "car_red"
 
 
 # Turn right
-if 1:
+if True:
     lateral_behavior = "TR"
     for relative_pos, use_route, shape in [
         ("FL-1", list(config["Center"]), "Curve"),
@@ -123,7 +123,7 @@ if 1:
             )
 
 #  Turn Left/Left U turn
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft
     route = aside_left_route
 
@@ -200,7 +200,7 @@ if 1:
 
 
 #  Keeping From opposite direction
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft
     route = aside_left_route
 
@@ -264,7 +264,7 @@ if 1:
             )
 
 #  Left turn From opposite direction
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft
     route = aside_left_route
 
@@ -329,7 +329,7 @@ if 1:
 
 
 #  Right turn From opposite direction
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft
     route = aside_left_route
 
@@ -391,7 +391,7 @@ if 1:
             )
 
 #  Left u turn From opposite direction
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft
     route = aside_left_route
 
@@ -457,7 +457,7 @@ if 1:
 ############## Motor ##############
 agent1["Type"] = "bicycle"
 # Turn right
-if 1:
+if True:
     lateral_behavior = "TR"
     for relative_pos in [
         "FL-M1",
@@ -527,7 +527,7 @@ if 1:
 
 
 #  Motor Left U turn
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft
     route = aside_left_route
 

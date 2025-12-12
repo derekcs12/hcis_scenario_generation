@@ -36,9 +36,9 @@ agentToSameDirectionAsideRight = [1, 2, 60, 0, 1]
 # BehaviorMode
 AgentSpeed = 40
 AgentLowSpeed = 10
-DynamicDuration = 3  # 3.0
-DynamicHaltDuration = 1  # 1
-DynamicDelay = 1  # 1
+DynamicDuration = 3
+DynamicHaltDuration = 1
+DynamicDelay = 1
 
 BehaviorMode = {}
 # BehaviorMode['keeping']  = ('Cruise.',AgentSpeed, AgentSpeed, DynamicDuration, 'linear', DynamicDelay,'drivingForward','cruising') #等速
@@ -67,7 +67,7 @@ agent1["Type"] = "car_red"
 
 
 # cut-in : Agent at 5 cut in
-if 1:
+if True:
     lateral_behavior = "CI"
     descript = "Agent at 5 cut in"
     itri_tags = [""]
@@ -125,7 +125,7 @@ if 1:
 
 
 # cut-in(Serving) : Agent at 5 cut in
-if 1:
+if True:
     lateral_behavior = "CI"
     descript = "Agent at 5 cut in(Serving) "
     itri_tags = [""]
@@ -183,7 +183,7 @@ if 1:
 
 
 # cut-out : Agent at 2 cut out
-if 1:
+if True:
     descript = "Agent at 2 cut out"
     lateral_behavior = "CO"
     relative_pos = "FS-2"
@@ -243,7 +243,7 @@ if 1:
         )
 
 # keeping at 2
-if 1:
+if True:
     lateral_behavior = "KEEP"
     descript == "keeping at 2"
     relative_pos = "FS-2"
@@ -356,7 +356,7 @@ if False:
         )
 
 # zigzag
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft  # [0, -1, 40, 0, 1]
     agent1 = {}
     agent1["Type"] = "car_red"
@@ -374,8 +374,6 @@ if 1:
         agent1_lat_direction = ""
         agent1_init_direction = "sameAsEgo"
 
-        # print(egoTriggerAt, relative_pos);
-        # print(set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos));exit()
         agent1["Start_pos"] = set_agentStart_from_relative_triggerAt(
             egoTriggerAt, relative_pos
         )
@@ -421,7 +419,7 @@ if 1:
 
 ############## Motor ##############
 # Motor keeping at all
-if 1:
+if True:
     agent1["Type"] = "bicycle"
     lateral_behavior = "KEEP"
     for relative_pos in ["FL-M1", "FR-M1", "SL-M1", "SR-M1", "BL-M1", "BR-M1"]:
@@ -493,7 +491,7 @@ if 1:
             )
 
 # Motor cut in to middle/nearside
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft  # [0, -1, 40, 0, 1]
     agent1 = {}
     agent1["Type"] = "bicycle"
@@ -564,7 +562,7 @@ if 1:
             )
 
 # Motor zigzag
-if 1:
+if True:
     config["Ego"] = egoStraightAsideLeft  # [0, -1, 40, 0, 1]
     agent1 = {}
     agent1["Type"] = "bicycle"
@@ -582,8 +580,6 @@ if 1:
         agent1_lat_direction = ""
         agent1_init_direction = "sameAsEgo"
 
-        # print(egoTriggerAt, relative_pos);
-        # print(set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos));exit()
         agent1["Start_pos"] = set_agentStart_from_relative_triggerAt(
             egoTriggerAt, relative_pos
         )

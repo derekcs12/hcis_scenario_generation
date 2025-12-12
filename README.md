@@ -30,6 +30,11 @@ e.g. python combine.py --s1 scenario_config/01BL-KEEP/1 --s2 scenario_config/01F
 
 Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_config'
 
+### Scenario Upload
+`python scenario_upload.py -s sample`
+- tag, route, condition等皆在此檔案設定
+- -s sample: 上傳指定的10個sample, -s all:上傳全部
+
 ### Code
 - main.py : main program, read config file and write OpenScenario file.
 - generate.py : all generation pipeline, include parameter setting, create entity, event generation, and so on.
@@ -45,3 +50,6 @@ Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_c
 
 - utils/
   - upload.py : build tag tree, tags and corresponding params for scenarios
+
+- runtime_data/
+  - scenario_list.csv: Scenarios overview table

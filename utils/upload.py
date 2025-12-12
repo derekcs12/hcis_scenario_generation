@@ -250,14 +250,7 @@ def write_to_scenario_table(scenario_id, content, file_path="./HCIS_scenarios.cs
 
     :param scenario_id: The scenario ID to be included in the CSV file.
     :param content: List of dictionaries or list of lists to write to the CSV file.
-    :param file_path: Path to the CSV file. Default is 'scenario_table.csv'.
-
-    # Example input
-    content_dicts = [
-        {'Name': 'Alice', 'Age': 30, 'City': 'New York'},
-        {'Name': 'Bob', 'Age': 25, 'City': 'Los Angeles'},
-        {'Name': 'Charlie', 'Age': 35, 'City': 'Chicago'}
-    ]
+    :param file_path: Path to the CSV file. Default is 'HCIS_scenarios.csv'.
     """
     print(f"write {scenario_id}, description: {content[0]['description']}.")
 
@@ -356,21 +349,17 @@ def _get_param_by_behaviormode(behavior_type):
         return ['0~20','0~10','40~60','2~4','0~2', '0~2', '5~5', '0~1']
     """
 
+    # Retrun parameter: agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay, ｜ agent1EventStartDelay, TA_DynamicDuration, TA_DynamicDelay
     if behavior_type == "keeping":
-        # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, agent1DynamicDelay, ｜ agent1EventStartDelay, TA_DynamicDuration, TA_DynamicDelay
         return ["0~20", "40~60", "40~60", "5~5", "0~3", "0~2", "5~5", "0~1"]
-        # # agent1_S, agent1Speed, agent1EndSpeed, agent1DynamicDuration, TA_DynamicDuration
-        # return ['0~20','40~60','40~60','5~5', '5~5']
     elif behavior_type == "braking":
         return ["0~20", "40~60", "10~20", "3~5", "0~3", "0~2", "5~5", "0~1"]
-        # return ['0~20','40~60','10~20','3~5', '5~5']
     elif behavior_type == "braking_halt":
         return ["0~20", "40~60", "0~0", "2~4", "0~3", "0~2", "5~5", "0~1"]
-        # return ['0~20','40~60','0~0','2~4', '5~5']
     elif behavior_type == "sudden_braking_halt":
         return ["0~20", "40~60", "0~0", "0.5~2", "0~3", "0~2", "5~5", "0~1"]
-        # return ['0~20','40~60','0~0','0.5~2', '5~5']
     elif behavior_type == "speed_up":
+        # 因agent從速度0開始, 在ego車速30下, 無法與前車產生互動, 故調大末速range提升與前車互動機率
         return [
             "0~20",
             "0~0",
@@ -380,9 +369,7 @@ def _get_param_by_behaviormode(behavior_type):
             "0~2",
             "5~5",
             "0~1",
-        ]  # 因ITRI要求agent只能從0開始, 在ego車速30下, 無法與前車產生互動, 故調大末速range提升與前車互動機率
-        # return ['0~20','0~0','40~60','2~4','0~2', '0~2', '5~5', '0~1']
-        # return ['0~20','0~10','40~60','2~4', '5~5']
+        ]  
 
 
 def _get_tag(value, param_name):
@@ -434,7 +421,7 @@ def generate_csv_content(
             "init_dynm": _get_tag(behavior[1], "init_dynm"),
             "init_lat_pos": _get_tag(initRelPostAbbvLat, "init_lat_pos"),
             "init_long_pos": _get_tag(initRelPostAbbvLon, "init_long_pos"),
-            "S": "0~0",  # _get_param_by_behaviormode(behavior_type)[0],  工研院不用Agent_S, 確保Agent在安全距離外
+            "S": "0~0",  # _get_param_by_behaviormode(behavior_type)[0],  不用Agent_S, 確保Agent在安全距離外
             "Speed": _get_param_by_behaviormode(behavior_type)[1],
             "1_Delay": "0~0",  # _get_param_by_behaviormode(behavior_type)[5]
             "1_SA_EndSpeed": _get_param_by_behaviormode(behavior_type)[2],
@@ -457,7 +444,7 @@ def generate_csv_content(
                 "1_TA_Times": "2",  #'1~5'
             }
         )
-        ## 加上 zigzag 最低限速，避免車頭太不自然
+        ## 加上 zigzag 最低限速，使車頭自然
         for name in ["Speed", "1_SA_EndSpeed"]:
             range = content.agents[0][name]
             try:
@@ -476,7 +463,7 @@ def generate_csv_content(
                 # 若格式錯誤，跳過
                 pass
 
-    # 1027 工研院需求調整： 地圖問題直線不夠長, 避免CI變CO
+    # 因地圖直線不夠長, 避免CI變CO
     if "FR-CI" in scenario_name:
         content.agents[0]["1_SA_EndSpeed"] = "20~30"  # 降低末速，增加切入成功率
 
@@ -581,7 +568,7 @@ def clone_behavior_mode_and_wriite_content(
         agent1_init_direction,
         isZigzag,
     )
-    # print(csv_row);exit()
+    
     write_to_scenario_table(
         next_id,
         [csv_row],
