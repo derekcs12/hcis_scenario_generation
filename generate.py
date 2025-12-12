@@ -257,7 +257,7 @@ def get_Ego_Controller(controller_name):
         print("Ego Controller: ROSController")
         return xosc.CatalogReference(catalogname="ControllerCatalog", entryname="ROSController")
 
-    print("Controller not found")
+    # print("Controller not found")
     return None
 
 def create_Entity(egoController, agentCount, pedCount, agentController):

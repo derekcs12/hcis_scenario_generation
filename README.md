@@ -1,55 +1,123 @@
-# hcis_scenario_generation
-- Config File Format: [link](https://lopsided-soursop-bec.notion.site/Scenario-Configuration-File-Format-5d423c6aab1740a2b53e7444fa2dad31?pvs=4)
-- Parameter Naming Rule: [link](https://lopsided-soursop-bec.notion.site/Scenario-Parameter-Naming-642563ce89f74de195116291d153c4ef?pvs=4)
+# HCIS Scenario Generation
+
+An OpenSCENARIO generator for creating **diverse and interactive traffic scenarios**.
+
+This project provides a complete pipeline to:
+
+- Generate structured scenario configuration files
+- Combine traffic agents across scenarios
+- Convert configurations into OpenSCENARIO (`.xosc`) files
+
+## Environment Setup
+
+Install all required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
 
 ## Usage
-### OpenScenario Config File(.yaml) Generator
-Runs all necessary functions to generate config files and .xosc. 
-Uncomment the upload section to upload scenarios & parameters to the payload (VPN connection required).
-```
+
+### Generate Scenario Configurations and OpenSCENARIO Files
+
+This command runs the full pipeline:
+
+- Generates scenario configuration files
+- Converts them into OpenSCENARIO (`.xosc`) files
+
+You can customize global settings (directories, variables, controllers, conditions, etc.) by editing: `./config/base/example.yaml`
+
+Run the pipeline:
+
+```bash
 sh run.sh
 ```
 
-### Combine scenarios
-You can combine two scenario's agents as a new scenario.
+## Output Structure
 
-`python combine.py --s1 [1st scenario_path] --s2 [2nd scenario_path]`
+By default, generated files are organized as follows:
 
-e.g. python combine.py --s1 scenario_config/01BL-KEEP/1 --s2 scenario_config/01FS-CO/4
+### Scenario Configuration Files
 
-**Note: you don't need to add the file extension (.yaml, .csv) in command.**
+- `./config/scenario_config/`
+- `./config/scenario_config_combined/`
 
-### Combine all scenarios in a folder
-`python combine_all.py`
+### OpenSCENARIO Files
 
-- This command will combine all scenarios cross different catagories in `scenario_config` folder.
-- In default, they will be saved in `scenario_config_conbined/[date]` folder.
+- `./results/`
 
-### OpenScenario Generator
-`python main.py -c [CONFIG_PATH]`
+---
 
-Note: If CONFIG_PATH == 'all', it will generate all config file in './scenario_config'
+## Scenario Combination
 
-### Scenario Upload
-`python scenario_upload.py -s sample`
-- tag, route, condition等皆在此檔案設定
-- -s sample: 上傳指定的10個sample, -s all:上傳全部
+### Combine Two Scenarios
 
-### Code
-- main.py : main program, read config file and write OpenScenario file.
-- generate.py : all generation pipeline, include parameter setting, create entity, event generation, and so on.
-- scenario_upload.py : upload scenario to MongoDB
+You can merge agents from two different scenarios into a new combined scenario:
 
-- combine.py : combine two scenario.
-- combine_all.py : combine all scenarios in `./scenario_config`
-- scripts/
-  - config_generator_4way.py : generate 4way scenarios, e.g. left turn, U turn, ...
-  - config_generator_straight.py : generate straight scenarios, e.g. cut-in/out, zigzag
-  - config_generator_straight_at4way.py : generate straight scenarios over 4way topology, e.g. cut-in/out, zigzag at crossroad
-  - combine_csv_files.py : output scenarios list
+```bash
+python combine.py --s1 [SCENARIO_PATH_1] --s2 [SCENARIO_PATH_2]
+```
 
-- utils/
-  - upload.py : build tag tree, tags and corresponding params for scenarios
+Example:
 
-- runtime_data/
-  - scenario_list.csv: Scenarios overview table
+```bash
+python combine.py --s1 scenario_config/01BL-KEEP/1 --s2 scenario_config/01FS-CO/4
+```
+
+> **Note:** Do **not** include file extensions (`.yaml`, `.csv`) when specifying scenario paths.
+
+---
+
+### Combine All Scenarios in a Folder
+
+To automatically combine all scenarios across different categories under `scenario_config`:
+
+```bash
+python combine_all.py
+```
+
+This generates cross-category combined scenarios and stores them under:
+
+```
+./config/scenario_config_combined/
+```
+
+---
+
+## OpenSCENARIO Generator
+
+This module converts a scenario configuration file into an OpenSCENARIO (`.xosc`) file.
+
+```bash
+python main.py -b [BASE_CONFIG_PATH] -c [SCENARIO_CONFIG_PATH]
+```
+
+### Arguments
+
+- **Base Config (`-b`)**  
+  Defines global settings such as directories, variables, controllers, and conditions.
+
+- **Scenario Config (`-c`)**  
+  Uses HCIS Lab’s custom simplified scenario configuration format.
+
+  Please refer to the documentation here:  
+  https://lopsided-soursop-bec.notion.site/Scenario-Configuration-File-Format-5d423c6aab1740a2b53e7444fa2dad31
+
+### Generate All Scenarios
+
+If `CONFIG_PATH == "all"`, the generator will automatically convert **all** scenario configurations located in:`./config/scenario_config/`
+
+---
+
+## References & Documentation
+
+- **Scenariogeneration (pyoscx)**  
+  https://github.com/pyoscx/scenariogeneration
+
+- **Scenario Configuration File Format**  
+  https://lopsided-soursop-bec.notion.site/Scenario-Configuration-File-Format-5d423c6aab1740a2b53e7444fa2dad31
+
+- **Parameter Naming Rules**  
+  https://lopsided-soursop-bec.notion.site/Scenario-Parameter-Naming-642563ce89f74de195116291d153c4ef
