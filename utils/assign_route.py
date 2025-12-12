@@ -1,6 +1,8 @@
 import yaml
 import os
 
+from config import PROJECT_PATH
+
 
 # Route mappings
 route1_mapping = {
@@ -130,7 +132,7 @@ def process_yaml_file(filepath):
 if __name__ == "__main__":
     # Directory containing YAML files
     scenario_config_dir = (
-        "/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/scenario_config/"
+        f"{PROJECT_PATH}/hcis_scenario_generation/scenario_config/"
     )
 
     # Process each YAML file in the directory

@@ -13,6 +13,7 @@ from pprint import pprint
 from typing import List
 from datetime import date
 
+from config import PROJECT_PATH
 from utils.upload import *
 from utils.cache import *
 from utils.assign_route import process_yaml_file
@@ -264,7 +265,7 @@ def upload(scenario_id):
     # exit()
 
     df = pd.read_csv(
-        f"/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{parent_folder}/{scenario_folder}/{scenario_index}.csv"
+        f"{PROJECT_PATH}/hcis_scenario_generation/{parent_folder}/{scenario_folder}/{scenario_index}.csv"
     )
     # print(df)
     result = df.replace({np.nan: None})
@@ -289,7 +290,7 @@ def upload(scenario_id):
 
     description = result["description"]
 
-    yaml_path = f"/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{parent_folder}/{scenario_folder}/{scenario_index}.yaml"
+    yaml_path = f"{PROJECT_PATH}/hcis_scenario_generation/{parent_folder}/{scenario_folder}/{scenario_index}.yaml"
     route = process_yaml_file(yaml_path)  # Use the function to get the route
 
     parameters = write_param(
@@ -370,7 +371,7 @@ def upload(scenario_id):
     # folder = date.today().strftime("%m%d")
     folder = "1027"
     filename = f"{result['scenario_name']}"
-    file_path = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/{filename}.xosc"
+    file_path = f"{PROJECT_PATH}/ITRI/xosc/{folder}/{filename}.xosc"
 
     # exit()
     openScenarioField = upload_openscenario_file(file_path)
@@ -468,7 +469,7 @@ if __name__ == "__main__":
 
         # 載入none-critical scenario清單（從檔案讀取）
         non_critical_scenarios = []
-        non_critical_file_path = f"/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_1027.txt"
+        non_critical_file_path = f"{PROJECT_PATH}/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_1027.txt"
         with open(non_critical_file_path, "r") as file:
             for line in file:
                 line = line.strip()
@@ -480,7 +481,7 @@ if __name__ == "__main__":
 
         # 載入已成功上傳的情境清單
         already_uploaded_scenarios = []
-        success_file_path = f"/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/success_upload_scenario.txt"
+        success_file_path = f"{PROJECT_PATH}/hcis_scenario_generation/{RUNTIME_DATA_DIR}/success_upload_scenario.txt"
         if os.path.exists(success_file_path):
             with open(success_file_path, "r") as file:
                 for line in file:
@@ -501,7 +502,7 @@ if __name__ == "__main__":
             # 請修改路徑
             folder = date.today().strftime("%m%d")
             folder = "1029"
-            xosc_dir = f"/home/hcis-s19/Documents/ChengYu/ITRI/xosc/{folder}/"
+            xosc_dir = f"{PROJECT_PATH}/ITRI/xosc/{folder}/"
             for file in os.listdir(xosc_dir):
                 if file.endswith(".xosc"):
                     if file in non_critical_scenarios:
@@ -563,7 +564,7 @@ if __name__ == "__main__":
 
             # 載入none-critical scenario清單（從檔案讀取）
             non_critical_scenarios = []
-            non_critical_file_path = f"/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_1027.txt"
+            non_critical_file_path = f"{PROJECT_PATH}/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_1027.txt"
             with open(non_critical_file_path, "r") as file:
                 for line in file:
                     line = line.strip()
@@ -616,7 +617,7 @@ if __name__ == "__main__":
 
             # 載入none-critical scenario清單（從檔案讀取）
             non_critical_scenarios = []
-            non_critical_file_path = f"/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0919.txt"
+            non_critical_file_path = f"{PROJECT_PATH}/hcis_scenario_generation/{RUNTIME_DATA_DIR}/none_critical_scenario_combined_0919.txt"
             with open(non_critical_file_path, "r") as file:
                 for line in file:
                     line = line.strip()

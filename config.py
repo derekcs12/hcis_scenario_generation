@@ -1,4 +1,5 @@
 # 共用變數
+import os
 
 RELATIVE_TRIGGER_POSITIONS = {
     # Given ego (trigger) position, return agent start positions relative to the trigger position.
@@ -31,3 +32,5 @@ RELATIVE_TRIGGER_POSITIONS = {
     "BR-M2": ("relative", 1, 0, -10, -1.5),
     "BR-M3": ("relative", 1, 0, -10, 1.5),
 }
+
+PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
