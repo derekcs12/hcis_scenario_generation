@@ -78,6 +78,9 @@ def combine_csv_files():
     # 輸出檔案路徑
     output_file = script_dir / "runtime_data/scenario_list.csv"
 
+    # if output file not exists, create parent directories
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    
     # 儲存合併後的CSV檔案
     try:
         combined_df.to_csv(output_file, index=False, encoding="utf-8")
