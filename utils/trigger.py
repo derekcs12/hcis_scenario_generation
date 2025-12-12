@@ -14,7 +14,7 @@ def create_EntityTrigger_at_absolutePos(
     )
     road = int(
         Map[road_index]
-    )  # if road_index < 4 else road_index #derek: SinD地圖太亂，traj直接給road比較快
+    )
     return xosc.EntityTrigger(
         name=triggerName,
         delay=delay,
@@ -37,18 +37,11 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
         Trigger["offset"],
     )
 
-    # ego_wp = Agent['Start_pos'].split(' ')
-    # ego_road = int(Map[int(ego_wp[0])])
-    # ego_lane = int(ego_wp[1])
-    # ego_s = int(ego_wp[2])
-
     ego_road, ego_lane, ego_s, ego_offset, _ = Agent["Start_pos"]
     ego_road = int(Map[ego_road])
 
     if lateral == 0:
         lane_id = ego_lane
-    # elif lateral > 0:
-    #     lane_id = ego_lane + np.sign(ego_lane) * lateral
     else:
         lane_id = ego_lane + np.sign(ego_lane) * lateral
 

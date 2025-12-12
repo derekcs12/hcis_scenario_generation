@@ -8,12 +8,10 @@ from utils.trigger import create_StopTrigger
 from utils.condition import (
     create_collision_condition,
     create_ego_stroll_condition,
-    create_ego_tle_condition,
-    # create_invalid_area_condition,
     create_reach_target_condition,
-    # create_right_start_speed_condition,
-    # create_stand_still_conditions,
     create_timeout_condition,
+    # create_ego_tle_condition,
+    # create_right_start_speed_condition,
     # create_wrong_start_speed_condition,
 )
 
