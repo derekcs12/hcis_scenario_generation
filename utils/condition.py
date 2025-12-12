@@ -1,4 +1,3 @@
-import numpy as np
 from scenariogeneration import xosc
 
 from utils.trigger import *
@@ -18,7 +17,7 @@ def create_collision_condition(egoName, agentCount=1):
         conditionedge=xosc.ConditionEdge.rising,
         entitycondition=condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
     group.add_condition(trigger)
     return group
@@ -30,19 +29,21 @@ def create_ego_stroll_condition(time=25):
     Test Result: invalid
     """
     group = xosc.ConditionGroup()
-    connected_condition = xosc.VariableCondition("FLAG-AV_CONNECTED", "true", xosc.Rule.equalTo)
+    connected_condition = xosc.VariableCondition(
+        "FLAG-AV_CONNECTED", "true", xosc.Rule.equalTo
+    )
     connected_trigger = xosc.ValueTrigger(
         name="EgoStroll",
         delay=time,
         conditionedge=xosc.ConditionEdge.none,
-        valuecondition=connected_condition
+        valuecondition=connected_condition,
     )
     event_started = xosc.VariableCondition("FLAG-IS_VALID", "false", xosc.Rule.equalTo)
     event_started_trigger = xosc.ValueTrigger(
         name="EventStarted",
         delay=0,
         conditionedge=xosc.ConditionEdge.none,
-        valuecondition=event_started
+        valuecondition=event_started,
     )
     group.add_condition(connected_trigger)
     group.add_condition(event_started_trigger)
@@ -56,7 +57,9 @@ def create_ego_tle_condition(Map, eventStartPoint, egoName, time=30):
     """
     """有助跑版本: 在經過trigger point後開始計時"""
     group = xosc.ConditionGroup()
-    trigger = create_EntityTrigger_at_absolutePos(Map, eventStartPoint, egoName, delay=time, triggerName="EgoTLE")
+    trigger = create_EntityTrigger_at_absolutePos(
+        Map, eventStartPoint, egoName, delay=time, triggerName="EgoTLE"
+    )
     group.add_condition(trigger)
     return group
 
@@ -80,14 +83,14 @@ def create_invalid_area_condition(Map, egoName, eventStartPoint, xodrPath, dista
         conditionedge=xosc.ConditionEdge.falling,
         entitycondition=condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
     group.add_condition(trigger)
     return group
 
 
 def create_reach_target_condition(Map, egoName, targetPoint):
-    """ 
+    """
     End Condition (2-a) - Ego reaches the target point
     Test Result: Valid/Success
     """
@@ -100,31 +103,39 @@ def create_reach_target_condition(Map, egoName, targetPoint):
         conditionedge=xosc.ConditionEdge.rising,
         entitycondition=condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
     group.add_condition(trigger)
     return group
- 
 
-def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5):
+
+def create_right_start_speed_condition(
+    Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5
+):
     """
     End Condition (1-d) - Right Start Speed Condition
     Test Result: Valid/Success
     """
     group = xosc.ConditionGroup()
     # Position Condition
-    startpoint_trigger = create_EntityTrigger_at_absolutePos(Map, eventStartPoint, egoName)
+    startpoint_trigger = create_EntityTrigger_at_absolutePos(
+        Map, eventStartPoint, egoName
+    )
 
-    # Speed Condition 
-    lowspeed_condition = xosc.SpeedCondition(f'${{$Ego_Speed/3.6-{tolerance/3.6}}}', xosc.Rule.greaterThan)
-    highspeed_condition = xosc.SpeedCondition(f'${{$Ego_Speed/3.6+{tolerance/3.6}}}', xosc.Rule.lessThan)
+    # Speed Condition
+    lowspeed_condition = xosc.SpeedCondition(
+        f"${{$Ego_Speed/3.6-{tolerance/3.6}}}", xosc.Rule.greaterThan
+    )
+    highspeed_condition = xosc.SpeedCondition(
+        f"${{$Ego_Speed/3.6+{tolerance/3.6}}}", xosc.Rule.lessThan
+    )
     lowspeed_trigger = xosc.EntityTrigger(
         name="EgoRightStartSpeed",
         delay=0,
         conditionedge=xosc.ConditionEdge.none,
         entitycondition=lowspeed_condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
     highspeed_trigger = xosc.EntityTrigger(
         name="EgoRightStartSpeed",
@@ -132,7 +143,7 @@ def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStart
         conditionedge=xosc.ConditionEdge.none,
         entitycondition=highspeed_condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
     group.add_condition(startpoint_trigger)
     group.add_condition(lowspeed_trigger)
@@ -173,7 +184,7 @@ def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStart
 #     group.add_condition(event_started_trigger)
 #     return group
 
-    
+
 def create_timeout_condition(egoName, time=60):
     """
     End Condition (1-a) - Timeout Condition
@@ -194,7 +205,7 @@ def create_timeout_condition(egoName, time=60):
         name="EgoHasNotMoved",
         delay=0,
         conditionedge=xosc.ConditionEdge.none,
-        valuecondition=has_moved
+        valuecondition=has_moved,
     )
 
     group.add_condition(simtime_trigger)
@@ -202,7 +213,9 @@ def create_timeout_condition(egoName, time=60):
     return group
 
 
-def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5):
+def create_wrong_start_speed_condition(
+    Map, egoName, eventStartPoint, eventStartSpeed, tolerance=5
+):
     """
     End Condition (1-d) - Wrong Start Speed Condition
     Test Result: Invalid
@@ -210,19 +223,24 @@ def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStart
     lowgroup = xosc.ConditionGroup()
     highgroup = xosc.ConditionGroup()
     # Position Condition
-    startpoint_trigger = create_EntityTrigger_at_absolutePos(Map, eventStartPoint, egoName)
+    startpoint_trigger = create_EntityTrigger_at_absolutePos(
+        Map, eventStartPoint, egoName
+    )
 
-
-    # Speed Condition 
-    low_speed_condition = xosc.SpeedCondition(f'${{$Ego_Speed/3.6-{tolerance/3.6}}}', xosc.Rule.lessThan)
-    high_speed_condition = xosc.SpeedCondition(f'${{$Ego_Speed/3.6+{tolerance/3.6}}}', xosc.Rule.greaterThan)
+    # Speed Condition
+    low_speed_condition = xosc.SpeedCondition(
+        f"${{$Ego_Speed/3.6-{tolerance/3.6}}}", xosc.Rule.lessThan
+    )
+    high_speed_condition = xosc.SpeedCondition(
+        f"${{$Ego_Speed/3.6+{tolerance/3.6}}}", xosc.Rule.greaterThan
+    )
     low_speed_trigger = xosc.EntityTrigger(
         name="EgoWrongStartSpeed_low",
         delay=0,
         conditionedge=xosc.ConditionEdge.none,
         entitycondition=low_speed_condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
     high_speed_trigger = xosc.EntityTrigger(
         name="EgoWrongStartSpeed_high",
@@ -230,13 +248,12 @@ def create_wrong_start_speed_condition(Map, egoName, eventStartPoint, eventStart
         conditionedge=xosc.ConditionEdge.none,
         entitycondition=high_speed_condition,
         triggerentity=egoName,
-        triggeringrule="any"
+        triggeringrule="any",
     )
 
     lowgroup.add_condition(startpoint_trigger)
     lowgroup.add_condition(low_speed_trigger)
     highgroup.add_condition(startpoint_trigger)
     highgroup.add_condition(high_speed_trigger)
-
 
     return lowgroup, highgroup

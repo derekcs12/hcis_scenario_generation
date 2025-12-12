@@ -1,54 +1,59 @@
 import os
 import pandas as pd
 
+
 def fix_zz_speed(input_csv):
     df = pd.read_csv(input_csv)
 
     for index, row in df.iterrows():
-        scenario_name = row.get('scenario_name', '')
-        
-        if 'ZZ' in scenario_name:
+        scenario_name = row.get("scenario_name", "")
+
+        if "ZZ" in scenario_name:
             # if scenario_name not in ['01FS-ZZ_02SR-ZZ_3', '01FS-ZZ_02SR-ZZ_4']:
             #     continue
             # 偵測 ZZ 所屬 agent：如 Agent2
-            parts = scenario_name.split('_')
-            zz_part = [p for p in parts if 'ZZ' in p]
+            parts = scenario_name.split("_")
+            zz_part = [p for p in parts if "ZZ" in p]
             if not zz_part:
                 print(f"[跳過] {scenario_name} 沒有 ZZ 部分")
                 continue
             print(f"[檢查] {scenario_name} ")
-            
+
             has_fixed = False
             for part in parts:
-                if 'ZZ' not in part:
+                if "ZZ" not in part:
                     continue
-                if '01' in part:
+                if "01" in part:
                     agent_number = 1
-                if '02' in part:
+                if "02" in part:
                     agent_number = 2
-                
-                agent_col = f'Agent{int(agent_number)}_1_SA_EndSpeed'
+
+                agent_col = f"Agent{int(agent_number)}_1_SA_EndSpeed"
                 if agent_col in df.columns:
                     speed_range = str(row[agent_col])
                     # print("    ",agent_col, speed_range)
-                    if '~' in speed_range:
+                    if "~" in speed_range:
                         try:
-                            min_speed, max_speed = map(float, speed_range.split('~'))
+                            min_speed, max_speed = map(float, speed_range.split("~"))
                             if min_speed < 20.0:
-                                print(f"[修正] {part} ｜ {agent_col} 值為 {speed_range}，將其設置為 20.0~20.0")
-                                df.at[index, agent_col] = '20.0~20.0'
+                                print(
+                                    f"[修正] {part} ｜ {agent_col} 值為 {speed_range}，將其設置為 20.0~20.0"
+                                )
+                                df.at[index, agent_col] = "20.0~20.0"
                                 has_fixed = True
 
                             else:
-                                print(f"[跳過] {part} ｜ {agent_col} 值為 {speed_range}，不符合條件")
+                                print(
+                                    f"[跳過] {part} ｜ {agent_col} 值為 {speed_range}，不符合條件"
+                                )
                                 continue
-                            
+
                         except ValueError:
                             # 若格式錯誤，跳過
                             continue
             if has_fixed:
                 df.to_csv(input_csv, index=False)
-                print(f'處理完成，結果儲存至 {input_csv}')
+                print(f"處理完成，結果儲存至 {input_csv}")
         else:
             print(f"[跳過] {input_csv} 的 {scenario_name} 沒有 Agent 部分")
     # from pprint import pprint
@@ -59,13 +64,13 @@ def fix_zz_speed(input_csv):
 def process_xosc_list(zz_xosc_list, base_csv_dir_combined, base_csv_dir_single):
     for xosc_path in zz_xosc_list:
         xosc_name = os.path.splitext(os.path.basename(xosc_path))[0]
-        parts = xosc_name.split('_')
+        parts = xosc_name.split("_")
 
         if len(parts) >= 2:
-            folder_name = '_'.join(parts[:-1])
+            folder_name = "_".join(parts[:-1])
             csv_file = f"{parts[-1]}.csv"
 
-            is_combined = '02' in xosc_name
+            is_combined = "02" in xosc_name
             csv_base = base_csv_dir_combined if is_combined else base_csv_dir_single
             csv_path = os.path.join(csv_base, folder_name, csv_file)
             # if is_combined:
@@ -75,15 +80,16 @@ def process_xosc_list(zz_xosc_list, base_csv_dir_combined, base_csv_dir_single):
         else:
             print(f"[跳過] 無法解析 xosc 名稱: {xosc_name}")
 
+
 def find_zz_xosc_files(folder_path):
     zz_files = []
-    
+
     for root, _, files in os.walk(folder_path):
         for file in files:
-            if file.endswith('.xosc') and 'ZZ' in file:
+            if file.endswith(".xosc") and "ZZ" in file:
                 full_path = os.path.join(root, file)
                 zz_files.append(full_path)
-    
+
     return zz_files
 
 
@@ -98,5 +104,5 @@ zz_xosc_list = find_zz_xosc_files(folder)
 process_xosc_list(
     zz_xosc_list,
     base_csv_dir_combined="/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/scenario_config_combined/",
-    base_csv_dir_single="/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/scenario_config/"
+    base_csv_dir_single="/home/hcis-s19/Documents/ChengYu/hcis_scenario_generation/scenario_config/",
 )

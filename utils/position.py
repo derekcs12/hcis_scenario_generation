@@ -2,9 +2,12 @@ import numpy as np
 from scenariogeneration import xosc
 
 from config import RELATIVE_TRIGGER_POSITIONS
-from utils.trigger import * 
+from utils.trigger import *
 
-def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=None):
+
+def create_LanePosition_from_config(
+    Map, position, orientation=False, s=None, offset=None
+):
     if s == None:
         # index, lane_id , s = map(int,position.split(' '))
         index, lane_id, s, _, orientation = position
@@ -19,10 +22,12 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
 
     orientation = True if orientation == -1 else False
     # print("index, lane_id , s", index, lane_id , s)
-    road = int(Map[index]) # if index < 4 else index #derek: SinD地圖太亂，traj直接給road比較快
+    road = int(
+        Map[index]
+    )  # if index < 4 else index #derek: SinD地圖太亂，traj直接給road比較快
     if np.sign(lane_id) == -1:
         if isinstance(offset, str):
-            offset = f'${{-{offset}}}'
+            offset = f"${{-{offset}}}"
         else:
             offset = -offset
     return xosc.LanePosition(
@@ -30,8 +35,11 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
         offset=offset,
         lane_id=lane_id,
         road_id=road,
-        orientation=xosc.Orientation(
-            h=3.14159, reference='relative') if orientation else xosc.Orientation()
+        orientation=(
+            xosc.Orientation(h=3.14159, reference="relative")
+            if orientation
+            else xosc.Orientation()
+        ),
     )
 
 
@@ -43,7 +51,10 @@ def get_entity_position(entityName):
 # Used for config_generator_*.py
 # =======================
 
-def set_agentpos_relative_to_egopos(egoPos, road_index=None, relative_lane=0, s_offset=0, lane_offset=0, orientation=1):
+
+def set_agentpos_relative_to_egopos(
+    egoPos, road_index=None, relative_lane=0, s_offset=0, lane_offset=0, orientation=1
+):
     agentPos = egoPos.copy()
     agentPos[0] = road_index if road_index != None else agentPos[0]
     agentPos[1] += relative_lane * int(np.sign(agentPos[1]))
@@ -62,12 +73,18 @@ def set_agentStart_from_relative_triggerAt(egoTriggerAt, relative_pos):
     s_offset = RELATIVE_TRIGGER_POSITIONS[relative_pos][3]
     lane_offset = egoTriggerAt[3] + RELATIVE_TRIGGER_POSITIONS[relative_pos][4]
 
-    return set_agentpos_relative_to_egopos(egoTriggerAt, road_index=road_index, relative_lane=relative_lane, s_offset=s_offset, lane_offset=lane_offset)
+    return set_agentpos_relative_to_egopos(
+        egoTriggerAt,
+        road_index=road_index,
+        relative_lane=relative_lane,
+        s_offset=s_offset,
+        lane_offset=lane_offset,
+    )
 
 
-def set_trigger_dict_from_absolute_pos(lane, road, s, offset, triggertype='absolute'):
+def set_trigger_dict_from_absolute_pos(lane, road, s, offset, triggertype="absolute"):
     position_vals = [triggertype, lane, road, s, offset]
-    trigger_dict = dict.fromkeys(['type', 'lane', 'road', 's', 'offset'], '')
+    trigger_dict = dict.fromkeys(["type", "lane", "road", "s", "offset"], "")
     trigger_dict.update(zip(trigger_dict, position_vals))
 
     return trigger_dict

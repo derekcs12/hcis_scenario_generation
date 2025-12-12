@@ -1,9 +1,9 @@
 import os
 import yaml
 import argparse
-from generate import generate, esmini
+from generate import generate
+from scenariogeneration import esmini
 import argcomplete
-import random
 
 """
  Usage:
@@ -11,51 +11,49 @@ import random
     python main.py -b config/base/hcis_no_runup.yaml -c all --esmini-path /home/hcis-s19/Documents/ChengYu/esmini  #(跑完自動開啟esmini)
 """
 
+
 def valid_path(path):
-    """驗證路徑是否有效"""
-    if path == 'all' or path == 'sind':
+    if path == "all" or path == "sind":
         return path
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(f"invalid path: {path}")
     return path
 
+
 def parse_args():
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        '-s', '--sc',
-        metavar='S',
-        default='',
-        nargs="+",
-        help='Scenario category')
+        "-s", "--sc", metavar="S", default="", nargs="+", help="Scenario category"
+    )
     argparser.add_argument(
-        '-b', '--base-config',
+        "-b",
+        "--base-config",
         type=valid_path,
-        default='config/base/hcis_base.yaml',
-        help='Base Config file path')
+        default="config/base/example.yaml",
+        help="Base Config file path",
+    )
     # config path
     argparser.add_argument(
-        '-c', '--config',
+        "-c",
+        "--config",
         required=True,
-        metavar='C',
+        metavar="C",
         type=valid_path,
-        help='Config file path')
+        help="Config file path",
+    )
     argparser.add_argument(
-        '-d', '--deactivate',
-        action='store_true',
-        help='Whether to deactivate the controller')
+        "--controller",
+        metavar="CONTROLLER",
+        default="",
+        help="Controller name (default: None)",
+    )
     argparser.add_argument(
-        '--controller',
-        metavar='CONTROLLER',
-        default='',
-        help='Controller name (default: None)')
-    argparser.add_argument(
-        '--esmini-path',
-        type=valid_path,
-        default=None,
-        help='Esmini path')
-    
+        "--esmini-path", type=valid_path, default=None, help="Esmini path"
+    )
+
     argcomplete.autocomplete(argparser)
     return argparser.parse_args()
+
 
 def collect_scenarios(path):
     collection = []
@@ -64,33 +62,34 @@ def collect_scenarios(path):
             # # Downsampling
             # if 1.2 < random.randint(0, 10):
             #     continue
-            if file.endswith('.yaml'):
+            if file.endswith(".yaml"):
                 file_path = os.path.join(root, file)
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     scenario_config = yaml.safe_load(f)
                 collection.append(scenario_config)
-                print('find config file: ', len(collection),end='\r')
+                print("find config file: ", len(collection), end="\r")
     return collection
+
 
 def main():
     args = parse_args()
 
-    # === Load Base Config === 
-    with open(args.base_config,'r') as f:
+    # === Load Base Config ===
+    with open(args.base_config, "r") as f:
         base_config = yaml.safe_load(f)
 
     # === Load Scenario Configs ===
     scenario_configs = []
-    if args.config == 'all':
+    if args.config == "all":
         # collect all files in the folder
-        scenario_configs.extend(collect_scenarios('./config/scenario_config'))
-        scenario_configs.extend(collect_scenarios('./config/scenario_config_combined'))
-    elif args.config.endswith('.yaml'):
+        scenario_configs.extend(collect_scenarios("./config/scenario_config"))
+        scenario_configs.extend(collect_scenarios("./config/scenario_config_combined"))
+    elif args.config.endswith(".yaml"):
         # collect single file
-        with open(args.config,'r') as f:
+        with open(args.config, "r") as f:
             scenario_config = yaml.safe_load(f)
         scenario_configs.append(scenario_config)
-    elif os.path.isdir(args.config): 
+    elif os.path.isdir(args.config):
         # collect all files in the folder
         scenario_configs = collect_scenarios(args.config)
     else:
@@ -98,33 +97,35 @@ def main():
 
     # === Generate & Save xosc ===
     for scenario_config in scenario_configs:
-        scenario_config['Controller'] = args.controller
+        scenario_config["Controller"] = args.controller
 
-        # Generate xosc 
+        # Generate xosc
         sce = generate(base_config, scenario_config)
-        
+
         if args.esmini_path is not None:
             esmini(sce, esminipath=args.esmini_path, window_size="60 60 1920 1080")
 
         # Save xosc
-        for path in base_config['save_paths']:
-            if path.endswith('.xosc'):
+        for path in base_config["save_paths"]:
+            if path.endswith(".xosc"):
                 dir_path = os.path.dirname(path)
                 file_path = path
-            elif os.path.isdir(path) or path.endswith('/'):
+            elif os.path.isdir(path) or path.endswith("/"):
                 dir_path = path
-                file_path = os.path.join(dir_path, f"{scenario_config['Scenario_name']}.xosc")
+                file_path = os.path.join(
+                    dir_path, f"{scenario_config['Scenario_name']}.xosc"
+                )
             else:
                 raise ValueError(f"Invalid save path: {path}")
-            
+
             os.makedirs(dir_path, exist_ok=True)
             sce.write_xml(file_path)
 
-
     print("total config: ", len(scenario_configs))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         main()
     finally:
-        print('Done.')
+        print("Done.")
