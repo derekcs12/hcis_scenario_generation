@@ -13,8 +13,6 @@ def combine_all_scenarios(basic_scenarios_folder):
     print(f"Total {len(all_basis)} folder found.")
 
     # Define save folder
-    # save_root = f'scenario_config_combined/{datetime.datetime.now()}'
-    # save_root = f'scenario_config_combined/{datetime.datetime.date(datetime.datetime.now())}'
     save_root = "config/scenario_config_combined"
 
     # Create save folder

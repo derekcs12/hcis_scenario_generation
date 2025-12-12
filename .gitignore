@@ -3,11 +3,5 @@
 *.xosc
 log.txt
 config/*
-
-
-# 忽略 scenario_config_ 開頭的備份料夾
-scenario_config*/
-scenario_config_combined*/
-ignore_folder
-runtime_data
+runtime_data/
 result/
