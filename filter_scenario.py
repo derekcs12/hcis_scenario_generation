@@ -5,7 +5,7 @@ import subprocess
 import yaml
 from generate import generate
 
-ESMINI_HOME = "/home/hcis-s05/Downloads/esmini-demo"
+ESMINI_HOME = "" # set your esmini path here
 
 
 def check_collision_between_agents(sc_path):
@@ -84,4 +84,3 @@ if __name__ == "__main__":
             else:
                 print("No collision detected")
 
-    # check_collision_between_agents('/home/hcis-s05/Downloads/esmini-demo/resources/xosc/tmp.xosc')
