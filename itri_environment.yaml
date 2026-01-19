@@ -1,0 +1,7 @@
+name: itri
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pyyaml
+prefix: /home/hcis-s19/miniconda3/envs/itri

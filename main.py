@@ -9,6 +9,7 @@ import random
  Usage:
     python main.py -b config/base/hcis_no_runup.yaml -c all
     python main.py -b config/base/hcis_no_runup.yaml -c all --esmini-path /home/hcis-s19/Documents/ChengYu/esmini  #(跑完自動開啟esmini)
+    python main.py -b config/base/HetroD_no_runup.yaml -c /home/hcis-s19/Documents/ChengYu/retrive_scene_nps/yaml/config_dynamic.yaml
 """
 
 def valid_path(path):

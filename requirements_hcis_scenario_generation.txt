@@ -1,0 +1,11 @@
+# Requirements for hcis_scenario_generation
+# Recommended: install into a virtualenv. "scenariogeneration" pinned as example (adjust if needed).
+scenariogeneration==0.14.9
+pandas
+numpy
+requests
+tqdm
+PyYAML
+argcomplete
+rich
+pyyaml

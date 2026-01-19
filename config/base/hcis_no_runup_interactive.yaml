@@ -2,7 +2,9 @@ company: HCIS # or ITRI
 
 save_paths:
   - "./test/"
-  - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  # - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  # - "/home/hcis-s19/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  - "/home/hcis-s19/Documents/ChengYu/esmini/resources/xosc/0918/"
 
 xodr_path: "./hct_6.xodr"
 

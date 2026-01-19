@@ -1,8 +1,12 @@
+# Usage:
+#    python main.py -b config/base/itri_no_runup.yaml -c all
 company: ITRI # or HCIS
 
 save_paths:
-  - "./test/itri"
-  - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  # - "./test/itri"
+  # - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  # - "/home/hcis-s19/Documents/ChengYu/itri-lssvip-hcis/resources/xosc/itri/"
+  - "/home/hcis-s19/Documents/ChengYu/ITRI/xosc/1029/"
 
 xodr_path: "../../xodr/itri/hct_6.xodr"
 
@@ -30,7 +34,7 @@ variables:
     value: false
   - name: VAL-AV_CONNECTION_TIMEOUT
     type: double
-    value: 3.0
+    value: 20.0
   - name: FLAG-EGO_REACHED_END
     type: boolean
     value: false
@@ -39,7 +43,7 @@ variables:
     value: false
   - name: VAL-EGO_TLE
     type: double
-    value: 5.0
+    value: 20.0
   - name: FLAG-EGO_COLLISION
     type: boolean
     value: false

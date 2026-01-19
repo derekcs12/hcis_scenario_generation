@@ -5,7 +5,8 @@ from scenariogeneration import xosc
 def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName, tolerance=2, delay = 0, triggerName="EgoApproachInitWp"):
     
     road_index, lane_id, s, offset = Trigger['road'], Trigger['lane'], Trigger['s'], Trigger['offset']
-    road = int(Map[road_index]) # if road_index < 4 else road_index #derek: SinD地圖太亂，traj直接給road比較快
+    # road = int(Map[road_index]) # if road_index < 4 else road_index #derek: SinD地圖太亂，traj直接給road比較快
+    road = road_index #derek: SinD地圖太亂，traj直接給road比較快
     return xosc.EntityTrigger(name=triggerName,
                               delay=delay,
                               conditionedge=xosc.ConditionEdge.rising,
@@ -27,7 +28,7 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
     # ego_s = int(ego_wp[2])
 
     ego_road, ego_lane, ego_s, ego_offset, _ = Agent['Start_pos']
-    ego_road = int(Map[ego_road])
+    # ego_road = int(Map[ego_road])
 
     if lateral == 0:
         lane_id = ego_lane

@@ -58,7 +58,7 @@ def generate(base_config, scenario_config):
 
 
     # === 3. 建立 Entities (Ego + Agents + Pedestrians)(document:xosc.Entities) ===
-    agentController = xosc.Controller(name="IgnoreEgoACCController", properties=xosc.Properties())
+    agentController = xosc.Controller(name="ACCController", properties=xosc.Properties())
     entities = create_Entity(egoController, agentCount, pedCount, agentController=agentController)
 
 
@@ -68,16 +68,16 @@ def generate(base_config, scenario_config):
     init = xosc.Init()
 
     # Ego 初始位置、控制器啟動與終點位置
-    # egoStartPos = create_LanePosition_from_config(MapConfig, EgoConfig['Start_pos'])
-    eventStart_road = MapConfig[Actors['Agents'][0]['Start_trigger']['road']]
-    eventStart_lane = Actors['Agents'][0]['Start_trigger']['lane']
-    eventStart_s = Actors['Agents'][0]['Start_trigger']['s']
-    eventStart_offset = Actors['Agents'][0]['Start_trigger']['offset']
-    egoStartPos = xosc.LanePosition(
-        s=eventStart_s,
-        offset=eventStart_offset,
-        lane_id=eventStart_lane,
-        road_id=eventStart_road)
+    egoStartPos = create_LanePosition_from_config(MapConfig, EgoConfig['Start_pos'])
+    # eventStart_road = MapConfig[Actors['Agents'][0]['Start_trigger']['road']]
+    # eventStart_lane = Actors['Agents'][0]['Start_trigger']['lane']
+    # eventStart_s = Actors['Agents'][0]['Start_trigger']['s']
+    # eventStart_offset = Actors['Agents'][0]['Start_trigger']['offset']
+    # egoStartPos = xosc.LanePosition(
+    #     s=eventStart_s,
+    #     offset=eventStart_offset,
+    #     lane_id=eventStart_lane,
+    #     road_id=eventStart_road)
     egoEndPos = create_LanePosition_from_config(MapConfig, EgoConfig['End_pos'])
     egoController = True
 
@@ -252,6 +252,12 @@ def get_Ego_Controller(controller_name):
         egoControllerProperties.add_property(name="mode", value="override")
         egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
         return xosc.Controller(name="ACCController", properties=egoControllerProperties)
+    elif controller_name == "IgnoreEgoACCController" or controller_name == "IgnoreEgoACC":
+        egoControllerProperties = xosc.Properties()
+        egoControllerProperties.add_property(name="timeGap", value="1.0")
+        egoControllerProperties.add_property(name="mode", value="override")
+        egoControllerProperties.add_property(name="setSpeed", value="${$Ego_Speed / 3.6}")
+        return xosc.Controller(name="IgnoreEgoACCController", properties=egoControllerProperties)
     elif controller_name == "interactiveDriver":
         print("Ego Controller: interactiveDriver")
         return xosc.CatalogReference(catalogname="ControllerCatalog", entryname="interactiveDriver")

@@ -8,10 +8,10 @@ python scripts/config_generator_straight_at4way.py
 python combine_all.py
 
 # Create Scenario Overview list
-python scripts/combine_csv_files.py
+# python scripts/combine_csv_files.py
 
 # Turn .yaml into .xosc
-python main.py -b config/base/hcis_no_runup.yaml -c all
+# python main.py -b config/base/hcis_no_runup.yaml -c all
 # python main.py -b config/base/itri_no_runup.yaml -c all
 # python main.py -b config/base/hcis_no_runup.yaml -c all --esmini-path /home/hcis-s19/Documents/ChengYu/esmini
 

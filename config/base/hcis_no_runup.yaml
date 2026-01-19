@@ -1,10 +1,11 @@
 company: HCIS # or ITRI
 
 save_paths:
-  - "./test/"
-  - "/home/hcis-s05/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  # - "./test/"
+  # - "/home/hcis-s19/ysws/esmini/resources/xosc/tmp/tmp.xosc"
+  - "/home/hcis-s19/Documents/ChengYu/esmini/resources/xosc/1030/"
 
-xodr_path: "./hct_6.xodr"
+xodr_path: "../hct_6.xodr"
 
 ego:
   name: "Ego"
@@ -12,11 +13,11 @@ ego:
 
 catalogs:
   - name: VehicleCatalog
-    path: "./Catalogs/Vehicles"
+    path: "../Catalogs/Vehicles"
   - name: PedestrianCatalog
-    path: "./Catalogs/Pedestrians"
+    path: "../Catalogs/Pedestrians"
   - name: ControllerCatalog
-    path: "./Catalogs/Controllers"
+    path: "../Catalogs/Controllers"
 
 variables:
   - name: FLAG-AV_CONNECTED

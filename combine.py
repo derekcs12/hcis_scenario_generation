@@ -1,3 +1,4 @@
+import difflib
 import glob
 import os
 import yaml
@@ -25,10 +26,17 @@ def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
     yaml2 = yaml.load(open(yaml2), Loader=yaml.FullLoader)
 
     msg = ''
+    import difflib
+    import pprint
+    def compare_dicts(d1, d2):
+        return ('\n' + '\n'.join(difflib.ndiff(
+                    pprint.pformat(d1).splitlines(),
+                    pprint.pformat(d2).splitlines())))
+
     # check if ego vehicle is the same
     if(yaml1['Ego'] != yaml2['Ego']):
         # print('ego vehicles are different')
-        msg = 'Ego vehicles are different'
+        msg = 'Ego vehicles are different' + compare_dicts(yaml1['Ego'], yaml2['Ego'])
         return None, msg
     
     # check if map is the same
@@ -36,6 +44,8 @@ def combine_yaml(yaml1, yaml2,combined_scenario_name, mode='agent'):
         # print('maps are different')
         msg = 'Maps are different'
         return None, msg
+    
+    return None, msg
     
     # combine actors
     actors1 = yaml1['Actors']

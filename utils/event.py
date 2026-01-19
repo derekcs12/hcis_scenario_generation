@@ -159,7 +159,8 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
         console = console.Console()
         # console.log(currentPosition);exit()
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s = 0))) #與出發點同道之進入路口點，加這個點軌跡比較自然
+        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #重複出發點，讓起始切線趨近 0，解決橫向滑動問題
+        # nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s = 0))) #與出發點同道之進入路口點，加這個點軌跡比較自然
         # nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #與出發點同道之進入路口點，加這個點軌跡比較自然
         if event['Use_route'] != None:
             nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
@@ -167,11 +168,18 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
         nurbs.add_control_point(xosc.ControlPoint(
             create_LanePosition_from_config(Map, event['End'], s=0)))  # 目的地
         nurbs.add_control_point(xosc.ControlPoint(targetPoint))  # 目的地
-        if event['Use_route'] != None:
-            nurbs.add_knots([0, 0, 0, 0, 1, 2, 2, 2, 2])
-        else:
-            nurbs.add_knots([0, 0, 0, 0, 2, 2, 2, 2])
 
+        knots_list = []
+        knots_number = nurbs.order + len(nurbs.controlpoints)
+        for i in range(knots_number):
+            if i < nurbs.order:
+                knots_list.append(0)
+            elif i >= knots_number - nurbs.order:
+                knots_list.append(2)
+            else:
+                knots_list.append(2/(knots_number - 2 * nurbs.order + 1))
+       
+        nurbs.add_knots(knots_list)
         trajectory.add_shape(nurbs)
 
         # Create a FollowTrajectory action
