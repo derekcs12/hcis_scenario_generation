@@ -1,0 +1,43 @@
+[
+  {
+    "id": "6705eb318eb0b4d25f529c02",
+    "name": "collision",
+    "unit": "boolean",
+    "rule": "lessThan",
+    "createdAt": "2024-10-09T02:32:17.662Z",
+    "updatedAt": "2024-10-09T02:32:17.662Z"
+  },
+  {
+    "id": "66d6af255fff188fbab3f690",
+    "name": "Pass Time Less Than",
+    "unit": "s",
+    "rule": "lessThan",
+    "createdAt": "2024-09-03T06:39:33.405Z",
+    "updatedAt": "2024-09-12T02:56:46.700Z",
+    "description": "Execution Time:\n    Execution time must be less than the Pass Time for the trial to be considered success.\n    The start of execution time depends on the scenario:\n        If \"Start Observation Sampling Conditions\" is defined in the scenario, execution time starts at this moment.\n        Otherwise, execution time starts when the ego begins moving.\n\nScenario Timeout:\n    If the scenario doesn't end within (PassTimeLessThan + 2) seconds from the execution time start, the trial is considered failed and will be stopped.\n    This feature prevents scenarios where the ego might become stuck at a certain point.\n\n"
+  },
+  {
+    "id": "666c0d62173ee592462062aa",
+    "name": "Minimum Space Between Ego and Agents",
+    "unit": "m",
+    "rule": "greaterThan",
+    "createdAt": "2024-06-14T09:29:06.512Z",
+    "updatedAt": "2024-06-14T09:29:06.512Z"
+  },
+  {
+    "id": "666c0d33173ee592462062a2",
+    "name": "Max Deceleration Less Than",
+    "unit": "m/s^2",
+    "rule": "lessThan",
+    "createdAt": "2024-06-14T09:28:19.564Z",
+    "updatedAt": "2025-04-09T09:14:52.464Z"
+  },
+  {
+    "id": "666c0d22173ee5924620629a",
+    "name": "Collision Less Than",
+    "unit": "times",
+    "rule": "lessThan",
+    "createdAt": "2024-06-14T09:28:02.855Z",
+    "updatedAt": "2024-06-14T09:28:02.855Z"
+  }
+]

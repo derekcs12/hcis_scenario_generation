@@ -20,7 +20,7 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
     orientation = True if orientation == -1 else False
     # print("index, lane_id , s", index, lane_id , s)
     # road = int(Map[index]) # if index < 4 else index #derek: SinD地圖太亂，traj直接給road比較快
-    road = index #derek: SinD地圖太亂，traj直接給road比較快
+    road = index #derek: 軌跡起始位置不固定，直接給road
     if np.sign(lane_id) == -1:
         if isinstance(offset, str):
             offset = f'${{-{offset}}}'

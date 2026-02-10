@@ -1,4 +1,5 @@
 import os
+import math
 from pprint import pprint
 from time import time
 import numpy as np
@@ -24,7 +25,8 @@ from utils.event import (
     generate_Cut_Event,
     generate_Offset_Event,
     generate_Position_Event,
-    generate_Zigzag_Event
+    generate_Zigzag_Event,
+    generate_FollowTrajectory_Event,  # <-- add this import
 )
 
 
@@ -90,8 +92,12 @@ def generate(base_config, scenario_config):
     # Agents / Pedestrians 初始位置
     for cata in Actors:
         for idx, actor in enumerate(Actors[cata], start=1):
+
             actorName = f"{cata[:-1]}{idx}"
             startPos = create_LanePosition_from_config(MapConfig, actor['Start_pos'], s=f"${actorName}_S", offset=f"${actorName}_Offset")
+            if actor['Acts'][0]['Type'] == 'replay':
+                first_point = actor['Acts'][0]['Events'][0]['Trajectories'][0]
+                startPos = xosc.WorldPosition(first_point[0], first_point[1], -100, math.radians(first_point[2]), 0, 0)
             init.add_init_action(actorName, xosc.TeleportAction(startPos))
 
     # === 4.2 產生 Maneuvers 與 Events ===
@@ -106,6 +112,11 @@ def generate(base_config, scenario_config):
         for idx, actor in enumerate(Actors[cata], start=1):
             actorName = f"{cata[:-1]}{idx}"
             maneuvers, previousEventNames = generate_Adv_Maneuver(actorName, actor, MapConfig)
+            from rich import console
+            console = console.Console()
+            # console.log(dir(maneuvers))
+            console.log(previousEventNames)
+            # exit()
             if maneuvers:
                 allManeuvers[actorName] = maneuvers
                 allStartEvent.append(previousEventNames[0])
@@ -205,6 +216,16 @@ def parameter_Declaration(Actors, Ego):
                                 name=f"{actorName}_{actIndex}_SA_EndSpeed", parameter_type="double", value=str(event['End']))
                             paraList.extend(
                                 [dynamicDelay, dynamicShape, dynamicDuration, endSpeed])
+                elif act['Type'] == 'replay':
+                    for eventIndex, event in enumerate(act['Events'], start=1):
+                        if event['Type'] == 'follow_trajectory':
+                            spawn_delay = xosc.Parameter(
+                                name=f"{actorName}_Delay", parameter_type="double", value=str(act['Delay'])) #Spawn event
+                            delay = xosc.Parameter(
+                                name=f"{actorName}_{actIndex}_Delay", parameter_type="double", value=str(0.0)) #Dummy event
+                            loop = xosc.Parameter(
+                                name=f"{actorName}_Loop_Times", parameter_type="double", value=str(event['Loop']))
+                            paraList.extend([loop, delay, spawn_delay])
                 else:
                     delay = xosc.Parameter(
                         name=f"{actorName}_{actIndex}_Delay", parameter_type="double", value=str(act['Delay']))
@@ -237,6 +258,25 @@ def parameter_Declaration(Actors, Ego):
 
                         paraList.extend(
                             [dynamicDelay, dynamicDuration, dynamicShape])
+
+    # Add Agent1_1_TA_Times parameter if any act of type follow_trajectory with Loop: true is found
+    for cata in Actors:
+        for actorIndex, actor in enumerate(Actors[cata], start=1):
+            actorName = f"{cata[:-1]}{actorIndex}"
+            # check if actor has 'Acts'
+            if 'Acts' not in actor:
+                print(f"{actorName} has no 'Acts'")
+                continue
+            for actIndex, act in enumerate(actor['Acts'], start=1):
+                print(f"Processing {actorName} Act {actIndex}: {act['Type']}"   )
+                if act['Type'] == 'follow_trajectory':
+                    for eventIndex, event in enumerate(act['Events'], start=1):
+                        if event.get('Loop', False):
+                            ta_times_name = f"{actorName}_{actIndex}_TA_Times"
+                            ta_times_param = xosc.Parameter(
+                                name=ta_times_name, parameter_type="double", value="5"
+                            )
+                            paraList.append(ta_times_param)
 
     for i in paraList:
         paramdec.add_parameter(i)
@@ -338,7 +378,7 @@ def generate_Adv_Maneuver(actorName, agent, Map):
                     advManeuver.add_event(currentEvent)
                 elif event['Type'] == 'offset':
                     zigzagEvent, currentPosition = generate_Zigzag_Event(
-                        actorName, actIndex, event, Map, previousEventName, currentPosition)
+                        actorName, actIndex, event, Map, previousEventNames, currentPosition)
                     for currentEvent in zigzagEvent:
                         currentEventName.append(currentEvent.name)
                         advManeuver.add_event(currentEvent)
@@ -346,6 +386,18 @@ def generate_Adv_Maneuver(actorName, agent, Map):
                     print('Event Type Error')
                     break
 
+            previousEventName = currentEventName
+        elif act['Type'] == 'replay':
+            for eventIndex, event in enumerate(act['Events'], start=1):
+                if event['Type'] == 'follow_trajectory':
+                    currentEvent = generate_FollowTrajectory_Event(
+                        actorName, actIndex, event, previousEventName
+                    )
+                    currentEventName.append(currentEvent.name)
+                    advManeuver.add_event(currentEvent)
+                else:
+                    print('Event Type Error')
+                    break
             previousEventName = currentEventName
         else:
             for eventIndex, event in enumerate(act['Events'], start=1):
@@ -479,5 +531,3 @@ def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors)
 
     return param_maneuver
 
-
-    

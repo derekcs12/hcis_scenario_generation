@@ -4,6 +4,7 @@ import argparse
 from generate import generate, esmini
 import argcomplete
 import random
+import glob
 
 """
  Usage:
@@ -38,7 +39,7 @@ def parse_args():
         '-c', '--config',
         required=True,
         metavar='C',
-        type=valid_path,
+        # type=valid_path,
         help='Config file path')
     argparser.add_argument(
         '-d', '--deactivate',
@@ -83,17 +84,21 @@ def main():
     # === Load Scenario Configs ===
     scenario_configs = []
     if args.config == 'all':
-        # collect all files in the folder
         scenario_configs.extend(collect_scenarios('./config/scenario_config'))
         scenario_configs.extend(collect_scenarios('./config/scenario_config_combined'))
     elif args.config.endswith('.yaml'):
-        # collect single file
         with open(args.config,'r') as f:
             scenario_config = yaml.safe_load(f)
         scenario_configs.append(scenario_config)
     elif os.path.isdir(args.config): 
-        # collect all files in the folder
         scenario_configs = collect_scenarios(args.config)
+    elif '*' in args.config or '?' in args.config or '[' in args.config:
+        # Handle glob patterns
+        for file_path in glob.glob(args.config):
+            if file_path.endswith('.yaml'):
+                with open(file_path, 'r') as f:
+                    scenario_config = yaml.safe_load(f)
+                scenario_configs.append(scenario_config)
     else:
         raise ValueError("Invalid config file path.")
 

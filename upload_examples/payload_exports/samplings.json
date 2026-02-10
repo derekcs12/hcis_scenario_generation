@@ -1,0 +1,29 @@
+[
+  {
+    "id": "66e2bf595ac155b0acf38cf0",
+    "name": "uniform-100-sobol-100-straddle-100-20",
+    "steps": [
+      {
+        "method": "uniform",
+        "sampleSize": 100,
+        "id": "66e2bf598dbcda0001877eef"
+      },
+      {
+        "method": "sobol",
+        "sampleSize": 100,
+        "id": "66e2bf598dbcda0001877ef0"
+      },
+      {
+        "method": "straddle",
+        "sampleSize": 100,
+        "parallelCounts": 20,
+        "maxSurrogateTrainingSampleSize": 1000,
+        "acquisitionSampleSize": 2000,
+        "acquisitionExplorationFactor": 0.1,
+        "id": "66e2bf598dbcda0001877ef1"
+      }
+    ],
+    "createdAt": "2024-09-12T10:15:53.316Z",
+    "updatedAt": "2024-10-04T03:57:38.999Z"
+  }
+]
