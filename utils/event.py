@@ -44,19 +44,19 @@ def generate_Agent_Start_Event(actorName, agent, Map):
     #         Map, agent['Start_trigger'], 'Ego')
     
     # agentStartTrigger = create_flag_trigger('IS_VALID', 'true', delay=0, conditionedge=xosc.ConditionEdge.rising)
-    agentStartTrigger = create_flag_trigger('FLAG-AV_CONNECTED', 'true', delay=0, conditionedge=xosc.ConditionEdge.rising)
-    if agent['Acts'][0]['Type'] == 'replay':
-        startPos = create_LanePosition_from_config(Map, agent['Start_pos'], s=f"${actorName}_S", offset=f"${actorName}_Offset")
-        agentStartTrigger = create_flag_trigger('FLAG-AV_CONNECTED', 'true', delay=f"${actorName}_Delay", conditionedge=xosc.ConditionEdge.rising)
+    # agentStartTrigger = create_flag_trigger('FLAG-AV_CONNECTED', 'true', delay=0, conditionedge=xosc.ConditionEdge.rising)
+    startPos = create_LanePosition_from_config(Map, agent['Start_pos'], s=f"${actorName}_S", offset=f"${actorName}_Offset")
+    agentStartTrigger = create_flag_trigger('FLAG-AV_CONNECTED', 'true', delay=f"${actorName}_Delay", conditionedge=xosc.ConditionEdge.rising)
         
 
     advStartSpeedEvent = xosc.Event(
         f"{actorName}_StartSpeedEvent", xosc.Priority.overwrite)
     advStartSpeedEvent.add_action(
         f"{actorName}_StartSpeedAction", agentInitSpeed)
-    advStartSpeedEvent.add_action(
-        f"{actorName}_ActivateController", xosc.ActivateControllerAction(longitudinal=True, lateral=True))
-    if agent['Acts'][0]['Type'] == 'replay':
+    if 'Pedestrian' not in actorName:
+        advStartSpeedEvent.add_action(
+            f"{actorName}_ActivateController", xosc.ActivateControllerAction(longitudinal=True, lateral=True))
+    if 'replay' == agent['Acts'][0]['Type']:
         advStartSpeedEvent.add_action(
             f"{actorName}_SpawnActor", xosc.TeleportAction(startPos))
     advStartSpeedEvent.add_trigger(agentStartTrigger)
@@ -162,7 +162,7 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
             trajectory, xosc.FollowingMode.position)
     elif event['Dynamic_shape'] == 'Curve':
         trajectory = xosc.Trajectory('selfDefineTrajectory', False)
-        road_center = event['Use_route']
+        
         nurbs = xosc.Nurbs(4)
 
         from rich import console
@@ -173,11 +173,20 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
         front_s2 = f'${{${actorName}_{actIndex-1}_S {sign} 1}}' if actIndex > 1 else f'${{${actorName}_S {sign} 1}}' 
 
         nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s1))) #車頭擺正,解決nurb橫向滑動問題
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s2))) #車頭擺正,解決nurb橫向滑動問題
+        if "Pedestrian" not in actorName:
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s1))) #車頭擺正,解決nurb橫向滑動問題
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s2))) #車頭擺正,解決nurb橫向滑動問題
         if event['Use_route'] != None:
-            nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
-                road_center[0], road_center[1]), weight=5))  # 路口中心
+            use_route = []
+            # 相容舊版config yaml
+            # print((event['Use_route']))
+            if type(event['Use_route'][0]) == float:
+                use_route = [event['Use_route']]
+            else:
+                use_route = event['Use_route']
+            for points in use_route:
+                nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
+                    points[0], points[1]), weight=5))  # 路口中心
         # nurbs.add_control_point(xosc.ControlPoint(
         #     create_LanePosition_from_config(Map, event['End'], s=0)))  # 目的地
         nurbs.add_control_point(xosc.ControlPoint(targetPoint))  # 目的地
@@ -290,6 +299,7 @@ def generate_FollowTrajectory_Event(actorName, actIndex, event, previousEventNam
     follow_event = xosc.Event(eventName, xosc.Priority.parallel)
     trajectories = event.get('Trajectories', [])
     loop = event.get('Loop', False)
+    # print(f"Generating FollowTrajectory Event: {eventName}, {len(trajectories)}")
 
     """
     用NURBS 生成軌跡
@@ -327,25 +337,26 @@ def generate_FollowTrajectory_Event(actorName, actIndex, event, previousEventNam
     points = trajectories
     vertices = []
     time = []
+    previous_heading = None
+
     for i in range(len(points)):
-        if i % 15 != 0:
+        if i % 6 != 0:
             continue
-        x, y, _ = points[i]
+        x, y, h = points[i]
 
-        
-        # 自動計算 Heading: 指向下一點的方向
-        h = 0.0
-        if i < len(points) - 1:
-            next_x, next_y, _ = points[i+1]
-            h = math.atan2(next_y - y, next_x - x)
-        else:
-            # 最後一點繼承前一點的角度
-            h = vertices[-1].h if vertices else 0.0
-            # print(dir(vertices[-1]))
+        if abs(h) > (2 * math.pi + 1e-6):
+            h = math.radians(h)
+        h = math.atan2(math.sin(h), math.cos(h))
 
-        # 建立 Vertex 並加入清單
-        vertices.append(xosc.WorldPosition(x, y, 0, h, 0, 0)) 
-        time.append(i/30) # 這裡的 0 是 time，若不靠時間觸發可設為 0
+        if previous_heading is not None:
+            while h - previous_heading > math.pi:
+                h -= 2 * math.pi
+            while h - previous_heading < -math.pi:
+                h += 2 * math.pi
+
+        previous_heading = h
+        vertices.append(xosc.WorldPosition(x, y, 0, h))
+        time.append(i / 30 )
 
     # 2. 建立 Trajectory 物件
     polyline = xosc.Polyline(time, vertices)
@@ -382,5 +393,5 @@ def _knots_list(order, num_control_points):
         elif i >= knots_number - order:
             knots_list.append(2)
         else:
-            knots_list.append(2/(knots_number - 2 * order + 1))
+            knots_list.append(2/(knots_number - 2 * order + 1) * (i - order + 1))
     return knots_list

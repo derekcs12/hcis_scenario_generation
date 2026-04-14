@@ -1,8 +1,8 @@
 import os
 import yaml
 import argparse
+import concurrent.futures
 from generate import generate, esmini
-import argcomplete
 import random
 import glob
 
@@ -55,50 +55,96 @@ def parse_args():
         type=valid_path,
         default=None,
         help='Esmini path')
+    argparser.add_argument(
+        '--yaml-workers',
+        type=int,
+        default=0,
+        help='Number of worker threads for loading yaml files (0: auto)')
     
-    argcomplete.autocomplete(argparser)
     return argparser.parse_args()
 
-def collect_scenarios(path):
+
+YAML_LOADER = getattr(yaml, 'CSafeLoader', yaml.SafeLoader)
+
+
+def load_yaml(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return yaml.load(f, Loader=YAML_LOADER)
+
+
+def iter_yaml_files(path):
+    stack = [path]
+    while stack:
+        current = stack.pop()
+        with os.scandir(current) as it:
+            for entry in it:
+                if entry.is_dir(follow_symlinks=False):
+                    stack.append(entry.path)
+                elif entry.is_file() and entry.name.endswith('.yaml'):
+                    yield entry.path
+
+
+def resolve_yaml_workers(configured_workers):
+    if configured_workers is None or configured_workers <= 0:
+        cpu_count = os.cpu_count() or 4
+        return max(1, min(32, cpu_count * 4))
+    return max(1, configured_workers)
+
+
+def collect_scenarios(path, yaml_workers=0):
     collection = []
-    for root, dirs, files in os.walk(path):
-        for file in files:
+    file_paths = list(iter_yaml_files(path))
+    total = len(file_paths)
+    if total == 0:
+        return collection
+
+    workers = resolve_yaml_workers(yaml_workers)
+
+    # Small set: avoid thread-pool overhead
+    if workers == 1 or total < 64:
+        append = collection.append
+        for idx, file_path in enumerate(file_paths, start=1):
             # # Downsampling
             # if 1.2 < random.randint(0, 10):
             #     continue
-            if file.endswith('.yaml'):
-                file_path = os.path.join(root, file)
-                with open(file_path, 'r') as f:
-                    scenario_config = yaml.safe_load(f)
-                collection.append(scenario_config)
-                print('find config file: ', len(collection),end='\r')
+            append(load_yaml(file_path))
+            if idx == 1 or idx % 10 == 0:
+                print('find config file: ', idx, end='\r')
+        print('find config file: ', len(collection))
+        return collection
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        for idx, scenario_config in enumerate(executor.map(load_yaml, file_paths), start=1):
+        # # Downsampling
+        # if 1.2 < random.randint(0, 10):
+        #     continue
+            collection.append(scenario_config)
+            if idx == 1 or idx % 10 == 0:
+                print('find config file: ', idx, end='\r')
+
+    print('find config file: ', len(collection))
     return collection
 
 def main():
     args = parse_args()
 
     # === Load Base Config === 
-    with open(args.base_config,'r') as f:
-        base_config = yaml.safe_load(f)
+    base_config = load_yaml(args.base_config)
 
     # === Load Scenario Configs ===
     scenario_configs = []
     if args.config == 'all':
-        scenario_configs.extend(collect_scenarios('./config/scenario_config'))
-        scenario_configs.extend(collect_scenarios('./config/scenario_config_combined'))
+        scenario_configs.extend(collect_scenarios('./config/scenario_config', yaml_workers=args.yaml_workers))
+        scenario_configs.extend(collect_scenarios('./config/scenario_config_combined', yaml_workers=args.yaml_workers))
     elif args.config.endswith('.yaml'):
-        with open(args.config,'r') as f:
-            scenario_config = yaml.safe_load(f)
-        scenario_configs.append(scenario_config)
+        scenario_configs.append(load_yaml(args.config))
     elif os.path.isdir(args.config): 
-        scenario_configs = collect_scenarios(args.config)
+        scenario_configs = collect_scenarios(args.config, yaml_workers=args.yaml_workers)
     elif '*' in args.config or '?' in args.config or '[' in args.config:
         # Handle glob patterns
         for file_path in glob.glob(args.config):
             if file_path.endswith('.yaml'):
-                with open(file_path, 'r') as f:
-                    scenario_config = yaml.safe_load(f)
-                scenario_configs.append(scenario_config)
+                scenario_configs.append(load_yaml(file_path))
     else:
         raise ValueError("Invalid config file path.")
 

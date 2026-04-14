@@ -40,6 +40,7 @@ def generate(base_config, scenario_config):
     EgoConfig = scenario_config['Ego']
     MapConfig = scenario_config['Map']
     ScenarioName = scenario_config['Scenario_name']
+    # print(f"Generating scenario: {ScenarioName} ", end=' | ')
     agentCount = len(Actors.get('Agents', []))
     pedCount = len(Actors.get('Pedestrians', []))
 
@@ -94,10 +95,12 @@ def generate(base_config, scenario_config):
         for idx, actor in enumerate(Actors[cata], start=1):
 
             actorName = f"{cata[:-1]}{idx}"
-            startPos = create_LanePosition_from_config(MapConfig, actor['Start_pos'], s=f"${actorName}_S", offset=f"${actorName}_Offset")
+            # for HetroD nps model
+            
+            startPos = xosc.WorldPosition(0, 1, -100, 0, 0, 0)
             if actor['Acts'][0]['Type'] == 'replay':
                 first_point = actor['Acts'][0]['Events'][0]['Trajectories'][0]
-                startPos = xosc.WorldPosition(first_point[0], first_point[1], -100, math.radians(first_point[2]), 0, 0)
+                startPos = xosc.WorldPosition(first_point[1], -100, math.radians(first_point[2]), 0, 0)
             init.add_init_action(actorName, xosc.TeleportAction(startPos))
 
     # === 4.2 產生 Maneuvers 與 Events ===
@@ -115,7 +118,7 @@ def generate(base_config, scenario_config):
             from rich import console
             console = console.Console()
             # console.log(dir(maneuvers))
-            console.log(previousEventNames)
+            # console.log(previousEventNames)
             # exit()
             if maneuvers:
                 allManeuvers[actorName] = maneuvers
@@ -136,7 +139,7 @@ def generate(base_config, scenario_config):
     # === 5. 組裝 Scenario 實體並回傳 ===
     scenario = xosc.Scenario(
         name="hct_" + ScenarioName,
-        author="HCIS_ChengYuSheng",
+        author="HCIS_ChengYu",
         parameters=paramdec,
         entities=entities,
         storyboard=sb,
@@ -227,9 +230,11 @@ def parameter_Declaration(Actors, Ego):
                                 name=f"{actorName}_Loop_Times", parameter_type="double", value=str(event['Loop']))
                             paraList.extend([loop, delay, spawn_delay])
                 else:
+                    spawn_delay = xosc.Parameter(
+                        name=f"{actorName}_Delay", parameter_type="double", value=str(act['Delay'])) #Spawn event
                     delay = xosc.Parameter(
-                        name=f"{actorName}_{actIndex}_Delay", parameter_type="double", value=str(act['Delay']))
-                    paraList.append(delay)
+                        name=f"{actorName}_{actIndex}_Delay", parameter_type="double", value=str(0.0))
+                    paraList.extend([spawn_delay, delay])
                     for eventIndex, event in enumerate(act['Events'], start=1):
                         actionName = 'TA'
                         if event['Type'] == 'speed':
@@ -268,7 +273,7 @@ def parameter_Declaration(Actors, Ego):
                 print(f"{actorName} has no 'Acts'")
                 continue
             for actIndex, act in enumerate(actor['Acts'], start=1):
-                print(f"Processing {actorName} Act {actIndex}: {act['Type']}"   )
+                # print(f"Processing {actorName} Act {actIndex}: {act['Type']}"   )
                 if act['Type'] == 'follow_trajectory':
                     for eventIndex, event in enumerate(act['Events'], start=1):
                         if event.get('Loop', False):
@@ -322,6 +327,7 @@ def create_Entity(egoController, agentCount, pedCount, agentController):
 
     # Create Pedestrian object
     pedObjectList = []
+    
     for i in range(pedCount):
         pedObject = xosc.CatalogReference(
             catalogname="PedestrianCatalog", entryname=f"$Pedestrian{i+1}_Type")
@@ -343,7 +349,7 @@ def create_Entity(egoController, agentCount, pedCount, agentController):
     # pedestrians
     for i in range(pedCount):
         entities.add_scenario_object(
-            name=f"Pedestrian{i+1}", entityobject=pedObjectList[i])
+            name=f"Pedestrian{i+1}", entityobject=pedObjectList[i], controller=agentController)
 
     return entities
 
@@ -426,9 +432,16 @@ def generate_Adv_Maneuver(actorName, agent, Map):
 
 def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors):
     param_maneuver = xosc.Maneuver("ParameterManeuver")
-    ego_speed = float(scenario_config['Ego']['Start_speed'])
-    agent = actors['Agents'][0]
-    agent_count = len(actors['Agents'])
+    # ego_speed = float(scenario_config['Ego']['Start_speed'])
+    # try:
+    #     agent = actors['Pedestrians'][0]
+    # except (KeyError, IndexError):
+    #     agent = actors['Agents'][0]
+    agent_count = 1
+    try:
+        agent_count = len(actors['Agents']) + len(actors['Pedestrians'])
+    except (KeyError, IndexError):
+        pass
     MapConfig = scenario_config['Map']
 
     # === Detect Ego Has Moved Event ===
