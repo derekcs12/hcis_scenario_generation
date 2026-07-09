@@ -60,7 +60,12 @@ def parse_args():
         type=int,
         default=0,
         help='Number of worker threads for loading yaml files (0: auto)')
-    
+    argparser.add_argument(
+        '--gen-workers',
+        type=int,
+        default=0,
+        help='生成 xosc 的平行 worker 進程數 (0=自動: 核心數-2, 上限12)')
+
     return argparser.parse_args()
 
 
@@ -125,55 +130,92 @@ def collect_scenarios(path, yaml_workers=0):
     print('find config file: ', len(collection))
     return collection
 
+_WORKER_BASE = None
+_WORKER_CTRL = None
+
+
+def _save_xosc(sce, base_config, scenario_config):
+    for path in base_config['save_paths']:
+        if path.endswith('.xosc'):
+            dir_path = os.path.dirname(path)
+            file_path = path
+        elif os.path.isdir(path) or path.endswith('/'):
+            dir_path = path
+            file_path = os.path.join(dir_path, f"{scenario_config['Scenario_name']}.xosc")
+        else:
+            raise ValueError(f"Invalid save path: {path}")
+        os.makedirs(dir_path, exist_ok=True)
+        sce.write_xml(file_path)
+
+
+def _gen_init(base_config, controller):
+    """ProcessPoolExecutor 每個 worker 啟動一次, 存 base_config/controller 為全域, 避免每個 task 重複 pickle。"""
+    global _WORKER_BASE, _WORKER_CTRL
+    _WORKER_BASE = base_config
+    _WORKER_CTRL = controller
+
+
+def _gen_from_path(file_path):
+    """Worker: 自行讀取 yaml → 生成 → 寫檔。只 pickle 檔案路徑, 避免傳輸大 config dict, 並平行化 yaml 讀取。"""
+    scenario_config = load_yaml(file_path)
+    scenario_config['Controller'] = _WORKER_CTRL
+    sce = generate(_WORKER_BASE, scenario_config)
+    _save_xosc(sce, _WORKER_BASE, scenario_config)
+    return scenario_config.get('Scenario_name')
+
+
 def main():
     args = parse_args()
 
     # === Load Base Config === 
     base_config = load_yaml(args.base_config)
 
-    # === Load Scenario Configs ===
-    scenario_configs = []
+    # === 收集 yaml 檔路徑 (不在主程序載入; 交給 worker 各自讀, 讀取也平行化) ===
+    file_paths = []
     if args.config == 'all':
-        scenario_configs.extend(collect_scenarios('./config/scenario_config', yaml_workers=args.yaml_workers))
-        scenario_configs.extend(collect_scenarios('./config/scenario_config_combined', yaml_workers=args.yaml_workers))
+        for d in ('./config/scenario_config', './config/scenario_config_combined'):
+            if os.path.isdir(d):
+                file_paths.extend(iter_yaml_files(d))
     elif args.config.endswith('.yaml'):
-        scenario_configs.append(load_yaml(args.config))
-    elif os.path.isdir(args.config): 
-        scenario_configs = collect_scenarios(args.config, yaml_workers=args.yaml_workers)
+        file_paths.append(args.config)
+    elif os.path.isdir(args.config):
+        file_paths.extend(iter_yaml_files(args.config))
     elif '*' in args.config or '?' in args.config or '[' in args.config:
-        # Handle glob patterns
-        for file_path in glob.glob(args.config):
-            if file_path.endswith('.yaml'):
-                scenario_configs.append(load_yaml(file_path))
+        file_paths.extend(p for p in glob.glob(args.config) if p.endswith('.yaml'))
     else:
         raise ValueError("Invalid config file path.")
+    print(f"找到 {len(file_paths)} 個 config 檔")
 
     # === Generate & Save xosc ===
-    for scenario_config in scenario_configs:
-        scenario_config['Controller'] = args.controller
-
-        # Generate xosc 
-        sce = generate(base_config, scenario_config)
-        
-        if args.esmini_path is not None:
+    if args.esmini_path is not None:
+        # 需開啟 esmini 視窗, 維持序列執行
+        for fp in file_paths:
+            scenario_config = load_yaml(fp)
+            scenario_config['Controller'] = args.controller
+            sce = generate(base_config, scenario_config)
             esmini(sce, esminipath=args.esmini_path, window_size="60 60 1920 1080")
+            _save_xosc(sce, base_config, scenario_config)
+            print(f"Saved scenario '{scenario_config['Scenario_name']}'")
+    else:
+        # 平行: 每個 worker 自行讀 yaml + 生成 + 寫檔 (讀取與生成皆平行, 不 pickle 大 config dict)
+        if args.gen_workers and args.gen_workers > 0:
+            gen_workers = args.gen_workers
+        else:
+            gen_workers = min(12, max(1, (os.cpu_count() or 4) - 2))
+        gen_workers = max(1, min(gen_workers, len(file_paths) or 1))
+        print(f"🧵 生成使用 {gen_workers} 個 worker 進程")
+        with concurrent.futures.ProcessPoolExecutor(
+                max_workers=gen_workers,
+                initializer=_gen_init,
+                initargs=(base_config, args.controller)) as executor:
+            done = 0
+            for _ in executor.map(_gen_from_path, file_paths, chunksize=8):
+                done += 1
+                if done == 1 or done % 100 == 0:
+                    print(f"generated: {done}/{len(file_paths)}", end='\r')
+        print(f"generated: {len(file_paths)}/{len(file_paths)}")
 
-        # Save xosc
-        for path in base_config['save_paths']:
-            if path.endswith('.xosc'):
-                dir_path = os.path.dirname(path)
-                file_path = path
-            elif os.path.isdir(path) or path.endswith('/'):
-                dir_path = path
-                file_path = os.path.join(dir_path, f"{scenario_config['Scenario_name']}.xosc")
-            else:
-                raise ValueError(f"Invalid save path: {path}")
-            
-            os.makedirs(dir_path, exist_ok=True)
-            sce.write_xml(file_path)
-
-
-    print("total config: ", len(scenario_configs))
+    print("total config: ", len(file_paths))
 
 if __name__ == '__main__':
     try:

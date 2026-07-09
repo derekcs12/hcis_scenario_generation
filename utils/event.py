@@ -5,6 +5,11 @@ from scenariogeneration import xosc
 from utils.trigger import *
 from utils.position import *
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import config
+
 
 
 def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
@@ -13,8 +18,11 @@ def create_Dummy_Event(actorName, actIndex, delay, previousEventName):
         previousEventName, delay=f'${actorName}_{actIndex}_Delay', state='complete')
     dummyEvent = xosc.Event(
         f"{actorName}_Event{actIndex}_DummyEvent", xosc.Priority.parallel)
+    # dummyEvent.add_action(f"{actorName}_Event{actIndex}_DummyAction",
+    #                       xosc.VisibilityAction(True, True, True))
+    # Since scenario runner has no visibility action, use parameter action as a dummy action.
     dummyEvent.add_action(f"{actorName}_Event{actIndex}_DummyAction",
-                          xosc.VisibilityAction(True, True, True))
+                          xosc.ParameterAddAction("Dummy_Parameter", 1))
     dummyEvent.add_trigger(trigger)
 
     return dummyEvent
@@ -46,19 +54,29 @@ def generate_Agent_Start_Event(actorName, agent, Map):
     # agentStartTrigger = create_flag_trigger('IS_VALID', 'true', delay=0, conditionedge=xosc.ConditionEdge.rising)
     # agentStartTrigger = create_flag_trigger('FLAG-AV_CONNECTED', 'true', delay=0, conditionedge=xosc.ConditionEdge.rising)
     startPos = create_LanePosition_from_config(Map, agent['Start_pos'], s=f"${actorName}_S", offset=f"${actorName}_Offset")
+    addEntityAction = xosc.AddEntityAction(f'{actorName}', startPos)
     agentStartTrigger = create_flag_trigger('FLAG-AV_CONNECTED', 'true', delay=f"${actorName}_Delay", conditionedge=xosc.ConditionEdge.rising)
-        
 
     advStartSpeedEvent = xosc.Event(
-        f"{actorName}_StartSpeedEvent", xosc.Priority.overwrite)
+        f"{actorName}_StartEvent", xosc.Priority.overwrite)
+    # advStartSpeedEvent.add_action(f"{actorName}_SpawnAction", addEntityAction)
     advStartSpeedEvent.add_action(
         f"{actorName}_StartSpeedAction", agentInitSpeed)
-    if 'Pedestrian' not in actorName:
+
+    if 'replay' == agent['Acts'][0]['Type']: #Suppose first wp == startpos's road/lane, however, we use first wp as startPos still, in case there is bug.
+        firstWp =  agent['Acts'][0]['Events'][0]['Trajectories'][0]
+        x, y, h = firstWp
+        if abs(h) > (2 * math.pi + 1e-6):
+            h = math.radians(h)
+        h = math.atan2(math.sin(h), math.cos(h))
+        startPos =  xosc.WorldPosition(float(x), float(y), 0, h)
+
+    elif 'Pedestrian' not in actorName and config.DEBUG: #for esmini's adv
+        # # 先不加ActivateControl for the bug: TM autopilot不知道為什麼在第一次開server的時候會很不穩定，所以會出現tick完長不一樣的狀況（像偏離預定waypoint甚至掉下去），
+        # # 所以如果可以拿掉ActivateController的話，就可以讓控制原單一（不要走TM autopilot)
         advStartSpeedEvent.add_action(
             f"{actorName}_ActivateController", xosc.ActivateControllerAction(longitudinal=True, lateral=True))
-    if 'replay' == agent['Acts'][0]['Type']:
-        advStartSpeedEvent.add_action(
-            f"{actorName}_SpawnActor", xosc.TeleportAction(startPos))
+    advStartSpeedEvent.add_action(f"{actorName}_SpawnActor", xosc.TeleportAction(startPos))
     advStartSpeedEvent.add_trigger(agentStartTrigger)
 
 
@@ -146,6 +164,57 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
     currentPosition[2] = f'${actorName}_{actIndex-1}_S' if actIndex > 1 else f'${actorName}_S'
     currentPosition[3] = f'${actorName}_{actIndex-1}_TA_Offset' if actIndex > 1 else f'${actorName}_Offset'
 
+    # """  ////////////////////// """
+    # # Non-replayer pedestrian (pedestrian_adult => AutonomousControl) replays Use_route as a
+    # # FollowTrajectory polyline timed by Dynamic_duration, instead of using AssignRouteAction.
+    # is_pedestrian_non_replayer = (
+    #     actor is not None
+    #     and 'Pedestrian' in actorName
+    #     and actor.get('Original_Type') == 'pedestrian_adult'
+    #     and event.get('Use_route') is not None
+    # )
+    # if is_pedestrian_non_replayer and event.get('Dynamic_shape') == 'Curve':
+    #     use_route = event['Use_route']
+    #     if isinstance(use_route[0], float):
+    #         use_route = [use_route]
+
+    #     duration = float(event.get('Dynamic_duration', 1.0))
+    #     vertices = []
+    #     time = []
+    #     previous_heading = None
+    #     n = len(use_route)
+    #     for i, pt in enumerate(use_route):
+    #         x, y = pt[0], pt[1]
+    #         h = pt[2] if len(pt) > 2 else 0.0
+    #         if abs(h) > (2 * math.pi + 1e-6):
+    #             h = math.radians(h)
+    #         h = math.atan2(math.sin(h), math.cos(h))
+    #         if previous_heading is not None:
+    #             while h - previous_heading > math.pi:
+    #                 h -= 2 * math.pi
+    #             while h - previous_heading < -math.pi:
+    #                 h += 2 * math.pi
+    #         previous_heading = h
+    #         vertices.append(xosc.WorldPosition(x, y, 0, h))
+    #         time.append(duration * i / max(1, n - 1))
+
+    #     polyline = xosc.Polyline(time, vertices)
+    #     trajectory = xosc.Trajectory("FollowTrajectory", False)
+    #     trajectory.add_shape(polyline)
+    #     advgoal = xosc.FollowTrajectoryAction(
+    #         trajectory, xosc.FollowingMode.position)
+
+    #     trigger = create_Trigger_following_previous(
+    #         previousEventName, delay=f'${actorName}_{actIndex}_TA_DynamicDelay', state='complete')
+    #     advgoalEvent = xosc.Event(
+    #         f"{actorName}_Event{actIndex}_TrajectoryEvent", xosc.Priority.parallel)
+    #     advgoalEvent.add_action(
+    #         f"{actorName}_Event{actIndex}_TrajectoryAction", advgoal)
+    #     advgoalEvent.add_trigger(trigger)
+    #     currentPosition = event['End']
+    #     return advgoalEvent, currentPosition
+    # """  ////////////////////// """
+
     # targetPoint = xosc.WorldPosition(event['End'][0], event['End'][1]) if len(
     #     event['End']) == 2 else create_LanePosition_from_config(Map, event['End'])
     if event['Dynamic_shape'] == 'Straight':
@@ -162,43 +231,110 @@ def generate_Position_Event(actorName, actIndex, event, Map, previousEventName, 
             trajectory, xosc.FollowingMode.position)
     elif event['Dynamic_shape'] == 'Curve':
         trajectory = xosc.Trajectory('selfDefineTrajectory', False)
+
+        actionType = "NURBS" 
+        # actionType = "AssignRoute" if config.SIMULATION_FOR == "CARLA" else "NURBS"
+        actionType = "PolyLine" if "Pedestrian" in actorName else actionType #Esmini Pedstrian 沒有支援assignRoute 的Controller，所以統一用Polyline
+
+        if actionType == "AssignRoute":
+            waypoints = []
+            sign = '+' if np.sign(currentPosition[1]) == -1 else '-'
+            front_s1 = f'${{${actorName}_{actIndex-1}_S {sign} 0.8}}' if actIndex > 1 else f'${{${actorName}_S {sign} 0.8}}' 
+            front_s2 = f'${{${actorName}_{actIndex-1}_S {sign} 1}}' if actIndex > 1 else f'${{${actorName}_S {sign} 1}}' 
+
+            waypoints.append(create_LanePosition_from_config(Map,currentPosition)) #出發點
+            # if "Pedestrian" not in actorName:
+            #     nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s1))) #車頭擺正,解決nurb橫向滑動問題
+            #     nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s2))) #車頭擺正,解決nurb橫向滑動問題
+            if event['Use_route'] != None:
+                use_route = []
+                # 相容舊版config yaml
+                # print((event['Use_route']))
+                if type(event['Use_route'][0]) == float:
+                    use_route = [event['Use_route']]
+                else:
+                    use_route = event['Use_route']
+                for points in use_route:
+                    waypoints.append(xosc.WorldPosition(points[0], points[1]))  # 路口中心
+            waypoints.append(targetPoint)  # 目的地
+
+            ego_route = xosc.Route(f"{actorName}_{actIndex-1}_route")
+            for wp in waypoints:
+                ego_route.add_waypoint(wp, xosc.RouteStrategy.shortest)
+
+            # create action
+            ego_action = xosc.AssignRouteAction(ego_route)
+
+        elif actionType == "PolyLine":
+            # from rich import console
+            # console = console.Console()
+            # # console.log(currentPosition);exit()
+
+            vertices = []
+            time = []
+
+            vertices.append(create_LanePosition_from_config(Map,currentPosition)) #出發點
+
+            if event['Use_route'] != None: #過程中間點
+                use_route = []
+                # 相容舊版config yaml
+                if type(event['Use_route'][0]) == float:
+                    use_route = [event['Use_route']]
+                else:
+                    use_route = event['Use_route']
+                for points in use_route:
+                    vertices.append(xosc.WorldPosition(points[0], points[1]))
+
+            vertices.append(targetPoint)  # 目的地
+
+            duration = float(event.get('Dynamic_duration', 6.0))
+            time = [duration * i / max(1, len(vertices) - 1) for i in range(len(vertices))]
+
+            polyline = xosc.Polyline(time, vertices)
+            trajectory = xosc.Trajectory("FollowTrajectory", False)
+            trajectory.add_shape(polyline)
+
+        elif actionType == "NURBS":
+            nurbs = xosc.Nurbs(4)
+
+            # from rich import console
+            # console = console.Console()
+            # console.log(currentPosition);exit()
+            sign = '+' if np.sign(currentPosition[1]) == -1 else '-'
+            front_s1 = f'${{${actorName}_{actIndex-1}_S {sign} 0.8}}' if actIndex > 1 else f'${{${actorName}_S {sign} 0.8}}' 
+            front_s2 = f'${{${actorName}_{actIndex-1}_S {sign} 1}}' if actIndex > 1 else f'${{${actorName}_S {sign} 1}}' 
+
+            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
+            if "Pedestrian" not in actorName:
+                nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s1))) #車頭擺正,解決nurb橫向滑動問題
+                nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s2))) #車頭擺正,解決nurb橫向滑動問題
+            if event['Use_route'] != None:
+                use_route = []
+                # 相容舊版config yaml
+                # print((event['Use_route']))
+                if type(event['Use_route'][0]) == float:
+                    use_route = [event['Use_route']]
+                else:
+                    use_route = event['Use_route']
+                for points in use_route:
+                    nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
+                        points[0], points[1]), weight=5))  # 路口中心
+            # nurbs.add_control_point(xosc.ControlPoint(
+            #     create_LanePosition_from_config(Map, event['End'], s=0)))  # 目的地
+            nurbs.add_control_point(xosc.ControlPoint(targetPoint))  # 目的地
+
+            knots_list = _knots_list(nurbs.order, len(nurbs.controlpoints))
         
-        nurbs = xosc.Nurbs(4)
+            nurbs.add_knots(knots_list)
+            trajectory.add_shape(nurbs)
 
-        from rich import console
-        console = console.Console()
-        # console.log(currentPosition);exit()
-        sign = '+' if np.sign(currentPosition[1]) == -1 else '-'
-        front_s1 = f'${{${actorName}_{actIndex-1}_S {sign} 0.8}}' if actIndex > 1 else f'${{${actorName}_S {sign} 0.8}}' 
-        front_s2 = f'${{${actorName}_{actIndex-1}_S {sign} 1}}' if actIndex > 1 else f'${{${actorName}_S {sign} 1}}' 
 
-        nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition))) #出發點
-        if "Pedestrian" not in actorName:
-            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s1))) #車頭擺正,解決nurb橫向滑動問題
-            nurbs.add_control_point(xosc.ControlPoint(create_LanePosition_from_config(Map,currentPosition, s=front_s2))) #車頭擺正,解決nurb橫向滑動問題
-        if event['Use_route'] != None:
-            use_route = []
-            # 相容舊版config yaml
-            # print((event['Use_route']))
-            if type(event['Use_route'][0]) == float:
-                use_route = [event['Use_route']]
-            else:
-                use_route = event['Use_route']
-            for points in use_route:
-                nurbs.add_control_point(xosc.ControlPoint(xosc.WorldPosition(
-                    points[0], points[1]), weight=5))  # 路口中心
-        # nurbs.add_control_point(xosc.ControlPoint(
-        #     create_LanePosition_from_config(Map, event['End'], s=0)))  # 目的地
-        nurbs.add_control_point(xosc.ControlPoint(targetPoint))  # 目的地
-
-        knots_list = _knots_list(nurbs.order, len(nurbs.controlpoints))
-       
-        nurbs.add_knots(knots_list)
-        trajectory.add_shape(nurbs)
-
-        # Create a FollowTrajectory action
-        advgoal = xosc.FollowTrajectoryAction(
-            trajectory, xosc.FollowingMode.position)
+        if actionType == "AssignRoute":
+            advgoal = ego_action
+        elif actionType in ["PolyLine", "NURBS"]:   
+            # Create a FollowTrajectory action
+            advgoal = xosc.FollowTrajectoryAction(
+                trajectory, xosc.FollowingMode.position)
     else:
         advgoal = xosc.AcquirePositionAction(targetPoint)
 
@@ -344,15 +480,19 @@ def generate_FollowTrajectory_Event(actorName, actIndex, event, previousEventNam
             continue
         x, y, h = points[i]
 
-        if abs(h) > (2 * math.pi + 1e-6):
-            h = math.radians(h)
-        h = math.atan2(math.sin(h), math.cos(h))
+        """HetroD-01FOLLOW_02LEAD_647_644_f10729.xosc"""
+        # 一律將角度視為度數轉弧度，確保來源一致
+        h = math.radians(h)
 
+        # heading 連續化，避免大跳變
         if previous_heading is not None:
-            while h - previous_heading > math.pi:
+            delta = h - previous_heading
+            # 讓 delta 落在 [-pi, pi]
+            if delta > math.pi:
                 h -= 2 * math.pi
-            while h - previous_heading < -math.pi:
+            elif delta < -math.pi:
                 h += 2 * math.pi
+        # 不做 atan2(sin, cos)，保留原始 heading 連續性
 
         previous_heading = h
         vertices.append(xosc.WorldPosition(x, y, 0, h))

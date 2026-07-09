@@ -1,6 +1,6 @@
 import numpy as np
 from scenariogeneration import xosc
-
+from utils.utils_config import condition_map
 
 def create_EntityTrigger_at_absolutePos(Map, Trigger, EntityName, tolerance=2, delay = 0, triggerName="EgoApproachInitWp"):
     
@@ -52,9 +52,11 @@ def create_EntityTrigger_at_relativePos(Map, Agent, EntityName):
                               triggerentity=EntityName, triggeringrule="any")
     
 
-def create_flag_trigger(variable_name, value='true', delay=0, conditionedge=xosc.ConditionEdge.rising):
+def create_flag_trigger(variable_name, value='true', delay=0, conditionedge=xosc.ConditionEdge.rising, conditionType="ParameterCondition"):
+    condition_class = condition_map.get(conditionType)
+
     group = xosc.ConditionGroup()
-    condition = xosc.VariableCondition(variable_name, value, xosc.Rule.equalTo)
+    condition = condition_class(variable_name, value, xosc.Rule.equalTo)
     trigger = xosc.ValueTrigger(
         name=f"{variable_name}_Trigger",
         delay=delay,

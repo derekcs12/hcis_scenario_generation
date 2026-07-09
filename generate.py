@@ -29,6 +29,13 @@ from utils.event import (
     generate_FollowTrajectory_Event,  # <-- add this import
 )
 
+from utils.utils_config import (
+    DEFAULT_AGENT_CONTROLLER,
+    agent_type_map,
+    set_flag_action,
+    agent_controller,
+)
+import config
 
 
 def generate(base_config, scenario_config):
@@ -47,7 +54,7 @@ def generate(base_config, scenario_config):
 
     # === 1. 宣告參數與 Catalogs ===
     vardec, variable_dict = variable_Declaration(base_config.get('variables', []))
-    paramdec = parameter_Declaration(Actors, EgoConfig)
+    paramdec = parameter_Declaration(Actors, EgoConfig, base_config.get('variables', []))
 
     # CatalogLocations & RoadNetwork (document:xosc.utiles)
     catalog = xosc.Catalog()
@@ -61,14 +68,31 @@ def generate(base_config, scenario_config):
 
 
     # === 3. 建立 Entities (Ego + Agents + Pedestrians)(document:xosc.Entities) ===
-    agentController = xosc.Controller(name="ACCController", properties=xosc.Properties())
-    entities = create_Entity(egoController, agentCount, pedCount, agentController=agentController)
-
+    entities = create_Entity(egoController, Actors)
 
     # --- 4. Storyboard ---
     # === 4.1 建立 Init 動作 ===
     step_time = xosc.TransitionDynamics(xosc.DynamicsShapes.step, xosc.DynamicsDimension.time, 0)
     init = xosc.Init()
+    
+
+    # 天氣
+    if config.SIMULATION_FOR == "CARLA":
+        if config.OPENSCENARIO_VERSION != 1.0:
+            raise NotImplementedError("Only OpenSCENARIO 1.0 is supported in the current implementation.")
+        
+        tod = xosc.TimeOfDay(True, 2026, 4, 21, 12, 00, 00)
+        weather = xosc.Weather(
+            cloudstate="free",
+            # cloudstate="zeroOktas", # osc 1.2
+            precipitation=xosc.Precipitation(xosc.PrecipitationType.dry, 0),
+            fog=xosc.Fog(100000.0),
+            sun=xosc.Sun(100000, 0.0, 1.31),
+        )
+        rc = xosc.RoadCondition(1)
+        env = xosc.Environment("Environment1", tod, weather, rc)
+        ea = xosc.EnvironmentAction(env)
+        init.add_global_action(ea)
 
     # Ego 初始位置、控制器啟動與終點位置
     egoStartPos = create_LanePosition_from_config(MapConfig, EgoConfig['Start_pos'])
@@ -82,26 +106,102 @@ def generate(base_config, scenario_config):
     #     lane_id=eventStart_lane,
     #     road_id=eventStart_road)
     egoEndPos = create_LanePosition_from_config(MapConfig, EgoConfig['End_pos'])
-    egoController = True
+    egoController = agent_controller.get('car_white', False)
+
 
     init.add_init_action(EgoName, xosc.TeleportAction(egoStartPos))
-    init.add_init_action(EgoName, xosc.ActivateControllerAction(lateral=egoController, longitudinal=egoController))
-    init.add_init_action(EgoName, xosc.AcquirePositionAction(egoEndPos))
+    # init.add_init_action(EgoName, xosc.ActivateControllerAction(lateral=egoController, longitudinal=egoController))
+    # init.add_init_action(EgoName, xosc.AcquirePositionAction(egoEndPos)) # Scenario runner 目前不支援在 Init 使用 AcquirePositionAction，改放在 Storyboard 的第一個 Event 裡面
     init.add_init_action(EgoName, xosc.AbsoluteSpeedAction("${$Ego_Speed / 3.6}", step_time))
+
+    # Add ControllerAction for Ego
+    if egoController:
+        # 舊版
+        # controller_action = xosc.ControllerAction()
+        # controller_action.add_assign_controller_action(egoController)
+        # controller_action.add_override_controller_value_action(lateral=True, longitudinal=True)
+        # init.add_init_action(EgoName, controller_action)
+
+        override_action = xosc.OverrideControllerValueAction()
+        override_action.set_throttle(active=False, value=0)
+        override_action.set_brake(active=False, value=0)
+        override_action.set_clutch(active=False, value=0)
+        override_action.set_parkingbrake(active=False, value=0)
+        override_action.set_steeringwheel(active=False, value=0)
+        override_action.set_gear(active=False, value=0)
+
+        # 2. 建立 AssignControllerAction (依 agent type 對應到 utils_config.agent_controller)
+        catalog_ref = xosc.CatalogReference("ControllerCatalog", egoController)
+        assign_action = xosc.AssignControllerAction(catalog_ref)
+
+        # 3. 【最終修正】在同一個 ControllerAction 中傳入兩者
+        # 這樣能同時滿足：
+        # - 兩者都被標記為 _used_by_parent (解決 VersionError)
+        # - 兩者都存在 (解決 NotEnoughInputArguments)
+        controller_action = xosc.ControllerAction(
+            assignControllerAction=assign_action,
+            overrideControllerValueAction=override_action
+        )
+
+        # 4. 只加入這一個 Action
+        init.add_init_action(EgoName, controller_action)
 
 
     # Agents / Pedestrians 初始位置
     for cata in Actors:
+        # continue #改在story
         for idx, actor in enumerate(Actors[cata], start=1):
 
             actorName = f"{cata[:-1]}{idx}"
             # for HetroD nps model
             
-            startPos = xosc.WorldPosition(0, 1, -100, 0, 0, 0)
-            if actor['Acts'][0]['Type'] == 'replay':
-                first_point = actor['Acts'][0]['Events'][0]['Trajectories'][0]
-                startPos = xosc.WorldPosition(first_point[1], -100, math.radians(first_point[2]), 0, 0)
-            init.add_init_action(actorName, xosc.TeleportAction(startPos))
+            """ esmini """
+            # # esmini
+            # startPos = xosc.WorldPosition(0, 1, -100, 0, 0, 0)
+            # if actor['Acts'][0]['Type'] == 'replay':
+            #     first_point = actor['Acts'][0]['Events'][0]['Trajectories'][0]
+            #     startPos = xosc.WorldPosition(first_point[1], -100, math.radians(first_point[2]), 0, 0)
+            # init.add_init_action(actorName, xosc.TeleportAction(startPos))
+
+
+            # # Add ControllerAction for Agents
+            # agentController = xosc.Controller(name="ACCController", properties=xosc.Properties())
+            # controller_action = xosc.ControllerAction()
+            # controller_action.add_assign_controller_action(agentController)
+            # controller_action.add_override_controller_value_action(lateral=True, longitudinal=True)
+            # init.add_init_action(actorName, controller_action)
+
+            """ carla """
+            if config.OPENSCENARIO_VERSION == 1.0:
+                init.add_init_action(actorName, xosc.TeleportAction(create_LanePosition_from_config(MapConfig, actor['Start_pos'])))
+                
+                override_action = xosc.OverrideControllerValueAction()
+                override_action.set_throttle(active=False, value=0)
+                override_action.set_brake(active=False, value=0)
+                override_action.set_clutch(active=False, value=0)
+                override_action.set_parkingbrake(active=False, value=0)
+                override_action.set_steeringwheel(active=False, value=0)
+                override_action.set_gear(active=False, value=0)
+
+                # 2. 建立 AssignControllerAction (依 agent type 對應到 utils_config.agent_controller)
+                controller_name = agent_controller.get(actor.get('Type'), DEFAULT_AGENT_CONTROLLER)
+                catalog_ref = xosc.CatalogReference("ControllerCatalog", controller_name)
+                assign_action = xosc.AssignControllerAction(catalog_ref)
+
+                # 3. 【最終修正】在同一個 ControllerAction 中傳入兩者
+                # 這樣能同時滿足：
+                # - 兩者都被標記為 _used_by_parent (解決 VersionError)
+                # - 兩者都存在 (解決 NotEnoughInputArguments)
+                controller_action = xosc.ControllerAction(
+                    assignControllerAction=assign_action,
+                    overrideControllerValueAction=override_action
+                )
+
+                # 4. 只加入這一個 Action
+                init.add_init_action(actorName, controller_action)
+            else:
+                NotImplementedError("Only OpenSCENARIO 1.0 is supported in the current implementation.")
+
 
     # === 4.2 產生 Maneuvers 與 Events ===
     # invalid condition flags
@@ -110,6 +210,29 @@ def generate(base_config, scenario_config):
 
     allManeuvers = {}
     allStartEvent = []
+
+    if config.DEBUG: #平常不加避免autowawre Actor not found in blackboard的問題
+        egoManeuver = xosc.Maneuver(f"Ego_Maneuver")
+        egoEndPos = create_LanePosition_from_config(MapConfig, EgoConfig['End_pos'])
+        
+        # Create Ego Acquire Position Event
+        egoAcquirePosEvent = xosc.Event("Ego_GoalEvent", xosc.Priority.parallel)
+        egoAcquirePosEvent.add_action("Ego_EndPosAction", xosc.AcquirePositionAction(egoEndPos))
+        egoAcquirePosEvent.add_action("Ego_ActivateController", xosc.ActivateControllerAction(longitudinal=True, lateral=True)) #for default demo
+        condition = xosc.SimulationTimeCondition(0, xosc.Rule.greaterThan)
+        egoAcquirePosTrigger = xosc.ValueTrigger(
+            name="EgoAcquirePosTrigger",
+            delay=0,
+            conditionedge=xosc.ConditionEdge.none,
+            valuecondition=condition,
+        )
+        egoAcquirePosEvent.add_trigger(egoAcquirePosTrigger)
+        
+
+    
+        
+        egoManeuver.add_event(egoAcquirePosEvent)
+        allManeuvers['Ego'] = egoManeuver
 
     for cata in Actors:
         for idx, actor in enumerate(Actors[cata], start=1):
@@ -130,44 +253,74 @@ def generate(base_config, scenario_config):
     # === 4.4 Storyboard 組裝 ===
     sb = xosc.StoryBoard(init, sb_stoptrigger)
     for name, maneuver in allManeuvers.items():
-        sb.add_maneuver(maneuver, name)
+        mangr = xosc.ManeuverGroup("maneuvergroup_" + maneuver.name)
+        mangr.add_actor(name)
+        mangr.add_maneuver(maneuver)
+        act = xosc.Act(name, stoptrigger=sb_stoptrigger)
+        act.add_maneuver_group(mangr)
+        sb.add_act(act)
 
     sb.add_maneuver(egoParamManeuver, "Ego")
 
-
+    # from rich import inspect
+    # inspect(sb);exit()
+    class HackyInt(int):
+        def __gt__(self, other):
+            # 欺騙邏輯：當程式問「2 是否大於 1」時，回傳 False
+            if other == 1:
+                return False
+            return super().__gt__(other)
+        
+        def __lt__(self, other):
+            # 欺騙邏輯：當程式問「2 是否小於 2」時，回傳 False
+            if other == 2:
+                return False
+            return super().__lt__(other)
 
     # === 5. 組裝 Scenario 實體並回傳 ===
     scenario = xosc.Scenario(
         name="hct_" + ScenarioName,
-        author="HCIS_ChengYu",
+        author="HCIS_ChengYu-Wu",
         parameters=paramdec,
         entities=entities,
         storyboard=sb,
         roadnetwork=road,
         catalog=catalog,
-        osc_minor_version=2,
-        variable_declaration=vardec
+        osc_minor_version=0,
+        # variable_declaration=vardec
     )
 
     return scenario
 
 def variable_Declaration(variable_list):
-    vardec = xosc.VariableDeclarations()
+    # vardec = xosc.VariableDeclarations()
+    # variable_dict = {}
+    # for var in variable_list:
+    #     vardec.add_variable(xosc.Variable(
+    #         name=var['name'], variable_type=var['type'], value=str(var['value'])))
+    #     variable_dict[var['name']] = var['value']
+
+    # scenario_runner 目前不支援 VariableDeclarations，先把變數用Declarations處理
+    vardec = xosc.ParameterDeclarations()
     variable_dict = {}
     for var in variable_list:
-        vardec.add_variable(xosc.Variable(
-            name=var['name'], variable_type=var['type'], value=str(var['value'])))
+        vardec.add_parameter(xosc.Parameter(
+            name=var['name'], parameter_type=var['type'], value=str(var['value'])))
         variable_dict[var['name']] = var['value']
 
     return vardec, variable_dict
 
-def parameter_Declaration(Actors, Ego):
+def parameter_Declaration(Actors, Ego, Variables=None):
     paramdec = xosc.ParameterDeclarations()
     paraList = []
 
+    # for common use
+    ego_type = agent_type_map.get("car_white", "vehicle.tesla.model3")
+
+
     # ParameterDeclarations
     egoInit = xosc.Parameter(
-        name="Ego_Vehicle", parameter_type="string", value="car_white")
+        name="Ego_Vehicle", parameter_type="string", value=ego_type)
     egoSpeed = xosc.Parameter(
         name="Ego_Speed", parameter_type="double", value=Ego['Start_speed'])
     egoS = xosc.Parameter(
@@ -177,10 +330,11 @@ def parameter_Declaration(Actors, Ego):
     # catas = ['Agents', 'Pedestrians']
     for cata in Actors:
         for actorIndex, actor in enumerate(Actors[cata], start=1):
+            agent_type = agent_type_map.get(actor['Type'], "vehicle.tesla.model3")
             actorName = f"{cata[:-1]}{actorIndex}"
             # actor's Init parameter
             actorType = xosc.Parameter(
-                name=f"{actorName}_Type", parameter_type="string", value=actor['Type'])
+                name=f"{actorName}_Type", parameter_type="string", value=agent_type)
             actorInitSpeed = xosc.Parameter(
                 name=f"{actorName}_Speed", parameter_type="double", value=str(actor['Start_speed']))
             actorInitS = xosc.Parameter(
@@ -282,6 +436,14 @@ def parameter_Declaration(Actors, Ego):
                                 name=ta_times_name, parameter_type="double", value="5"
                             )
                             paraList.append(ta_times_param)
+    if Variables:
+        for var in Variables:
+            param = xosc.Parameter(name=var['name'], parameter_type=var['type'], value=str(var['value']))
+            paraList.append(param)
+
+    # for dummy action: ParameterAction
+    dummy_parameter = xosc.Parameter(name="Dummy_Parameter", parameter_type="double", value=1)
+    paraList.append(dummy_parameter)
 
     for i in paraList:
         paramdec.add_parameter(i)
@@ -313,43 +475,39 @@ def get_Ego_Controller(controller_name):
     print("Controller not found")
     return None
 
-def create_Entity(egoController, agentCount, pedCount, agentController):
+def create_agent_controller(agent_type):
+    name = agent_controller.get(agent_type, DEFAULT_AGENT_CONTROLLER)
+    return xosc.Controller(name=name, properties=xosc.Properties())
+
+def create_Entity(egoController, Actors):
     # construct CatalogReference
     egoObject = xosc.CatalogReference(
         catalogname="VehicleCatalog", entryname="$Ego_Vehicle")  # xosc.utils
 
-    # Create agent object
-    agentObjectList = []
-    for i in range(agentCount):
-        agentObject = xosc.CatalogReference(
-            catalogname="VehicleCatalog", entryname=f"$Agent{i+1}_Type")
-        agentObjectList.append(agentObject)
-
-    # Create Pedestrian object
-    pedObjectList = []
-    
-    for i in range(pedCount):
-        pedObject = xosc.CatalogReference(
-            catalogname="PedestrianCatalog", entryname=f"$Pedestrian{i+1}_Type")
-        pedObjectList.append(pedObject)
+    agents = Actors.get('Agents', [])
+    pedestrians = Actors.get('Pedestrians', [])
 
     # create entity
     entities = xosc.Entities()
 
     # ego
     entities.add_scenario_object(
-        name="Ego", entityobject=egoObject, controller=egoController)
-    
+        name="Ego", entityobject=egoObject) #, controller=egoController) # Scenario Runner 目前不支援在 Entity 定義 Controller
 
-    # agents
-    for i in range(agentCount):
+    # Scenario Runner 目前不支援在 Entity 定義 Controller，所以改在 Init 裡面用 ControllerAction 指定控制器與 OverrideControllerValueAction 的初始值
+    # agents — controller chosen per actor type via utils_config.agent_controller
+    for i, actor in enumerate(agents):
+        agentObject = xosc.CatalogReference(
+            catalogname="VehicleCatalog", entryname=f"$Agent{i+1}_Type")
         entities.add_scenario_object(
-            name=f"Agent{i+1}", entityobject=agentObjectList[i], controller=agentController)
+            name=f"Agent{i+1}", entityobject=agentObject)
 
-    # pedestrians
-    for i in range(pedCount):
+    # pedestrians — controller chosen per actor type via utils_config.agent_controller
+    for i, actor in enumerate(pedestrians):
+        pedObject = xosc.CatalogReference(
+            catalogname="PedestrianCatalog", entryname=f"$Pedestrian{i+1}_Type")
         entities.add_scenario_object(
-            name=f"Pedestrian{i+1}", entityobject=pedObjectList[i], controller=agentController)
+            name=f"Pedestrian{i+1}", entityobject=pedObject)
 
     return entities
 
@@ -431,10 +589,12 @@ def generate_Adv_Maneuver(actorName, agent, Map):
 
 
 def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors):
+    setFlagAction = set_flag_action['ParameterSetAction']
+
     param_maneuver = xosc.Maneuver("ParameterManeuver")
     # ego_speed = float(scenario_config['Ego']['Start_speed'])
     # try:
-    #     agent = actors['Pedestrians'][0]
+    #     agent = actors['generate_Agent_Start_Event'][0]
     # except (KeyError, IndexError):
     #     agent = actors['Agents'][0]
     agent_count = 1
@@ -447,7 +607,7 @@ def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors)
     # === Detect Ego Has Moved Event ===
     if 'FLAG-AV_CONNECTED' in variable_dict:
         event = xosc.Event("DetectEgoHasMovedEvent", xosc.Priority.parallel)
-        event.add_action("Set EgoHasMoved Flag", xosc.VariableSetAction("FLAG-AV_CONNECTED", "true"))
+        event.add_action("Set EgoHasMoved Flag", setFlagAction("FLAG-AV_CONNECTED", "true"))
         event.add_trigger(xosc.EntityTrigger("EgoHasMoved", 0, xosc.ConditionEdge.none,
                         xosc.SpeedCondition(0, xosc.Rule.greaterThan), ego_name))
         param_maneuver.add_event(event)
@@ -455,7 +615,7 @@ def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors)
     # === Init Valid Flag ===
     if 'FLAG-IS_VALID' in variable_dict:
         event = xosc.Event("ValidManeuverEvent", xosc.Priority.parallel)
-        event.add_action("Set Valid Flag", xosc.VariableSetAction("FLAG-IS_VALID", "true"))
+        event.add_action("Set Valid Flag", setFlagAction("FLAG-IS_VALID", "true"))
         
         """ 舊的trigger(有助跑得狀況): 需要在觸發位置有正確的速度才算valid"""
         # valid_trigger = create_right_start_speed_condition(MapConfig, EGO_NAME, agent['Start_trigger'], ego_speed)
@@ -472,7 +632,7 @@ def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors)
     # === Detect AV Connection Timeout Event(30) ===
     if 'FLAG-AV_CONNECTION_TIMEOUT' in variable_dict:
         event = xosc.Event("DetectAVConnectionTimeoutEvent", xosc.Priority.parallel)
-        event.add_action("Set AV Connection Timeout Flag", xosc.VariableSetAction("FLAG-AV_CONNECTION_TIMEOUT", "true"))
+        event.add_action("Set AV Connection Timeout Flag", setFlagAction("FLAG-AV_CONNECTION_TIMEOUT", "true"))
         if 'VAL-AV_CONNECTION_TIMEOUT' in variable_dict:
             time = float(variable_dict['VAL-AV_CONNECTION_TIMEOUT'])
         else:
@@ -486,27 +646,27 @@ def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors)
     #     MapConfig, EGO_NAME, agent['Start_trigger'], ego_speed, tolerance=2)
 
     # event = xosc.Event("DetectHighStartSpeedEvent", xosc.Priority.parallel)
-    # event.add_action("Set High Start Speed Flag", xosc.VariableSetAction("FLAG-WRONG_START_SPEED", "true"))
+    # event.add_action("Set High Start Speed Flag", setFlagAction("FLAG-WRONG_START_SPEED", "true"))
     # event.add_trigger(high_group)
     # param_maneuver.add_event(event)
 
     # # === Detect Wrong Start Speed Event - below tolerance ===
     # event = xosc.Event("DetectLowStartSpeedEvent", xosc.Priority.parallel)
-    # event.add_action("Set Low Start Speed Flag", xosc.VariableSetAction("FLAG-WRONG_START_SPEED", "true"))
+    # event.add_action("Set Low Start Speed Flag", setFlagAction("FLAG-WRONG_START_SPEED", "true"))
     # event.add_trigger(low_group)
     # param_maneuver.add_event(event)
 
     # === Detect Ego Reached End Event ===
     if 'FLAG-EGO_REACHED_END' in variable_dict:
         event = xosc.Event("DetectEgoReachedEndEvent", xosc.Priority.parallel)
-        event.add_action("Set Ego Reached End Flag", xosc.VariableSetAction("FLAG-EGO_REACHED_END", "true"))
+        event.add_action("Set Ego Reached End Flag", setFlagAction("FLAG-EGO_REACHED_END", "true"))
         event.add_trigger(create_reach_target_condition(MapConfig, ego_name, scenario_config['Ego']['End_pos']))
         param_maneuver.add_event(event)
 
     # === Detect Ego TLE Event ===
     if 'FLAG-EGO_TLE' in variable_dict:
         event = xosc.Event("DetectEgoTLEEvent", xosc.Priority.parallel)
-        event.add_action("Set Ego TLE Flag", xosc.VariableSetAction("FLAG-EGO_TLE", "true"))
+        event.add_action("Set Ego TLE Flag", setFlagAction("FLAG-EGO_TLE", "true"))
         if 'VAL-EGO_TLE' in variable_dict:
             time = float(variable_dict['VAL-EGO_TLE'])
         else:
@@ -526,14 +686,14 @@ def generate_Variable_Maneuver(ego_name, variable_dict, scenario_config, actors)
     # === Detect Ego Collision Event ===
     if 'FLAG-EGO_COLLISION' in variable_dict:
         event = xosc.Event("DetectEgoCollisionEvent", xosc.Priority.parallel)
-        event.add_action("Set Ego Collision Flag", xosc.VariableSetAction("FLAG-EGO_COLLISION", "true"))
+        event.add_action("Set Ego Collision Flag", setFlagAction("FLAG-EGO_COLLISION", "true"))
         event.add_trigger(create_collision_condition(ego_name, agentCount=agent_count))
         param_maneuver.add_event(event)
 
     # === Create Ego Stroll Event ===
     if 'FLAG-EGO_STROLL' in variable_dict:
         event = xosc.Event("EgoStrollEvent", xosc.Priority.parallel)
-        event.add_action("Set Ego Stroll Flag", xosc.VariableSetAction("FLAG-EGO_STROLL", "true"))
+        event.add_action("Set Ego Stroll Flag", setFlagAction("FLAG-EGO_STROLL", "true"))
         if 'VAL-EGO_STROLL' in variable_dict:
             time = float(variable_dict['VAL-EGO_STROLL'])
         else:

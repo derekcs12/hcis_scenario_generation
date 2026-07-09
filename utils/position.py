@@ -1,8 +1,11 @@
 import numpy as np
 from scenariogeneration import xosc
 
-from config import RELATIVE_TRIGGER_POSITIONS
 from utils.trigger import * 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import RELATIVE_TRIGGER_POSITIONS
 
 def create_LanePosition_from_config(Map, position, orientation=False, s=None, offset=None):
     if s == None:
@@ -21,11 +24,6 @@ def create_LanePosition_from_config(Map, position, orientation=False, s=None, of
     # print("index, lane_id , s", index, lane_id , s)
     # road = int(Map[index]) # if index < 4 else index #derek: SinD地圖太亂，traj直接給road比較快
     road = index #derek: 軌跡起始位置不固定，直接給road
-    if np.sign(lane_id) == -1:
-        if isinstance(offset, str):
-            offset = f'${{-{offset}}}'
-        else:
-            offset = -offset
     return xosc.LanePosition(
         s=s,
         offset=offset,

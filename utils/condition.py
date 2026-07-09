@@ -3,6 +3,7 @@ from scenariogeneration import xosc
 
 from utils.trigger import *
 from utils.position import *
+from utils.utils_config import condition_map
 
 
 def create_collision_condition(egoName, agentCount=1):
@@ -24,20 +25,28 @@ def create_collision_condition(egoName, agentCount=1):
     return group
 
 
-def create_ego_stroll_condition(time=25):
+def create_ego_stroll_condition(time=25, conditionType="ParameterCondition"):
     """
     Replace (1-c) and (2-d): Ego enters invalid area => check if the ego is connected and does not arrive the trigger point in x seconds
     Test Result: invalid
     """
+
+    # 取得對應的類別
+    condition_class = condition_map.get(conditionType)
+    
+    if not condition_class:
+        raise ValueError(f"不支援的 conditionType: {conditionType}")
+    
+
     group = xosc.ConditionGroup()
-    connected_condition = xosc.VariableCondition("FLAG-AV_CONNECTED", "true", xosc.Rule.equalTo)
+    connected_condition = condition_class("FLAG-AV_CONNECTED", "true", xosc.Rule.equalTo)
     connected_trigger = xosc.ValueTrigger(
         name="EgoStroll",
         delay=time,
         conditionedge=xosc.ConditionEdge.none,
         valuecondition=connected_condition
     )
-    event_started = xosc.VariableCondition("FLAG-IS_VALID", "false", xosc.Rule.equalTo)
+    event_started = xosc.condition_class("FLAG-IS_VALID", "false", xosc.Rule.equalTo)
     event_started_trigger = xosc.ValueTrigger(
         name="EventStarted",
         delay=0,
@@ -174,7 +183,7 @@ def create_right_start_speed_condition(Map, egoName, eventStartPoint, eventStart
 #     return group
 
     
-def create_timeout_condition(egoName, time=60):
+def create_timeout_condition(egoName, time=60, conditionType="ParameterCondition"):
     """
     End Condition (1-a) - Timeout Condition
     Description: If the simulation time exceeds the specified time, and the AV system has not connected, the scenario is considered invalid.
@@ -189,7 +198,10 @@ def create_timeout_condition(egoName, time=60):
         valuecondition=condition,
     )
 
-    has_moved = xosc.VariableCondition("FLAG-AV_CONNECTED", "false", xosc.Rule.equalTo)
+    # 取得對應的類別
+    condition_class = condition_map.get(conditionType)
+
+    has_moved = condition_class("FLAG-AV_CONNECTED", "false", xosc.Rule.equalTo)
     has_moved_trigger = xosc.ValueTrigger(
         name="EgoHasNotMoved",
         delay=0,
