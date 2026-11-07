@@ -38,3 +38,4 @@ SIMULATION_FOR = "CARLA" # or "ESMINI"
 # SIMULATION_FOR = "ESMINI" # or "ESMINI"
 OPENSCENARIO_VERSION = 1.0
 DEBUG = False  # 生成Debug 版本xosc，包含ego controller 
+# DEBUG = True  # 生成Debug 版本xosc，包含ego controller 

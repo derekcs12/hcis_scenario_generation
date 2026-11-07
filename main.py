@@ -39,8 +39,9 @@ def parse_args():
         '-c', '--config',
         required=True,
         metavar='C',
+        nargs='+',
         # type=valid_path,
-        help='Config file path')
+        help='Config file path (支援多個路徑 / 目錄 / glob 樣式, 例如 dir/HetroD-01SpecialCase*)')
     argparser.add_argument(
         '-d', '--deactivate',
         action='store_true',
@@ -87,6 +88,51 @@ def iter_yaml_files(path):
                     stack.append(entry.path)
                 elif entry.is_file() and entry.name.endswith('.yaml'):
                     yield entry.path
+
+
+def resolve_config_paths(config_tokens):
+    """把 -c 參數解析成 yaml 檔案路徑清單。
+
+    config_tokens 為 list (argparse nargs='+'), 每個 token 可以是:
+      - 'all'            : 內建的 scenario_config 目錄
+      - *.yaml 檔案
+      - 目錄             : 遞迴收集底下所有 yaml
+      - glob 樣式 (*, ?, [])：展開後, 目錄遞迴收集、.yaml 直接加入
+    也支援 shell 已把 glob 展開成多個 token 的情況 (fish/bash 預設會展開未加引號的 *)。
+    """
+    file_paths = []
+    seen = set()
+
+    def add(fp):
+        if fp not in seen:
+            seen.add(fp)
+            file_paths.append(fp)
+
+    for token in config_tokens:
+        if token == 'all':
+            for d in ('./config/scenario_config', './config/scenario_config_combined'):
+                if os.path.isdir(d):
+                    for fp in iter_yaml_files(d):
+                        add(fp)
+        elif os.path.isdir(token):
+            for fp in iter_yaml_files(token):
+                add(fp)
+        elif token.endswith('.yaml'):
+            add(token)
+        elif any(ch in token for ch in '*?['):
+            matches = glob.glob(token)
+            if not matches:
+                print(f"⚠️  glob 沒有匹配到任何檔案: {token}")
+            for m in matches:
+                if os.path.isdir(m):
+                    for fp in iter_yaml_files(m):
+                        add(fp)
+                elif m.endswith('.yaml'):
+                    add(m)
+        else:
+            raise ValueError(f"Invalid config file path: {token}")
+
+    return file_paths
 
 
 def resolve_yaml_workers(configured_workers):
@@ -171,19 +217,7 @@ def main():
     base_config = load_yaml(args.base_config)
 
     # === 收集 yaml 檔路徑 (不在主程序載入; 交給 worker 各自讀, 讀取也平行化) ===
-    file_paths = []
-    if args.config == 'all':
-        for d in ('./config/scenario_config', './config/scenario_config_combined'):
-            if os.path.isdir(d):
-                file_paths.extend(iter_yaml_files(d))
-    elif args.config.endswith('.yaml'):
-        file_paths.append(args.config)
-    elif os.path.isdir(args.config):
-        file_paths.extend(iter_yaml_files(args.config))
-    elif '*' in args.config or '?' in args.config or '[' in args.config:
-        file_paths.extend(p for p in glob.glob(args.config) if p.endswith('.yaml'))
-    else:
-        raise ValueError("Invalid config file path.")
+    file_paths = resolve_config_paths(args.config)
     print(f"找到 {len(file_paths)} 個 config 檔")
 
     # === Generate & Save xosc ===
